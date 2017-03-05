@@ -1,0 +1,49 @@
+# General
+.*
+~*
+*~
+*#
+data/
+results/
+
+# Notebooks
+# Only allow notebooks, readmes, and example config/light data files
+# TODO doesn't work
+#notebooks/**/*
+!notebooks/**/*.ipynb
+!notebooks/**/*.md
+!notebooks/**/*.json
+!notebooks/**/*.toml
+!notebooks/**/*.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+env/
+build/
+dist/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+
+# Scala and Java
+dist/*
+target/
+*.class
+hs_err_pid*
+
+# Julia
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+deps/deps.jl
+
+# Keep these:
+!/.gitignore
+!/.smt
+
