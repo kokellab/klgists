@@ -3,7 +3,7 @@ A package of Python Gists for the Kokel Lab.
 
 Many of these these were taken from [dmyersturnbull's Gist](https://gist.github.com/dmyersturnbull). This repository should be assumed to contain the most recent versions.
 
-[![CircleCI](https://circleci.com/gh/kokellab/klgists.svg?style=svg)](https://circleci.com/gh/kokellab/klgists)
+[![CircleCI](https://circleci.com/gh/kokellab/klgists.svg?style=shield)](https://circleci.com/gh/kokellab/klgists)
 
 
 ## license
