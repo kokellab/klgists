@@ -1,6 +1,6 @@
 dill == 0.2.5
 PyMySQL == 0.7.6
-ChemSpiPy == 1.0.4
+ChemSpiPy == 1.0.5
 h5py == 2.6.0
 numpy == 1.11.1
 scipy == 0.18.1
