@@ -8,14 +8,18 @@ class FileHasher:
 
 	algorithm = None
 	extension = None
+	buffer_size = None
 
-	def __init__(self, algorithm=hashlib.sha1, extension: str='.sha1'):
+	def __init__(self, algorithm=hashlib.sha1, extension: str='.sha1', buffer_size: int = 16*1024):
 		self.algorithm = algorithm
 		self.extension = extension
+		self.buffer_size = buffer_size
 
 	def hashsum(self, file_name: str) -> str:
 		with open(file_name, 'rb') as f:
-			return self.algorithm(f.read()).hexdigest()
+			for chunk in iter(lambda: f.read(4096), b''):
+				self.algorithm.update(chunk)
+		return self.algorithm.hexdigest()
 
 	def add_hash(self, file_name: str) -> None:
 		with open(file_name + self.extension, 'w') as f:
