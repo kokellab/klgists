@@ -12,7 +12,7 @@ class TomlData:
 		data.()                # returns (x, {}
 	"""
 
-	top = None
+	top = None  # type: Dict[str, object]
 
 	def __init__(self, top_level_item: Dict[str, object]):
 		assert top_level_item is not None
