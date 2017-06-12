@@ -4,21 +4,21 @@ from colorama import Fore, Style
 
 def warn_user(*lines: str):
 	print()
-	warn_thin(lines)
+	warn_thin(*lines)
 	print()
 def warn_thin(*lines: str):
 	print_to_user(['', *lines, ''], Fore.RED)
 
 def notify_user(*lines: str):
 	print()
-	notify_thin(lines)
+	notify_thin(*lines)
 	print()
 def notify_thin(*lines: str):
 	print_to_user(['', *lines, ''], Fore.BLUE)
 
 def notify_user_light(*lines: str):
 	print()
-	notify_light_thin(lines)
+	notify_light_thin(*lines)
 	print()
 def notify_light_thin(*lines: str):
 	print_to_user(['', *lines, ''], Style.BRIGHT, sides='')
