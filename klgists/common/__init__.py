@@ -13,7 +13,16 @@ class DevNull:
 
 pjoin = os.path.join
 pexists = os.path.exists
+pdir = os.path.isdir
+pfile = os.path.isfile
 pis_dir = os.path.isdir
+fsize = os.path.getsize
+def pardir(path: str, depth: int=1):
+	for _ in range(-1, depth):
+		path = os.path.dirname(path)
+	return path
+def grandpardir(path: str):
+	return pardir(path, 2)
 
 T = TypeVar('T')
 def try_index_of(element: List[T], list_element: T) -> Optional[T]:

@@ -1,6 +1,6 @@
-# coding=utf-8
-
 import datetime
+import re
+from typing import Dict, Optional
 
 def format_time(time: datetime.datetime) -> str:
 	"""Standard timestamp format. Ex: 2016-05-02_22_35_56."""

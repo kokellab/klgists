@@ -30,17 +30,33 @@ def prompt_and_delete(
 ) -> Deletion:
 
 	def if_allowed(task: Callable[[], None]):
-		if allow_dirs: raise ValueError('Cannot delete directory {}; only files are allowed'.format(path))
+		if not allow_dirs and os.path.isdir(path):
+			raise ValueError('Cannot delete directory {}; only files are allowed'.format(path))
 		if not test_only: task()
 
 	choices = [Deletion.NO.name.lower(), Deletion.TRASH.name.lower(), Deletion.HARD.name.lower()]
-	while True:
-		command = input('Delete? [{}] '.format('/'.join(choices)))
-		if command.lower() == Deletion.TRASH.name.lower():
+
+	def poll(command: str) -> bool:
+
+		if command.lower() == Deletion.HARD.name.lower():
 			if_allowed(lambda: shutil.rmtree(path))
 			if show_confirmation: print(Style.BRIGHT + "Trashed {} to {}".format(path, trash_dir))
+			return Deletion.HARD
+
 		elif command.lower() == Deletion.TRASH.name.lower():
 			if_allowed(lambda: shutil.move(path, trash_dir))
 			if show_confirmation: print(Style.BRIGHT + "Permanently deleted {}".format(path))
+			return Deletion.TRASH
+
+		elif command.lower() == Deletion.NO:
+			return Deletion.NO
+
 		else:
-			print(Fore.RED + "Enter {}".format(' or'.join(choices)))
+			print(Fore.RED + "Enter {}".format(' or '.join(choices)))
+			return None
+
+	while True:
+		command = input('Delete? [{}] '.format('/'.join(choices)))
+		polled = poll(command)
+		if polled is not None: return polled
+
