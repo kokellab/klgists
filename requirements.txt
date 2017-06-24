@@ -2,7 +2,7 @@ dill == 0.2.6
 PyMySQL == 0.7.11
 ChemSpiPy == 1.0.5
 h5py == 2.6.0
-numpy == 1.13.0rc1
+numpy == 1.13.0
 scipy == 0.19.0
 scikit-learn == 0.18.1
 overrides == 1.7
@@ -10,5 +10,15 @@ pandas == 0.20.1
 matplotlib == 2.0.2
 seaborn == 0.7.1
 altair == 1.2.0
-vega == 0.4.4
 colorama == 0.3.9
+peewee == 2.10.1
+toml == 0.9.2
+psutil == 5.2.2
+requests == 2.14.2
+terminaltables == 3.1.0
+cryptography == 1.9
+sshtunnel == 0.1.2
+infix == 1.2
+colorama == 0.3.9
+py-cpuinfo == 3.2.0
+hurry.filesize == 0.9
