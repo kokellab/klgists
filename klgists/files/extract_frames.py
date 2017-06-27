@@ -33,4 +33,4 @@ def extract_frames(video_path: str, output_frames_dir: str, notification_path: O
 				'-i', video_path,
 				pjoin(output_frames_dir, '%06d.jpg')
 		])
-		with open(extraction_finished_path, 'w'): print('')  # all done
+		with open(notification_path, 'w'): print('')  # all done
