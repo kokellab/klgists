@@ -1,5 +1,7 @@
 import os
 
+from klgists.common import pjoin
+
 def fix_path(path: str) -> str:
 	"""Modifies path strings to work with Python and external tools.
 	Replaces a beginning '~' with the HOME environment variable.

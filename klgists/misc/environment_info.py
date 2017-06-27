@@ -1,12 +1,16 @@
 import os
 import sys
+import getpass
 import platform
+import psutil
+import cpuinfo
 import socket
 from typing import Dict, Any, Optional
-from klgists.misc.git_commit_hash import git_commit_hash
+from klgists.misc.commit_hash import git_commit_hash
 from klgists.common.datetime_utils import now
 
-def get_environment_info(extras: Optional[Dict[str, Any]]=None) -> Dict[str, str]:
+
+def find_environment_info(extras: Optional[Dict[str, Any]]=None) -> Dict[str, str]:
 	"""Get a dictionary of some system and environment information."""
 	if extras is None: extras = {}
 	mains = {
@@ -22,5 +26,5 @@ def get_environment_info(extras: Optional[Dict[str, Any]]=None) -> Dict[str, str
 			'cpu': cpuinfo.get_cpu_info()['brand'],
 			'sauronx_hash': git_commit_hash(),
 			'environment_info_capture_datetime': now().isoformat()
-	}.items()}
+	}
 	return  {k: str(v) for k, v in {**mains, **extras}.items()}
