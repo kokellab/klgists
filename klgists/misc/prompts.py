@@ -38,7 +38,7 @@ def prompt_and_delete(
 
 	def poll(command: str) -> bool:
 
-		if command.lower() == Deletion.TRASH.name.lower():
+		if command.lower() == Deletion.HARD.name.lower():
 			if_allowed(lambda: shutil.rmtree(path))
 			if show_confirmation: print(Style.BRIGHT + "Trashed {} to {}".format(path, trash_dir))
 			return Deletion.HARD
@@ -52,10 +52,11 @@ def prompt_and_delete(
 			return Deletion.NO
 
 		else:
-			print(Fore.RED + "Enter {}".format(' or'.join(choices)))
+			print(Fore.RED + "Enter {}".format(' or '.join(choices)))
 			return None
 
 	while True:
 		command = input('Delete? [{}] '.format('/'.join(choices)))
 		polled = poll(command)
 		if polled is not None: return polled
+
