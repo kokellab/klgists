@@ -1,8 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 from typing import Optional, Tuple
 
-def colored_barplot(x: np.ndarray, y: np.ndarray, colors: np.ndarray, y_ticks: Optional[np.ndarray]=None, fig_size: Tuple[float, float]=(10.0, 10.0), label_rotation: float=75):
+
+def colored_barplot(x: np.ndarray, y: np.ndarray, colors: np.ndarray, y_ticks: Optional[np.ndarray]=None, fig_size: Tuple[float, float]=(10.0, 10.0), label_rotation: float=75) -> (Figure, Axes):
     index = np.arange(0, len(x))
     fig = plt.figure()
     fig.set_size_inches(fig_size)
@@ -13,4 +16,4 @@ def colored_barplot(x: np.ndarray, y: np.ndarray, colors: np.ndarray, y_ticks: O
     if y_ticks is not None:
         ax.set_yticks(y_ticks)
     ax.set_xticklabels(x, rotation=label_rotation)
-    return plot
+    return plot, ax
