@@ -59,7 +59,7 @@ class UniProtGoTerms:
 		# That's because uniprot.fetch_uniprot_metadata will only return one per unique ID
 		if len(set(uniprot_ids)) != len(uniprot_ids):
 			raise ValueError('Set of UniProt IDs cannot contain duplicates')
-		with silenced(stderr=False):
+		with silenced(no_stderr=False):
 			uniprot_data = uniprot.fetch_uniprot_metadata(uniprot_ids)
 		if uniprot_data is None or uniprot_data == {} or len(uniprot_data) != len(uniprot_ids):
 			raise ValueError('At least one UniProt ID not found in {}'.format(str(uniprot_ids)))

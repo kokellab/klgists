@@ -1,7 +1,7 @@
 
 from typing import Callable
 import pandas as pd
-from dl_and_rezip import dl_and_rezip # see https://gist.github.com/dmyersturnbull/a6591676fc98da355c5250d48e26844e
+from klgists.files.dl_and_rezip import dl_and_rezip # see https://gist.github.com/dmyersturnbull/a6591676fc98da355c5250d48e26844e
 
 
 def _load(filter_fn: Callable[[pd.DataFrame], pd.DataFrame]=pd.DataFrame.dropna) -> pd.DataFrame:
