@@ -39,16 +39,16 @@ def prompt_and_delete(
 	def poll(command: str) -> bool:
 
 		if command.lower() == Deletion.HARD.name.lower():
+			if show_confirmation: print(Style.BRIGHT + "Permanently deleted {}".format(path))
 			if_allowed(lambda: shutil.rmtree(path))
-			if show_confirmation: print(Style.BRIGHT + "Trashed {} to {}".format(path, trash_dir))
 			return Deletion.HARD
 
 		elif command.lower() == Deletion.TRASH.name.lower():
 			if_allowed(lambda: shutil.move(path, trash_dir))
-			if show_confirmation: print(Style.BRIGHT + "Permanently deleted {}".format(path))
+			if show_confirmation: print(Style.BRIGHT + "Trashed {} to {}".format(path, trash_dir))
 			return Deletion.TRASH
 
-		elif command.lower() == Deletion.NO:
+		elif command.lower() == Deletion.NO.name.lower():
 			return Deletion.NO
 
 		else:
