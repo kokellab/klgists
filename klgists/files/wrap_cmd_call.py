@@ -8,6 +8,7 @@ def wrap_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PIPE
 	"""Calls an external command, waits, and throws a ExternalCommandFailed for nonzero exit codes.
 	Returns (stdout, stderr).
 	"""
+	cmd = [str(p) for p in cmd]
 	logging.info("Calling '{}'".format(' '.join(cmd)))
 	p = subprocess.Popen(cmd, stdout=stdout, stderr=stderr)
 	(out, err) = p.communicate()
@@ -17,3 +18,4 @@ def wrap_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PIPE
 		logging.error("Standard error\n" + err.decode('utf-8') + "\n\n")
 		raise ExternalCommandFailed("Got nonzero exit code {} from '{}'".format(exit_code, ' '.join(cmd)))
 	return out.decode('utf8'), err.decode('utf8')
+
