@@ -48,7 +48,7 @@ def prompt_and_delete(
 			if show_confirmation: print(Style.BRIGHT + "Trashed {} to {}".format(path, trash_dir))
 			return Deletion.TRASH
 
-		elif command.lower() == Deletion.NO.name.lower():
+		elif command.lower() == Deletion.NO.name.lower() or len(command.strip()) == 0:
 			return Deletion.NO
 
 		else:
