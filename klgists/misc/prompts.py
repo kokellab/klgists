@@ -34,7 +34,7 @@ def prompt_and_delete(
 
 	choices = [Deletion.NO.name.lower(), Deletion.TRASH.name.lower(), Deletion.HARD.name.lower()]
 
-	def poll(command: str) -> bool:
+	def poll(command: str) -> Deletion:
 
 		if command.lower() == Deletion.HARD.name.lower():
 			if show_confirmation: print(Style.BRIGHT + "Permanently deleted {}".format(path))

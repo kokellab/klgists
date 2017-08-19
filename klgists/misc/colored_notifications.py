@@ -16,6 +16,20 @@ def notify_user(*lines: str):
 def notify_thin(*lines: str):
 	print_to_user(['', *lines, ''], Fore.BLUE)
 
+def success_to_user(*lines: str):
+	print()
+	success_to_user_thin(*lines)
+	print()
+def success_to_user_thin(*lines: str):
+	print_to_user(['', *lines, ''], Fore.GREEN)
+
+def concern_to_user(*lines: str):
+	print()
+	concern_to_user_thin(*lines)
+	print()
+def concern_to_user_thin(*lines: str):
+	print_to_user(['', *lines, ''], Fore.YELLOW)
+
 def notify_user_light(*lines: str):
 	print()
 	notify_light_thin(*lines)
