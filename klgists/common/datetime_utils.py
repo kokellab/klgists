@@ -3,22 +3,22 @@ import datetime as dt
 from typing import Tuple
 
 def mkdatetime(s: str) -> datetime:
-    return datetime.strptime(s.replace(' ', 'T'), "%Y-%m-%dT%H:%M:%S")
+	return datetime.strptime(s.replace(' ', 'T'), "%Y-%m-%dT%H:%M:%S")
 
 def now() -> datetime:
-    return datetime.now()
+	return datetime.now()
 
 def today() -> date:
-    return datetime.today()
+	return datetime.today()
 
 def mkdate(s: str) -> date:
-    return datetime.strptime(s, "%Y-%m-%d")
+	return datetime.strptime(s, "%Y-%m-%d")
 
 def this_year(s: str) -> date:
-    return datetime.strptime(s, "%Y")
+	return datetime.strptime(s, "%Y")
 
 def year_range(year: int) -> Tuple[datetime, datetime]:
-    return (
-        datetime(year, 1, 1, 0, 0, 0, 0),
-        datetime(year, 12, 31, 23, 59, 59, 999)
-    )
+	return (
+		datetime(year, 1, 1, 0, 0, 0, 0),
+		datetime(year, 12, 31, 23, 59, 59, 999)
+	)

@@ -1,6 +1,7 @@
 import pandas as pd
 import itertools
-from typing import Iterator
+import warnings
+from typing import Iterator, List
 
 def marker_iterator(df: pd.DataFrame, class_column: str='class') -> Iterator[str]:
     """Returns an iterator of decent marker shapes. The order is such that similar markers aren't used unless they're needed."""
@@ -14,6 +15,6 @@ def markers_for_rows(df: pd.DataFrame, class_column: str='class') -> List[str]:
     """Returns a list of markers, one for each row.
     Mostly useful as a reminder not to give Seaborn lmplot markers=a_pandas_series: it needs a list.
     """
-    markers = _get_available_markers(df)
+    markers = marker_iterator(df)
     # NOTE: With Seaborn lmplot, if you just pass the Series markers_df['marker] without doing .values.tolist(), you'll get an error
     return df.index.map(lambda _: next(markers)).values.tolist()
