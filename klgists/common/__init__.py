@@ -1,4 +1,5 @@
 import os
+from enum import Enum
 from itertools import chain
 from typing import TypeVar, Optional, List
 

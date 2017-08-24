@@ -1,6 +1,15 @@
 import os
+from enum import Enum
 
 from klgists.common import pjoin
+
+
+class OverwriteChoice(Enum):
+	FAIL = 1
+	WARN = 2
+	IGNORE = 3
+	OVERWRITE = 4
+
 
 def fix_path(path: str) -> str:
 	"""Modifies path strings to work with Python and external tools.

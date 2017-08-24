@@ -1,10 +1,10 @@
-# Adapted from the Gist: https://gist.github.com/dmyersturnbull/f0116c52feae3094f66b0c99b586d166
-
 from typing import Callable, Any
 import hashlib
 import os
 import codecs
 import gzip
+
+from klgists.common.exceptions import HashValidationFailedException, NoSuchFileException
 
 
 class FileHasher:
@@ -43,8 +43,8 @@ class FileHasher:
 
 	def _o(self, file_name: str, opener, *args):
 		if not os.path.isfile(file_name + self.extension):
-			raise ValueError("Hash for file {} does not exist".format(file_name))
+			raise NoSuchFileException("Hash for file {} does not exist".format(file_name))
 		with open(file_name + self.extension, 'r') as f:
 			if f.read() != self.hashsum(file_name):
-				raise ValueError("Hash for file {} does not match".format(file_name))
+				raise HashValidationFailedException("Hash for file {} does not match".format(file_name))
 		return opener(file_name, *args)

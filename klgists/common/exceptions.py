@@ -1,24 +1,56 @@
+"""
+The motivation here is simply that Python lacks some standard exceptions that I consider important.
+Projects can/should subclass from these in addition to the normal Python ones.
+"""
+
+
+class PreconditionFailedException(Exception): pass
+
+class MultipleMatchesException(Exception): pass
+
+class HashValidationFailedException(Exception): pass
+
+
+# hardware and OS errors
 
 class ExternalDeviceNotFound(IOError): pass
 
-class TimeoutException(IOError): pass
+class TimeoutException(IOError): pass  # maybe just Python's timeout error?
 
-class ExternalCommandFailed(Exception):
-	message = None  # type: str
-	def __init__(self, message: str) -> None:
-		self.message = message
+class ExternalCommandFailed(IOError): pass
 
-class MissingComponentException(Exception):
-	message = None
-	def __init__(self, message: str):
-		self.message = message
+class MissingComponentException(IOError): pass
 
-class BadCommandError(Exception):
-	message = None
-	def __init__(self, message: str):
-		self.message = message
+class InsufficientResourceException(OSError): pass
 
-class BadConfigException(Exception):
-	message = None  # type: str
-	def __init__(self, message: str) -> None:
-		self.message = message
+
+# user errors
+
+class UserError(Exception): pass
+
+class BadCommandError(UserError): pass
+
+class BadConfigException(UserError): pass  # this one's a bit ambiguous
+
+class UserContradictionException(UserError): pass
+
+class RefusingRequestException(UserError): pass
+
+class ParsingFailedException(UserError): pass
+
+
+# path errors
+
+class PathException(IOError): pass
+
+class NoSuchPathException(PathException, FileNotFoundError): pass
+
+class NoSuchFileException(NoSuchPathException): pass
+
+class NoSuchDirectoryException(NoSuchPathException): pass
+
+class PathAlreadyExistsException(PathException): pass
+
+class PathIsNotFileException(PathAlreadyExistsException): pass
+
+class PathIsNotDirectoryException(PathAlreadyExistsException): pass

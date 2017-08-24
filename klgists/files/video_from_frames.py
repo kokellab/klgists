@@ -1,7 +1,5 @@
 import numpy as np
 import logging
-import warnings
-from os.path import dirname
 from typing import Optional
 from klgists.common import pjoin, pdir, pfile, pexists
 from klgists.files.wrap_cmd_call import wrap_cmd_call
