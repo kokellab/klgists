@@ -35,5 +35,5 @@ def sevenz(dir_to_sevenz: str, sevenz_path: str, overwrite: OverwriteChoice = Ov
 		elif overwrite is OverwriteChoice.IGNORE:
 			pass
 
-	wrap_cmd_call(['7z', 'a', sevenz_path, pjoin(dir_to_sevenz, '*.*')])
+	wrap_cmd_call(['7z', 'a', sevenz_path, dir_to_sevenz])
 	file_hasher.add_hash(sevenz_path)  # will overwrite regardless
