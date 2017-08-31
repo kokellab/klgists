@@ -47,7 +47,7 @@ class SubcommandHandler:
 		full_args = self.parser.parse_args(args[1:2])
 		subcommand = full_args.subcommand.replace('-', '_')
 
-		if not hasattr(self, subcommand) and not subcommand.startswith('_'):
+		if not hasattr(self.target, subcommand) and not subcommand.startswith('_'):
 			print(Fore.RED + 'Unrecognized subcommand {}'.format(subcommand))
 			self.parser.print_help()
 			exit(1)
