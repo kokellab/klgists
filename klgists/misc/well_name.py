@@ -24,6 +24,9 @@ def wells_of_rows(row_indices: Iterable[int], n_rows: int=8, n_columns: int=12) 
 	# surprisingly, this is MUCH faster than a for loop and list.extend
 	return itertools.chain.from_iterable(map(partial(wells_of_row, n_rows=n_rows, n_columns=n_columns), row_indices))
 
+def well_index_from_name(well_name: str, n_rows: int=8, n_columns: int=12) -> int:
+	return (ord(well_name[0])%32)*n_columns - 1 - (n_columns - int(well_name[1:]))
+
 # tests
 assert well_name(0) == 'A01'
 assert well_name(-1) == 'H12'
@@ -33,6 +36,8 @@ assert wells_of_row(0, n_columns=2) == ['A01', 'A02']
 assert wells_of_row(3, n_columns=2) == ['D01', 'D02']
 assert wells_of_row(13, n_rows=14, n_columns=2) == ['N01', 'N02']
 assert wells_of_row(2, n_columns=200)[-1] == 'C200'
+assert [well_index_from_name(x) for x in ['A01', 'H12', 'G10']] == [0, 95, 81]
+assert [well_index_from_name(x, n_columns = 4) for x in ['A01', 'A02', 'A03', 'A04']] == [0,1,2,3]
 
 # these are much faster
 standards = {(r, c): [well_name(i, n_rows=r, n_columns=c) for i in range(0, r*c)] for r, c in [(12, 8), (8, 12), (24, 16), (16, 24)]}
