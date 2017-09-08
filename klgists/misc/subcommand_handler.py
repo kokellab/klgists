@@ -9,7 +9,7 @@ from colorama import Fore
 
 from klgists.common.exceptions import PathIsNotDirectoryException
 from klgists.common import pexists, pdir
-from klgists.files.make_dirs import make_dirs
+from klgists.files import remake_dirs
 
 
 class SubcommandHandler:
@@ -50,7 +50,7 @@ class SubcommandHandler:
 		if not hasattr(self.target, subcommand) and not subcommand.startswith('_'):
 			print(Fore.RED + 'Unrecognized subcommand {}'.format(subcommand))
 			self.parser.print_help()
-			exit(1)
+			return
 
 		# clever; from Chase Seibert: https://chase-seibert.github.io/blog/2014/03/21/python-multilevel-argparse.html
 		# use dispatch pattern to invoke method with same name
@@ -58,7 +58,8 @@ class SubcommandHandler:
 			if self.temp_dir is not None:
 				if pexists(self.temp_dir) and pdir(self.temp_dir): shutil.rmtree(self.temp_dir)
 				elif pexists(self.temp_dir): raise PathIsNotDirectoryException(self.temp_dir)
-				make_dirs(self.temp_dir)
+				remake_dirs(self.temp_dir)
+				logging.info("Created temp dir at {}".format(self.temp_dir))
 			getattr(self.target, subcommand)()
 		except (KeyboardInterrupt, SystemExit) as e:
 			try:
@@ -77,6 +78,5 @@ class SubcommandHandler:
 		finally:
 			if self.temp_dir is not None:
 				if pexists(self.temp_dir):
+					logging.info("Deleted temp dir at {}".format(self.temp_dir))
 					shutil.rmtree(self.temp_dir)
-			sys.stdout = open(os.devnull, 'w')
-			sys.exit()  # TODO workaround

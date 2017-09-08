@@ -1,6 +1,7 @@
-from typing import List
 import logging
 import subprocess
+from typing import List
+
 from klgists.common.exceptions import ExternalCommandFailed
 
 
