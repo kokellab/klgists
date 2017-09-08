@@ -14,7 +14,7 @@ def notify_user(*lines: str):
 	notify_thin(*lines)
 	print()
 def notify_thin(*lines: str):
-	print_to_user(['', *lines, ''], Fore.BLUE)
+	print_to_user(['', *lines, ''], Fore.LIGHTBLUE_EX)
 
 def success_to_user(*lines: str):
 	print()
