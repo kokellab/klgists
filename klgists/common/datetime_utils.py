@@ -8,13 +8,13 @@ def mkdatetime(s: str) -> datetime:
 def now() -> datetime:
 	return datetime.now()
 
-def today() -> date:
+def today() -> datetime:
 	return datetime.today()
 
-def mkdate(s: str) -> date:
+def mkdate(s: str) -> datetime:
 	return datetime.strptime(s, "%Y-%m-%d")
 
-def this_year(s: str) -> date:
+def this_year(s: str) -> datetime:
 	return datetime.strptime(s, "%Y")
 
 def year_range(year: int) -> Tuple[datetime, datetime]:

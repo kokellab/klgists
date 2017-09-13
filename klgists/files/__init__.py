@@ -48,7 +48,7 @@ def remake_dirs(output_dir: str):
 		shutil.rmtree(output_dir)
 	elif os.path.exists(output_dir):
 		raise PathIsNotDirectoryException("{} already exists and is not a directory".format(output_dir))
-	make_dirs.make_dirs(output_dir)
+	make_dirs(output_dir)
 
 
 
