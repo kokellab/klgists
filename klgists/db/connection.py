@@ -1,8 +1,10 @@
+import os, json, logging
+from typing import Tuple, Iterator, Dict, Optional, Union
+
 from sshtunnel import SSHTunnelForwarder
 import pymysql
 import peewee
-import logging
-from typing import Tuple, Iterator, Dict, Optional
+
 
 
 class Connection:
@@ -13,6 +15,11 @@ class Connection:
 		db.connect_with_peewee()     # don't worry, this will be closed with the GlobalConnection
 		from mymodel.model import *  # you MUST import this AFTER setting global_connection.db
 		do_my_stuff()
+
+	Or:
+		with Connection.from_json('a_json_file'):
+			...
+	The JSON file will need to specify a value for each argument in the constructor.
 	"""
 
 	_ssh_username = None
@@ -51,6 +58,20 @@ class Connection:
 				ssh_username=self._ssh_username, ssh_password=self._ssh_password,
 				remote_bind_address=('localhost', self._db_port)
 			)
+
+	@classmethod
+	def from_json(cls, config_path: str):
+		if os.path.isfile(config_path) and os.access(config_path, os.R_OK):
+			logging.info("Using Valar connection from '{}'".format(config_path))
+			with open(config_path) as jscfg:
+				params = json.load(jscfg)  # type: Dict[str, Union[str, int, None]]
+				return cls(**params)
+		else:
+			raise ValueError("{} does not exist, is not a file, or is not readable".format(config_path))
+
+	@classmethod
+	def from_dict(cls, dct: Dict[str, str]):
+		return cls(**dct)
 
 	def connect_with_peewee(self):
 		self.peewee_database = peewee.MySQLDatabase(self._db_name, **self._connection_params())
