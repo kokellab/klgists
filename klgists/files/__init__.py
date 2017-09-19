@@ -1,8 +1,9 @@
 import os, io, shutil, gzip
 from enum import Enum
-from typing import Iterator
+from typing import Iterator, Iterable
 
 from klgists.common import pjoin
+from klgists.common.exceptions import PathIsNotDirectoryException
 
 
 class OverwriteChoice(Enum):
@@ -27,7 +28,24 @@ def fix_path(path: str) -> str:
 	return path.replace('./', '')
 
 
-from klgists.common.exceptions import PathIsNotDirectoryException
+
+# NTFS doesn't allow these, so let's be safe
+# Also exclude control characters
+# 127 is the DEL char
+_bad_chars = {'/', ':', '<', '>', '"', "'", '\\', '|', '?', '*', chr(127), *{chr(i) for i in range(0, 32)}}
+assert ' ' not in _bad_chars
+def _sanitize_bit(p: str) -> str:
+	for b in _bad_chars: p = p.replace(b, '-')
+	return p
+def pjoin_sanitized_rel(*pieces: Iterable[any]) -> str:
+	"""Builds a path from a hierarchy, sanitizing the path by replacing /, :, <, >, ", ', \, |, ?, *, <DEL>, and control characters 0–32 with a hyphen-minus (-).
+	Each input to pjoin_sanitized must refer only to a single directory or file (cannot contain a path separator).
+	This means that you cannot have an absolute path (it would begin with os.path (probably /); use pjoin_sanitized_abs for this.
+	"""
+	return pjoin(*[_sanitize_bit(str(bit)) for bit in pieces])
+def pjoin_sanitized_abs(*pieces: Iterable[any]) -> str:
+	"""Same as pjoin_sanitized_rel but starts with os.sep (the root directory)."""
+	return pjoin(os.sep, pjoin_sanitized_rel(*pieces))
 
 
 def make_dirs(output_dir: str):
