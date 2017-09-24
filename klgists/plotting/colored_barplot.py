@@ -5,7 +5,10 @@ from matplotlib.axes import Axes
 from typing import Optional, Tuple
 
 
-def colored_barplot(x: np.ndarray, y: np.ndarray, colors: np.ndarray, y_ticks: Optional[np.ndarray]=None, fig_size: Tuple[float, float]=(10.0, 10.0), label_rotation: float=75) -> (Figure, Axes):
+def colored_barplot(
+		x: np.ndarray, y: np.ndarray, colors: np.ndarray,
+		y_ticks: Optional[np.ndarray]=None, fig_size: Tuple[float, float]=(10.0, 10.0), label_rotation: float=75
+) -> (Figure, Axes):
 	index = np.arange(0, len(x))
 	fig = plt.figure()
 	fig.set_size_inches(fig_size)

@@ -6,10 +6,12 @@ import time
 import multiprocessing
 from typing import Callable, Tuple, Union
 
-def groupby_parallel(groupby_df: pd.core.groupby.DataFrameGroupBy,
-					 func: Callable[[Tuple[str, pd.DataFrame]], Union[pd.DataFrame, pd.Series]],
-					 num_cpus: int=multiprocessing.cpu_count() - 1,
-					 logger: Callable[[str], None]=print) -> pd.DataFrame:
+def groupby_parallel(
+		groupby_df: pd.core.groupby.DataFrameGroupBy,
+		func: Callable[[Tuple[str, pd.DataFrame]], Union[pd.DataFrame, pd.Series]],
+		num_cpus: int=multiprocessing.cpu_count() - 1,
+		logger: Callable[[str], None]=print
+) -> pd.DataFrame:
 	"""Performs a Pandas groupby operation in parallel.
 	Example usage:
 		import pandas as pd

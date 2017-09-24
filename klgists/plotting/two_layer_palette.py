@@ -1,9 +1,11 @@
 # coding=utf-8
 
 import warnings
-import numpy as np
-from typing import List, Optional, Tuple, Callable, Dict, Any
+import typing
+from typing import List, Optional, Callable, Dict, Any
 from collections import OrderedDict
+import numpy as np
+
 
 default_top_level_colors = [
 				(0.7, 0.1, 0.1),
@@ -31,16 +33,18 @@ default_top_level_colors = [
 				(0.35, 0.0, 0.35),
 				(0.4, 0.4, 0.4),
 				(1.0, 0.2, 0.3)
-			   ]
+]
 
-default_cycler = [(0.0, 0.0, 0.0), (0.05, 0.05, 0.0), (-0.05, -0.05, 0.0), (-0.05, 0.05, 0.0), (0.05, -0.05, 0.0),
-			  (0.05, 0.0, 0.05), (-0.05, 0.0, -0.05), (-0.05, 0.0, 0.05), (0.05, 0.0, -0.05),
-			  (0.0, 0.05, 0.05), (0.0, -0.05, -0.05), (0.0, -0.05, 0.05), (0.0, 0.05, -0.05),
-			  (0.04, 0.04, 0.04), (-0.04, -0.04, -0.04),
-			  (-0.04, -0.04, 0.04), (-0.04, 0.04, -0.04), (0.04, -0.04, -0.04),
-			  (-0.04, 0.04, 0.04), (0.04, 0.04, -0.04), (0.04, -0.04, 0.04),
-			  (0.0, 0.0, 0.0), (0.08, 0.0, 0.0), (0.0, 0.08, 0.0), (0.0, 0.0, 0.08),
-			  (-0.08, 0.0, 0.0), (0.0, -0.08, 0.0), (0.0, 0.0, -0.08)]
+default_cycler = [
+	(0.0, 0.0, 0.0), (0.05, 0.05, 0.0), (-0.05, -0.05, 0.0), (-0.05, 0.05, 0.0), (0.05, -0.05, 0.0),
+	(0.05, 0.0, 0.05), (-0.05, 0.0, -0.05), (-0.05, 0.0, 0.05), (0.05, 0.0, -0.05),
+	(0.0, 0.05, 0.05), (0.0, -0.05, -0.05), (0.0, -0.05, 0.05), (0.0, 0.05, -0.05),
+	(0.04, 0.04, 0.04), (-0.04, -0.04, -0.04),
+	(-0.04, -0.04, 0.04), (-0.04, 0.04, -0.04), (0.04, -0.04, -0.04),
+	(-0.04, 0.04, 0.04), (0.04, 0.04, -0.04), (0.04, -0.04, 0.04),
+	(0.0, 0.0, 0.0), (0.08, 0.0, 0.0), (0.0, 0.08, 0.0), (0.0, 0.0, 0.08),
+	(-0.08, 0.0, 0.0), (0.0, -0.08, 0.0), (0.0, 0.0, -0.08)
+]
 
 class TwoLayerPalette:
 	"""A color palette that has a number of calc colors and small variations of those colors.
@@ -68,22 +72,25 @@ class TwoLayerPalette:
 
 	palette_map = None
 
-	def __init__(self, class_names: List[str], subclasses_in_class: Dict[str, List[str]],
-				 top_level_colors: List[Tuple[float, float, float]]=default_top_level_colors,
-				 subclass_difference_coefficient: Callable[[int, str], float]=lambda size, name: 2.0 * np.power(size, 1/5),
-				 cycler: Optional[List[Tuple[float, float, float]]]=None,
-				 out_of_bounds_warner: Optional[Callable[[str], Any]]=warnings.warn):
+	def __init__(
+			self,
+			class_names: List[str], subclasses_in_class: Dict[str, List[str]],
+			top_level_colors: List[typing.Tuple[float, float, float]] = default_top_level_colors,
+			subclass_difference_coefficient: Callable[[int, str], float] = lambda size, name: 2.0 * np.power(size, 1/5),
+			cycler: Optional[List[typing.Tuple[float, float, float]]] = None,
+			out_of_bounds_warner: Optional[Callable[[str], Any]] = warnings.warn
+	):
 		"""
 		Arguments:
-			class_names: The names of the major grouping (e.g. dogs vs birds), where the order matters
+			:param class_names: The names of the major grouping (e.g. dogs vs birds), where the order matters
 				The colors should be apart from each other and away from 0.0 and 1.0 in all three of red, green, and blue.
-			subclasses_in_class: A dict mapping each major group to a list of the subclass names, where the order of the list matters
+			:param subclasses_in_class: A dict mapping each major group to a list of the subclass names, where the order of the list matters
 				The values are allowed to overlap for different major groups, but this is not advised.
-			top_level_colors: An array of (R, G, B) color tuples where each value is between 0 and 1, inclusive. One element for each class name is required, but can be longer.
-			subclass_difference_coefficient: The relative amount of variation from the major colors as a function of the number of subclasses in a class and the class name
+			:param top_level_colors: An array of (R, G, B) color tuples where each value is between 0 and 1, inclusive. One element for each class name is required, but can be longer.
+			:param subclass_difference_coefficient: The relative amount of variation from the major colors as a function of the number of subclasses in a class and the class name
 				If there are fewer than 26 subclasses in any class, the maximum amount of deviation will be ±0.1*subclass_difference_coefficient in any of red, green, or blue, as well as |red|+|green|+|blue|.
-			cycler: The color values to add, starting with (0, 0, 0). The default is probably fine.
-			out_of_bounds_warner: If the required variant color extends between the RGB range and needs to be bounded, this function will be called with a warning message.
+			:param cycler: The color values to add, starting with (0, 0, 0). The default is probably fine.
+			:param out_of_bounds_warner: If the required variant color extends between the RGB range and needs to be bounded, this function will be called with a warning message.
 		"""
 
 		if len(class_names) != len(subclasses_in_class):
@@ -107,15 +114,15 @@ class TwoLayerPalette:
 	def color(self, class_name: str, subclass_name: str):
 		return self.palette_map[class_name, subclass_name]
 
-	def _color(self, class_name: str, subclass_name: str) -> Tuple[float, float, float]:
+	def _color(self, class_name: str, subclass_name: str) -> typing.Tuple[float, float, float]:
 		class_index = self.class_names.index(class_name)
 		subclass_index = self.subclass_dict[class_name].index(subclass_name)
 		return self._try_color(class_index, subclass_index)
 
-	def palette(self) -> List[Tuple[float, float, float]]:
+	def palette(self) -> List[typing.Tuple[float, float, float]]:
 		return list(self.palette_map.values())
 
-	def _palette_map(self) -> Dict[Tuple[str, str], Tuple[float, float, float]]:
+	def _palette_map(self) -> Dict[typing.Tuple[str, str], typing.Tuple[float, float, float]]:
 		dct = OrderedDict()
 		# TODO loop and skip out-of-bounds
 		for clazz in self.class_names:
