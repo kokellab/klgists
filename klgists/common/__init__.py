@@ -1,6 +1,13 @@
 import os
 from itertools import chain
+import operator
 from typing import Callable, TypeVar, Iterable, Optional, List
+
+def look(obj: object, attrs: str) -> any:
+	if not isinstance(attrs, str) and isinstance(attrs, Iterable): attrs = '.'.join(attrs)
+	try:
+		return operator.attrgetter(attrs)(obj)
+	except AttributeError: return None
 
 def flatmap(func, *iterable):
 	return chain.from_iterable(map(func, *iterable))
