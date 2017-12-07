@@ -22,7 +22,7 @@ def init_logger(
 		logger = logging.getLogger()
 	else:
 		logger = logging.getLogger(child_logger_name)
-		logger.setLevel(logging.DEBUG)
+	logger.setLevel(logging.NOTSET)
 
 	formatter = logging.Formatter(format)
 
