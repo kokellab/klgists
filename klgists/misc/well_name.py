@@ -9,6 +9,7 @@ def well_name(index: int, n_rows: int=8, n_columns: int=12) -> str:
 	Limited to plates with no more than 26 rows.
 	Modified from https://stackoverflow.com/questions/19170420/converting-well-number-to-the-identifier-on-a-96-well-plate.
 	"""
+	index = int(index)
 	if n_rows > 52:  # a 1536-well plate has 32 rows and 48 columns, so this won't work with that
 		raise ValueError('Well names are limited to plates with 26 rows!')
 	if index >= n_rows * n_columns:
