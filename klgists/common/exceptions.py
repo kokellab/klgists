@@ -4,6 +4,11 @@ Projects can/should subclass from these in addition to the normal Python ones.
 """
 
 
+class NaturalExpectedException(Exception): pass
+
+class HelpRequestedException(NaturalExpectedException): pass
+
+
 class PreconditionFailedException(Exception): pass
 
 class MultipleMatchesException(Exception): pass

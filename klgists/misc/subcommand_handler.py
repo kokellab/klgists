@@ -9,6 +9,7 @@ from colorama import Fore
 
 from klgists.common.exceptions import PathIsNotDirectoryException
 from klgists.common import pexists, pdir
+from klgists.common.exceptions import NaturalExpectedException
 from klgists.files import remake_dirs
 
 
@@ -59,11 +60,20 @@ class SubcommandHandler:
 				if pexists(self.temp_dir) and pdir(self.temp_dir): shutil.rmtree(self.temp_dir)
 				elif pexists(self.temp_dir): raise PathIsNotDirectoryException(self.temp_dir)
 				remake_dirs(self.temp_dir)
-				logging.info("Created temp dir at {}".format(self.temp_dir))
+				logging.debug("Created temp dir at {}".format(self.temp_dir))
 			getattr(self.target, subcommand)()
-		except (KeyboardInterrupt, SystemExit) as e:
+		except (NaturalExpectedException) as e:
+			pass  # ignore totally
+		except (KeyboardInterrupt) as e:
 			try:
 				logging.error("Received cancellation signal")
+				logging.exception(e)
+				self.cancel_handler(e)
+			except BaseException: pass
+			raise e
+		except (SystemExit) as e:
+			try:
+				logging.error("Received system exit signal")
 				logging.exception(e)
 				self.cancel_handler(e)
 			except BaseException: pass
@@ -78,5 +88,5 @@ class SubcommandHandler:
 		finally:
 			if self.temp_dir is not None:
 				if pexists(self.temp_dir):
-					logging.info("Deleted temp dir at {}".format(self.temp_dir))
+					logging.debug("Deleted temp dir at {}".format(self.temp_dir))
 					shutil.rmtree(self.temp_dir)
