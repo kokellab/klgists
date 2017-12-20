@@ -16,11 +16,16 @@ class MultipleMatchesException(Exception): pass
 class HashValidationFailedException(Exception): pass
 
 
+class ImpossibleStateException(AssertionError):
+	"""Refers explicitly to state."""
+	pass
+
+
 # hardware and OS errors
 
 class ExternalDeviceNotFound(IOError): pass
 
-class TimeoutException(IOError): pass  # maybe just Python's timeout error?
+class TimeoutException(IOError, TimeoutError): pass  # maybe just Python's timeout error?
 
 class ExternalCommandFailed(IOError): pass
 
@@ -35,13 +40,30 @@ class UserError(Exception): pass
 
 class BadCommandError(UserError): pass
 
+class LookupFailedException(UserError): pass
+
 class BadConfigException(UserError): pass  # this one's a bit ambiguous
 
 class UserContradictionException(UserError): pass
 
 class RefusingRequestException(UserError): pass
 
+class LockedException(RefusingRequestException): pass
+
+class MissingResourceException(UserError): pass
+
 class ParsingFailedException(UserError): pass
+
+
+# EE-related user errors
+
+class BoardUserError(UserError): pass
+
+class BadPinWriteValueException(BoardUserError): pass
+
+class NoSuchInputPinException(BoardUserError): pass
+
+class NoSuchOutputPinException(BoardUserError): pass
 
 
 # path errors
@@ -58,4 +80,4 @@ class PathAlreadyExistsException(PathException): pass
 
 class PathIsNotFileException(PathAlreadyExistsException): pass
 
-class PathIsNotDirectoryException(PathAlreadyExistsException): pass
+class PathIsNotDirectoryException(PathAlreadyExistsException, NotADirectoryError): pass
