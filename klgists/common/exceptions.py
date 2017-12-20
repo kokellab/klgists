@@ -25,7 +25,7 @@ class ImpossibleStateException(AssertionError):
 
 class ExternalDeviceNotFound(IOError): pass
 
-class TimeoutException(IOError, TimeoutError): pass  # maybe just Python's timeout error?
+class TimeoutException(IOError): pass
 
 class ExternalCommandFailed(IOError): pass
 
