@@ -3,6 +3,8 @@ The motivation here is simply that Python lacks some standard exceptions that I 
 Projects can/should subclass from these in addition to the normal Python ones.
 """
 
+from enum import Enum
+
 
 class NaturalExpectedException(Exception): pass
 
@@ -38,11 +40,34 @@ class InsufficientResourceException(OSError): pass
 
 class UserError(Exception): pass
 
+class MissingConfigEntry(UserError): pass
+
 class BadCommandError(UserError): pass
 
 class LookupFailedException(UserError): pass
 
-class BadConfigException(UserError): pass  # this one's a bit ambiguous
+class BadConfigException(UserError): pass
+
+class Edge(Enum):
+	LEFT = 1
+	RIGHT = 2
+	TOP = 3
+	BOTTOM = 4
+
+class Axis(Enum):
+	HORIZONTAL = 1
+	VERTICAL = 2
+
+class RoiError(BadConfigException):
+	edge = None  # type: Edge
+	axis = None  # type: Axis
+	def on_edge(self, edge: Edge): self.edge = edge; return self
+	def on_axis(self, axis: Axis): self.axis = axis; return self
+
+
+class RoiOutOfBoundsError(RoiError): pass
+class NegativeRoiBoundsError(RoiError): pass
+class FlippedRoiBoundsError(RoiError): pass
 
 class UserContradictionException(UserError): pass
 

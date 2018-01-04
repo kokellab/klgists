@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Iterator, Iterable
 
 from klgists.common import pjoin
-from klgists.common.exceptions import PathIsNotDirectoryException
+from klgists.common.exceptions import PathIsNotDirectoryException, MissingResourceException
 
 
 class OverwriteChoice(Enum):
@@ -92,3 +92,19 @@ def pkl(data, path: str):
 def unpkl(path: str):
 	with open(path, 'rb') as f:
 		return dill.load(f)
+
+
+def file_from_env_var(var: str) -> str:
+	"""
+	Just returns the path of a file specified in an environment variable, checking that it's a file.
+	Will raise a MissingResourceException error if not set or not a file.
+	:param var: The environment variable name, not including the $
+	"""
+	if var not in os.environ:
+		raise MissingResourceException('Environment variable ${} is not set'.format(var))
+	config_file_path = fix_path(os.environ[var])
+	if not pexists(config_file_path):
+		raise MissingResourceException("{} file {} does not exist".format(var, config_file_path))
+	if not pfile(config_file_path):
+		raise MissingResourceException("{} file {} is not a file".format(var, config_file_path))
+	return config_file_path

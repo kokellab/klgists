@@ -1,7 +1,8 @@
 
 from typing import Iterator, Tuple, Dict, List
 
-class MissingConfigEntry(Exception): pass
+from klgists.common.exceptions import MissingConfigEntry
+
 
 class TomlData:
 	"""A better TOML data structure than a plain dict.
@@ -9,7 +10,7 @@ class TomlData:
 		data = TomlData({'x': {'y': {'z': 155}}})
 		print(data['x.y.z'])   # prints 155
 		data.sub('x.y')        # returns a new TomlData for {'z': 155}
-		data.()                # returns (x, {}
+		data.nested_keys()     # returns all keys and sub-keys
 	"""
 
 	top = None  # type: Dict[str, object]
@@ -18,10 +19,12 @@ class TomlData:
 		assert top_level_item is not None
 		self.top = top_level_item
 
-	def __str__(self):
-		print(self.top)
+	def __str__(self) -> str:
+		return repr(self)
+	def __repr__(self) -> str:
+		return "TomlData({})".format(str(self.top))
 
-	def __getitem__(self, key: str):
+	def __getitem__(self, key: str) -> Dict[str, object]:
 		return self.sub(key).top
 
 	def sub(self, key: str):
