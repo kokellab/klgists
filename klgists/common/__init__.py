@@ -1,4 +1,4 @@
-import os, json
+import os, json, sys
 from itertools import chain
 from datetime import date, datetime
 import operator
@@ -94,23 +94,27 @@ class Comparable:
 
 
 def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code.
-        From jgbarah at https://stackoverflow.com/questions/11875770/how-to-overcome-datetime-datetime-not-json-serializable
-    """
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    if isinstance(obj, peewee.Field):
-        return type(obj).__name__
-    raise TypeError("Type %s not serializable" % type(obj))
+	"""JSON serializer for objects not serializable by default json code.
+	From jgbarah at https://stackoverflow.com/questions/11875770/how-to-overcome-datetime-datetime-not-json-serializable
+	"""
+	if isinstance(obj, (datetime, date)):
+		return obj.isoformat()
+	try:
+		import peewee
+		if isinstance(obj, peewee.Field):
+			return type(obj).__name__
+	except ImportError: pass
+	raise TypeError("Type %s not serializable" % type(obj))
 
 def pretty_dict(dct: dict) -> str:
-    """Returns a pretty-printed dict, complete with indentation. Will fail on non-JSON-serializable datatypes."""
-    return json.dumps(dct, default=json_serial, sort_keys=True, indent=4)
+	"""Returns a pretty-printed dict, complete with indentation. Will fail on non-JSON-serializable datatypes."""
+	return json.dumps(dct, default=json_serial, sort_keys=True, indent=4)
 
 def pp_dict(dct: dict) -> None:
-    """Pretty-prints a dict to stdout."""
-    print(pretty_dict(dct))
+	"""Pretty-prints a dict to stdout."""
+	print(pretty_dict(dct))
 
 def pp_size(obj: object) -> None:
-    """Prints to stdout a human-readable string of the memory usage of arbitrary Python objects. Ex: 8M for 8 megabytes."""
-    print(_hurrysize(sys.getsizeof(obj)))
+	"""Prints to stdout a human-readable string of the memory usage of arbitrary Python objects. Ex: 8M for 8 megabytes."""
+	print(_hurrysize(sys.getsizeof(obj)))
+
