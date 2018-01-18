@@ -31,9 +31,10 @@ class FileHasher:
 			f.write(s)
 
 	def check_hash(self, file_name: str) -> bool:
-		if not os.path.isfile(file_name + self.extension): return False
+		if not os.path.isfile(file_name + self.extension): return False 
 		with open(file_name + self.extension, 'r') as f:
-			return f.read() == self.hashsum(file_name)
+			hash_str = f.read().split()[0] # check only the first thing on the line before any spaces
+			return hash_str == self.hashsum(file_name)
 
 	def check_and_open(self, file_name: str, *args):
 		return self._o(file_name, opener=lambda f: codecs.open(f, encoding='utf-8'), *args)
