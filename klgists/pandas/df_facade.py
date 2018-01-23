@@ -82,7 +82,7 @@ class MemoryLimitingPolicy(FacadePolicy, Generic[K]):
 			type(self).__name__,
 			len(self._usage_bytes),
 			_hurry(self._total_memory_bytes),
-			'-' if self._total_memory_bytes is None else _hurry(self._max_memory_bytes),
+			'-' if self._max_memory_bytes is None else _hurry(self._max_memory_bytes),
 			_hurry(self._total_memory_bytes),
 			'-' if self._max_fraction_available_bytes is None else _hurry(available * self._max_fraction_available_bytes),
 			'-' if self._max_fraction_available_bytes is None else np.round(100 * self._total_memory_bytes / (available * self._max_fraction_available_bytes), 3)
@@ -141,6 +141,24 @@ class DfFacade(Generic[K]):
 			archived.append(key)
 			logging.debug("Archived {} items: {}".format(len(archived), archived))
 		return archived
+
+	def clear(self) -> None:
+		it = self._policy.items()
+		while self._policy.can_archive():
+			key = next(it)
+			self._policy.removed(key)
+			del self._items[key]
+
+	def remove(self, key: K) -> None:
+		if key in self:
+			self._policy.removed(key)
+			del self._items[key]
+
+	def __contains__(self, key: K):
+		return key in self._items
+
+	def __delitem__(self, key):
+		self.remove(key)
 
 	def __repr__(self):
 		return "{}({})@{}".format(type(self).__name__, repr(self._policy), hex(id(self)))
