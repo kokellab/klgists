@@ -96,7 +96,7 @@ class MemoryLruPolicy(FacadePolicy, Generic[K]):
 					current_day = dt
 					ss.append('#' + current_day.strftime('%Y-%m-%d') + '...')
 				ss.append("{}:{}@{}".format(k, _hurry(self._usage_bytes[k]), self._last_accessed[k].strftime('%H:%M:%S')))
-		return "{}: [{}]".format(str(self), ', '.join(ss))
+		return "{}@{}: [{}]".format(str(self), hex(id(self)), ', '.join(ss))
 
 
 class DfFacade(Generic[K]):
@@ -111,7 +111,7 @@ class DfFacade(Generic[K]):
 			return self._items[key]
 		else:
 			value = self._loader(key)
-			print("Loaded {}".format(key))
+			logging.debug("Loaded {}".format(key))
 			self._items[key] = value
 			self._policy.added(key, value)
 			self.archive()
@@ -125,8 +125,13 @@ class DfFacade(Generic[K]):
 			self._policy.removed(key)
 			del self._items[key]
 			archived.append(key)
-		print("Archived {} items: {}".format(len(archived), archived))
+			logging.debug("Archived {} items: {}".format(len(archived), archived))
 		return archived
+
+	def __repr__(self):
+		return "DfFacade({})@{}".format(repr(self._policy), hex(id(self)))
+	def __str__(self):
+		return "DfFacade({})".format(self._policy)
 
 
 __all__ = ['FacadePolicy', 'DfFacade', 'MemoryLruPolicy']
