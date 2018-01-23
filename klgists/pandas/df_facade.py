@@ -33,13 +33,15 @@ class FacadePolicy(Generic[K]):
 		pass
 
 
-class MemoryLruPolicy(FacadePolicy, Generic[K]):
+class MemoryLimitingPolicy(FacadePolicy, Generic[K]):
+
 	def __init__(self, max_memory_bytes: Optional[int] = None, max_fraction_available_bytes: Optional[float] = None):
 		self._max_memory_bytes = max_memory_bytes
 		self._max_fraction_available_bytes = max_fraction_available_bytes
 		self._total_memory_bytes = 0
 		self._usage_bytes = {}  # type: Dict[K, int]
 		self._last_accessed = {}  # type: Dict[K, datetime]
+		self._created = {}  # type: Dict[K, datetime]
 
 	def can_archive(self) -> bool:
 		return len(self._last_accessed) > 0
@@ -49,9 +51,6 @@ class MemoryLruPolicy(FacadePolicy, Generic[K]):
 			self._max_memory_bytes is not None and self._total_memory_bytes > self._max_memory_bytes
 			or self._max_fraction_available_bytes is not None and self._total_memory_bytes > virtual_memory().available * self._max_fraction_available_bytes
 		)
-
-	def items(self) -> Iterator[K]:
-		return iter([k for k, v in sorted(self._last_accessed.items(), key=operator.itemgetter(1))])
 
 	def reindex(self, items: Dict[K, pd.DataFrame]) -> None:
 		for key in set(self._last_accessed.keys()) - set(items.keys()):
@@ -65,18 +64,22 @@ class MemoryLruPolicy(FacadePolicy, Generic[K]):
 		self._last_accessed[key] = datetime.now()
 
 	def added(self, key: K, value: pd.DataFrame) -> None:
-		self._last_accessed[key] = datetime.now()
+		now = datetime.now()
+		self._created[key] = now
+		self._last_accessed[key] = now
 		self._usage_bytes[key] = sys.getsizeof(value)
 		self._total_memory_bytes += self._usage_bytes[key]
 
 	def removed(self, key: K) -> None:
 		self._total_memory_bytes -= self._usage_bytes[key]
 		del self._last_accessed[key]
+		del self._created[key]
 		del self._usage_bytes[key]
 
 	def __str__(self):
 		available = virtual_memory().available
-		return "MemoryLruPolicy(n={}, {}/{}, {}/{}={}%)".format(
+		return "{}(n={}, {}/{}, {}/{}={}%)".format(
+			type(self).__name__,
 			len(self._usage_bytes),
 			_hurry(self._total_memory_bytes),
 			'-' if self._total_memory_bytes is None else _hurry(self._max_memory_bytes),
@@ -99,6 +102,15 @@ class MemoryLruPolicy(FacadePolicy, Generic[K]):
 		return "{}@{}: [{}]".format(str(self), hex(id(self)), ', '.join(ss))
 
 
+class MemoryLruPolicy(MemoryLimitingPolicy, Generic[K]):
+	def items(self) -> Iterator[K]:
+		return iter([k for k, v in sorted(self._last_accessed.items(), key=operator.itemgetter(1))])
+
+class MemoryMruPolicy(MemoryLimitingPolicy, Generic[K]):
+	def items(self) -> Iterator[K]:
+		return iter([k for k, v in reversed(sorted(self._last_accessed.items(), key=operator.itemgetter(1)))])
+
+
 class DfFacade(Generic[K]):
 	def __init__(self, loader: Callable[[K], pd.DataFrame], policy: FacadePolicy):
 		self._loader = loader
@@ -116,6 +128,8 @@ class DfFacade(Generic[K]):
 			self._policy.added(key, value)
 			self.archive()
 			return value
+	def __call__(self,  key: K) -> pd.DataFrame:
+		return self[key]
 
 	def archive(self, at_least: Optional[int] = None) -> List[K]:
 		it = self._policy.items()
@@ -129,9 +143,9 @@ class DfFacade(Generic[K]):
 		return archived
 
 	def __repr__(self):
-		return "DfFacade({})@{}".format(repr(self._policy), hex(id(self)))
+		return "{}({})@{}".format(type(self).__name__, repr(self._policy), hex(id(self)))
 	def __str__(self):
-		return "DfFacade({})".format(self._policy)
+		return "{}({})".format(type(self).__name__, self._policy)
 
 
-__all__ = ['FacadePolicy', 'DfFacade', 'MemoryLruPolicy']
+__all__ = ['FacadePolicy', 'DfFacade', 'MemoryLimitingPolicy', 'MemoryLruPolicy', 'MemoryMruPolicy']
