@@ -32,7 +32,7 @@ def fix_path_platform_dependent(path: str) -> str:
 	# if windows, allow either / or \, but not both
 	if platform.system().lower() == 'win32' and '/' in path and '\\' not in path:
 		bits = re.split('[/\\\\]', path)
-		return pjoin(*bits)
+		return pjoin(*bits).replace('\\', '\\\\')
 	else:
 		return path
 
