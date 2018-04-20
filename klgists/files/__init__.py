@@ -1,4 +1,4 @@
-import os, io, shutil, gzip
+import os, io, shutil, gzip, platform
 from enum import Enum
 from typing import Iterator, Iterable
 
@@ -12,11 +12,7 @@ class OverwriteChoice(Enum):
 	IGNORE = 3
 	OVERWRITE = 4
 
-
 def fix_path(path: str) -> str:
-	"""Modifies path strings to work with Python and external tools.
-	Replaces a beginning '~' with the HOME environment variable.
-	"""
 	# ffmpeg won't recognize './' and will simply not write images!
 	# and Python doesn't recognize ~
 	if '%' in path: raise ValueError(
@@ -27,6 +23,18 @@ def fix_path(path: str) -> str:
 		path = pjoin(os.environ['HOME'], path[2:])
 	return path.replace('./', '')
 
+def fix_path_platform_dependent(path: str) -> str:
+	"""Modifies path strings to work with Python and external tools.
+	Replaces a beginning '~' with the HOME environment variable.
+	Also accepts either / or \ (but not both) as a path separator in windows. 
+	"""
+	path = fix_path(path)
+	# if windows, allow either / or \, but not both
+	if platform.system().lower() == 'win32' and '/' in path and '\\' not in path:
+		bits = re.split('[/\\\\]', path)
+		return pjoin(*bits)
+	else:
+		return path
 
 
 # NTFS doesn't allow these, so let's be safe
