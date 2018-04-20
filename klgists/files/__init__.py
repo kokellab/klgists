@@ -1,4 +1,4 @@
-import os, io, shutil, gzip, platform
+import os, io, shutil, gzip, platform, re
 from enum import Enum
 from typing import Iterator, Iterable
 
@@ -30,9 +30,9 @@ def fix_path_platform_dependent(path: str) -> str:
 	"""
 	path = fix_path(path)
 	# if windows, allow either / or \, but not both
-	if platform.system().lower() == 'win32':
+	if platform.system() == 'Windows':
 		bits = re.split('[/\\\\]', path)
-		return pjoin(*bits).replace('\\', '\\\\')
+		return pjoin(*bits).replace(":", ":\\")
 	else:
 		return path
 
