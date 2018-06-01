@@ -1,17 +1,17 @@
 import logging
 import subprocess
-from typing import List
+from typing import List, Optional
 
 from klgists.common.exceptions import ExternalCommandFailed
 
 
-def wrap_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PIPE) -> (str, str):
+def wrap_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd: Optional[str] = None) -> (str, str):
 	"""Calls an external command, waits, and throws a ExternalCommandFailed for nonzero exit codes.
 	Returns (stdout, stderr).
 	"""
 	cmd = [str(p) for p in cmd]
 	logging.info("Calling '{}'".format(' '.join(cmd)))
-	p = subprocess.Popen(cmd, stdout=stdout, stderr=stderr)
+	p = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, cwd=cwd)
 	(out, err) = p.communicate()
 	exit_code = p.wait()
 	if exit_code != 0:
