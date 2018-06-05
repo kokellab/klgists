@@ -9,7 +9,7 @@ from klgists.common.exceptions import NoSuchDirectoryException, PathIsNotDirecto
 from klgists.files.wrap_cmd_call import wrap_cmd_call
 
 
-def sevenz(dir_to_sevenz: str, sevenz_path: str, overwrite: OverwriteChoice = OverwriteChoice.FAIL) -> None:
+def sevenz(dir_to_sevenz: str, sevenz_path: str, overwrite: OverwriteChoice = OverwriteChoice.FAIL, _7z_executable: str = '7z') -> None:
 	"""7-zips a directory and adds a .sha256 with the same base filename of the output archive.
 	Leaves the original directory when it finishes.
 	Requires '7z' to be on the command line.
@@ -35,5 +35,5 @@ def sevenz(dir_to_sevenz: str, sevenz_path: str, overwrite: OverwriteChoice = Ov
 		elif overwrite is OverwriteChoice.IGNORE:
 			pass
 
-	wrap_cmd_call(['7z', 'a', sevenz_path, dir_to_sevenz])
+	wrap_cmd_call([_7z_executable, 'a', sevenz_path, dir_to_sevenz])
 	file_hasher.add_hash(sevenz_path)  # will overwrite regardless
