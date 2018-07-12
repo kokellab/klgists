@@ -5,7 +5,7 @@ from typing import List, Optional
 from klgists.common.exceptions import ExternalCommandFailed
 
 
-def wrap_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell_cmd: str=None, timeout_secs: Optional[float] = None) -> (str, str):
+def wrap_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell_cmd: str=None, cwd: Optional[str] = None, timeout_secs: Optional[float] = None) -> (str, str):
 	"""Calls an external command, waits, and throws a ExternalCommandFailed for nonzero exit codes.
 	Returns (stdout, stderr).
 	The user can optionally provide a shell to run the command with, e.g. "powershell.exe" 
