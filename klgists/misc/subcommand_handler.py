@@ -7,6 +7,7 @@ from typing import List, Any, Callable, Optional, Union
 
 from colorama import Fore
 
+from klgists import logger
 from klgists.common.exceptions import PathIsNotDirectoryException
 from klgists.common import pexists, pdir
 from klgists.common.exceptions import NaturalExpectedException
@@ -60,33 +61,33 @@ class SubcommandHandler:
 				if pexists(self.temp_dir) and pdir(self.temp_dir): shutil.rmtree(self.temp_dir)
 				elif pexists(self.temp_dir): raise PathIsNotDirectoryException(self.temp_dir)
 				remake_dirs(self.temp_dir)
-				logging.debug("Created temp dir at {}".format(self.temp_dir))
+				logger.debug("Created temp dir at {}".format(self.temp_dir))
 			getattr(self.target, subcommand)()
 		except (NaturalExpectedException) as e:
 			pass  # ignore totally
 		except (KeyboardInterrupt) as e:
 			try:
-				logging.error("Received cancellation signal")
-				logging.exception(e)
+				logger.error("Received cancellation signal")
+				logger.exception(e)
 				self.cancel_handler(e)
 			except BaseException: pass
 			raise e
 		except (SystemExit) as e:
 			try:
-				logging.error("Received system exit signal")
-				logging.exception(e)
+				logger.error("Received system exit signal")
+				logger.exception(e)
 				self.cancel_handler(e)
 			except BaseException: pass
 			raise e
 		except BaseException as e:
 			try:
-				logging.error("{} failed!".format(self.parser.prog))
-				logging.exception(e)
+				logger.error("{} failed!".format(self.parser.prog))
+				logger.exception(e)
 				self.error_handler(e)
 			except BaseException: pass
 			raise e
 		finally:
 			if self.temp_dir is not None:
 				if pexists(self.temp_dir):
-					logging.debug("Deleted temp dir at {}".format(self.temp_dir))
+					logger.debug("Deleted temp dir at {}".format(self.temp_dir))
 					shutil.rmtree(self.temp_dir)

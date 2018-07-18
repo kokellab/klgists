@@ -3,6 +3,7 @@ import os
 from enum import Enum
 from colorama import Fore, Style
 
+from klgists import logger
 
 class Deletion(Enum):
 	NO = 1
@@ -17,7 +18,7 @@ def prompt_yes_no(msg: str) -> bool:
 		elif command.lower() == 'no':
 			return False
 		else:
-			print(Fore.RED + "Enter 'yes' or 'no'.")
+			logger.debug("Enter 'yes' or 'no'.")
 
 
 def prompt_and_delete(
@@ -47,6 +48,7 @@ def prompt_and_delete(
 
 		if command.lower() == Deletion.HARD.name.lower():
 			if show_confirmation: print(Style.BRIGHT + "Permanently deleted {}".format(path))
+			logger.debug("Permanently deleted {}".format(path))
 			if not dry:
 				if os.path.isdir(path): shutil.rmtree(path)
 				else: os.remove(path)
@@ -56,9 +58,11 @@ def prompt_and_delete(
 			if not dry:
 				shutil.move(path, trash_dir)
 			if show_confirmation: print(Style.BRIGHT + "Trashed {} to {}".format(path, trash_dir))
+			logger.debug("Trashed {} to {}".format(path, trash_dir))
 			return Deletion.TRASH
 
 		elif command.lower() == Deletion.NO.name.lower() or len(command) == 0 and allow_ignore:
+			logger.debug("Will not delete {}".format(path))
 			return Deletion.NO
 
 		else:
@@ -67,5 +71,6 @@ def prompt_and_delete(
 
 	while True:
 		command = input('Delete? [{}] '.format('/'.join(choices))).strip()
+		logger.debug("Received user input {}".format(command))
 		polled = poll(command)
 		if polled is not None: return polled

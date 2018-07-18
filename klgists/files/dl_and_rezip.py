@@ -5,6 +5,8 @@ import logging
 import gzip
 import shutil
 
+from klgists import logger
+
 def gz(input_filename: str, output_filename: str=None):
 	"Gzips a file, by default to input_filename + '.gz'."
 	if output_filename is None: output_filename = input_filename + '.gz'
@@ -35,7 +37,7 @@ def dl_and_rezip(url: str, base_filename: str):
 	"""Downloads a file and gzips it. If the download file is a ZIP archive, first extracts base_filename from it.
 	The gzipped output file is written to base_filename + '.gz'."""
 	if not os.path.exists(base_filename + '.gz'):
-		logging.info("Downloading {}...".format(url))
+		logger.info("Downloading {}...".format(url))
 		dled_filename = wget.download(url)
 		rezip(dled_filename, base_filename)
-		logging.info("Done—file at {}".format(base_filename))
+		logger.info("Done—file at {}".format(base_filename))

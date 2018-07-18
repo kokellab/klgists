@@ -1,9 +1,9 @@
-import logging
-import warnings
 from os.path import dirname
 from typing import Optional
 from klgists.common import pjoin, pexists
 from klgists.files.wrap_cmd_call import wrap_cmd_call
+
+from klgists import logger
 
 
 def extract_frames(video_path: str, output_frames_dir: str, notification_path: Optional[str]=None, quality: int=0) -> None:
@@ -18,13 +18,13 @@ def extract_frames(video_path: str, output_frames_dir: str, notification_path: O
 	if notification_path is None: notification_path = pjoin(dirname(video_path), ".finished-extraction")
 
 	if pexists(notification_path) and pexists(output_frames_dir):
-		logging.info("Frames directory {} is already complete; skipping.".format(output_frames_dir))
+		logger.info("Frames directory {} is already complete; skipping.".format(output_frames_dir))
 	else:
 
 		if pexists(output_frames_dir):
-			warnings.warn("Frames directory {} already exists but is incomplete. Extracting frames...".format(output_frames_dir))
+			logger.warn("Frames directory {} already exists but is incomplete. Extracting frames...".format(output_frames_dir))
 		else:
-			logging.info("Extracting frames into {}".format(output_frames_dir))
+			logger.info("Extracting frames into {}".format(output_frames_dir))
 
 		if not pexists(video_path):
 			raise ValueError('Cannot extract frames: video.avi does not exist')
