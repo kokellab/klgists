@@ -45,6 +45,6 @@ def wrap_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PIPE
 		p.kill()
 	if exit_code != 0:
 		_log(out, err, logger.warning)
-		raise ExternalCommandFailed("Got nonzero exit code {} from '{}'".format(exit_code, ' '.join(cmd)))
+		raise ExternalCommandFailed("Got nonzero exit code {} from '{}'".format(exit_code, ' '.join(cmd)), cmd, exit_code, out, err)
 	_log(out, err, logger.debug)
 	return out, err
