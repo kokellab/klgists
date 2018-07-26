@@ -29,7 +29,24 @@ class ExternalDeviceNotFound(IOError): pass
 
 class TimeoutException(IOError): pass
 
-class ExternalCommandFailed(IOError): pass
+class ExternalCommandFailed(IOError):
+	def __init__(self, message, command: str, exit_code: int, stdout: str, stderr: str):
+		super().__init__(message)
+		self.command = command
+		self.exit_code = exit_code
+		self.stdout = stdout
+		self.stderr = stderr
+	def extended_message(self) -> str:
+		return "Command `{}` failed with exit code `{}`.\nstdout:{}\nstderr:{}"\
+			.format(self.command, self.exit_code, self._x(self.stdout), self._x(self.stderr))
+	def _x(self, out):
+		out = out.strip()
+		if '\n' in out:
+			return "\n<<=====\n" + out + '\n=====>>'
+		elif len(out) > 0:
+			return " <<===== " + out + " =====>>"
+		else:
+			return " <no output>"
 
 class MissingComponentException(IOError): pass
 
@@ -59,8 +76,10 @@ class Axis(Enum):
 	VERTICAL = 2
 
 class RoiError(BadConfigException):
-	edge = None  # type: Edge
-	axis = None  # type: Axis
+	def __init__(self, message, errors = None, edge: Edge = None, axis: Axis = None):
+		super().__init__(message, errors)
+		self.edge = None
+		self.axis = None
 	def on_edge(self, edge: Edge): self.edge = edge; return self
 	def on_axis(self, axis: Axis): self.axis = axis; return self
 
