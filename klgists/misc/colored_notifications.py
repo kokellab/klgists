@@ -29,7 +29,7 @@ def concern_to_user(*lines: str):
 	concern_to_user_thin(*lines)
 	print()
 def concern_to_user_thin(*lines: str):
-	print_to_user(['', *lines, ''], Fore.YELLOW)
+	print_to_user(['', *lines, ''], Fore.MAGENTA)
 
 def notify_user_light(*lines: str):
 	print()
@@ -44,10 +44,10 @@ def header_to_user(*lines: str):
 def print_to_user(lines: Iterable[str], color: int, top: str='_', bottom: str='_', sides: str='', line_length: int=100):
 	def cl(text: str): print(str(color) + sides + text.center(line_length - 2*len(sides)) + sides)
 	print(str(color) + top * line_length)
-	logger.debug(str(color) + top * line_length)
+	logger.debug(top * line_length)
 	for line in lines:
 		logger.debug(line)
 		cl(line)
 	print(str(color) + bottom * line_length)
-	logger.debug(str(color) + bottom * line_length)
+	logger.debug(bottom * line_length)
 
