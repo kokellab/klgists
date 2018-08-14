@@ -1,6 +1,6 @@
 import logging
 import subprocess
-from enumeration import Enum
+from enum import Enum
 from subprocess import Popen, PIPE
 from queue import Queue
 from threading import Thread
@@ -42,7 +42,15 @@ def smart_log_callback(source, line, prefix: str = '') -> None:
 		logger.debug(prefix + line)
 	else:
 		logger.debug(prefix + line)
-	
+
+
+def _reader(pipe_type, pipe, queue):
+	try:
+		with pipe:
+			for line in iter(pipe.readline, b''):
+				queue.put((pipe_type, line))
+	finally:
+		queue.put(None)
 	
 def stream_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell_cmd: str=None, cwd: Optional[str] = None, timeout_secs: Optional[float] = None, log_callback: Callable[[PipeType, bytes], None] = None, bufsize: int = 1) -> None:
 	"""Calls an external command, waits, and throws a ExternalCommandFailed for nonzero exit codes.
@@ -54,12 +62,13 @@ def stream_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PI
 	cmd = [str(p) for p in cmd]
 	if shell_cmd:
 		cmd = [shell_cmd] + cmd
-	logger.debug("Calling '{}'".format(' '.join(cmd)))
+	logger.debug("Streaming '{}'".format(' '.join(cmd)))
+	
 	p = subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, cwd=cwd, bufsize=bufsize)
 	try:
 		q = Queue()
-		Thread(target=reader, args=[PipeType.STDOUT, q]).start()
-		Thread(target=reader, args=[PipeType.STDERR, q]).start()
+		Thread(target=_reader, args=[PipeType.STDOUT, p.stdout, q]).start()
+		Thread(target=_reader, args=[PipeType.STDERR, p.stderr, q]).start()
 		for _ in range(2):
 			for source, line in iter(q.get, None):
 				log_callback(source, line)
@@ -67,8 +76,7 @@ def stream_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PI
 	finally:
 		p.kill()
 	if exit_code != 0:
-		raise ExternalCommandFailed("Got nonzero exit code {} from '{}'".format(exit_code, ' '.join(cmd)))
-	return out, err
+		raise ExternalCommandFailed("Got nonzero exit code {} from '{}'".format(exit_code, ' '.join(cmd)), cmd, exit_code, '<<unknown>>', '<<unknown>>')
 	
 
 def wrap_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell_cmd: str=None, cwd: Optional[str] = None, timeout_secs: Optional[float] = None) -> (str, str):
