@@ -1,24 +1,71 @@
 import shutil
 import os
+import time
 from enum import Enum
+from typing import Callable, Optional
 from colorama import Fore, Style
 
 from klgists import logger
+
 
 class Deletion(Enum):
 	NO = 1
 	TRASH = 2
 	HARD = 3
 
+
 def prompt_yes_no(msg: str) -> bool:
 	while True:
-		command = input(msg + ' ')
+		print(Fore.BLUE + msg + ' ', end='')
+		command = input('')
 		if command.lower() == 'yes':
 			return True
 		elif command.lower() == 'no':
 			return False
 		else:
-			logger.debug("Enter 'yes' or 'no'.")
+			print(Fore.BLUE + "Enter 'yes' or 'no'.")
+
+			
+def deletion_fn(path) -> Optional[Exception]:
+	"""
+	Deletes files or directories, which should work even in Windows.
+	:return Returns None, or an Exception for minor warnings
+	"""
+	# we need this because of Windows
+	chmod_err = None
+	try:
+		os.chmod(path, stat.S_IWRITE)
+	except Exception as e:
+		chmod_err = e
+	# another reason for returning exception:
+	# We don't want to interrupt the current line being printed like in slow_delete
+	if os.path.isdir(path):
+		shutil.rmtree(path, ignore_errors=True) # ignore_errors because of Windows
+		try:
+			os.remove(path)  # again, because of Windows
+		except IOError: pass  # almost definitely because it doesn't exist
+	else:
+		os.remove(path)
+	logger.debug("Permanently deleted {}".format(path))
+	return chmod_err
+
+	
+def slow_delete(path: str, wait: int = 5, delete_fn: Callable[[str], None] = deletion_fn):
+	logger.debug("Deleting directory tree {} ...".format(path))
+	print(Fore.BLUE + "Waiting for {}s before deleting {}: ".format(wait, path), end='')
+	for i in range(0, wait):
+		time.sleep(1)
+		print(Fore.BLUE + str(wait-i) + ' ', end='')
+	time.sleep(1)
+	print(Fore.BLUE + '...', end='')
+	chmod_err = delete_fn(path)
+	print(Fore.BLUE + ' deleted.')
+	#if chmod_err is not None:
+	#	try:
+	#		raise chmod_err
+	#	except:
+	#		logger.warning("Couldn't chmod {}".format(path), exc_info=True)
+	logger.debug("Deleted directory tree {}".format(path))
 
 
 def prompt_and_delete(
@@ -27,7 +74,8 @@ def prompt_and_delete(
 		allow_dirs: bool=True,
 		show_confirmation: bool=True,
 		dry: bool=False,
-		allow_ignore: bool=True
+		allow_ignore: bool=True,
+		delete_fn: Callable[[str], None] = deletion_fn
 ) -> Deletion:
 	"""
 
@@ -48,17 +96,21 @@ def prompt_and_delete(
 
 		if command.lower() == Deletion.HARD.name.lower():
 			if show_confirmation: print(Style.BRIGHT + "Permanently deleted {}".format(path))
-			logger.debug("Permanently deleted {}".format(path))
-			if not dry:
+			if dry:
+				logger.debug("Operating in dry mode. Would otherwise have deleted {}".format(path))
+			else:
 				if os.path.isdir(path): shutil.rmtree(path)
 				else: os.remove(path)
+				logger.debug("Permanently deleted {}".format(path))
 			return Deletion.HARD
 
 		elif command.lower() == Deletion.TRASH.name.lower():
-			if not dry:
+			if dry:
+				logger.debug("Operating in dry mode. Would otherwise have trashed {} to {}".format(path, trash_dir))
+			else:
 				shutil.move(path, trash_dir)
+				logger.debug("Trashed {} to {}".format(path, trash_dir))
 			if show_confirmation: print(Style.BRIGHT + "Trashed {} to {}".format(path, trash_dir))
-			logger.debug("Trashed {} to {}".format(path, trash_dir))
 			return Deletion.TRASH
 
 		elif command.lower() == Deletion.NO.name.lower() or len(command) == 0 and allow_ignore:
@@ -70,7 +122,8 @@ def prompt_and_delete(
 			return None
 
 	while True:
-		command = input('Delete? [{}] '.format('/'.join(choices))).strip()
-		logger.debug("Received user input {}".format(command))
+		print(Fore.BLUE + "Delete? [{}]".format('/'.join(choices)), end='')
+		command = input('').strip()
+		#logger.debug("Received user input {}".format(command))
 		polled = poll(command)
 		if polled is not None: return polled
