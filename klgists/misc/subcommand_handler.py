@@ -67,22 +67,19 @@ class SubcommandHandler:
 			pass  # ignore totally
 		except (KeyboardInterrupt) as e:
 			try:
-				logger.error("Received cancellation signal")
-				logger.exception(e)
+				logger.fatal("Received cancellation signal", exc_info=True)
 				self.cancel_handler(e)
 			except BaseException: pass
 			raise e
 		except (SystemExit) as e:
 			try:
-				logger.error("Received system exit signal")
-				logger.exception(e)
+				logger.fatal("Received system exit signal", exc_info=True)
 				self.cancel_handler(e)
 			except BaseException: pass
 			raise e
 		except BaseException as e:
 			try:
-				logger.error("{} failed!".format(self.parser.prog))
-				logger.exception(e)
+				logger.fatal("{} failed!".format(self.parser.prog), exc_info=True)
 				self.error_handler(e)
 			except BaseException: pass
 			raise e
@@ -91,3 +88,6 @@ class SubcommandHandler:
 				if pexists(self.temp_dir):
 					logger.debug("Deleted temp dir at {}".format(self.temp_dir))
 					shutil.rmtree(self.temp_dir)
+					try:
+						os.remove(self.temp_dir)
+					except IOError: pass

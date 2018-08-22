@@ -1,9 +1,11 @@
 import os, json, sys
+import unicodedata
 from itertools import chain
+import signal
 from datetime import date, datetime
 import operator
 from datetime import date, datetime
-from typing import Callable, TypeVar, Iterable, Optional, List
+from typing import Callable, TypeVar, Iterable, Optional, List, Any
 
 def look(obj: object, attrs: str) -> any:
 	if not isinstance(attrs, str) and isinstance(attrs, Iterable): attrs = '.'.join(attrs)
@@ -53,7 +55,7 @@ def exists(keep_predicate: Callable[[T], bool], seq: Iterable[T]) -> bool:
 
 
 def zip_strict(*args):
-	"""Same as zip(), but raises a ValueError if the lengths don't match."""
+	"""Same as zip(), but raises an IndexError if the lengths don't match."""
 	iters = [iter(axis) for axis in args]
 	n_elements = 0
 	failures = []
@@ -69,9 +71,9 @@ def zip_strict(*args):
 		if len(failures) == 0:
 			yield tuple(values)
 	if len(failures) == 1:
-		raise ValueError("Too few elements ({}) along axis {}".format(n_elements, failures[0]))
+		raise IndexError("Too few elements ({}) along axis {}".format(n_elements, failures[0]))
 	elif len(failures) < len(iters):
-		raise ValueError("Too few elements ({}) along axes {}".format(n_elements, failures))
+		raise IndexError("Too few elements ({}) along axes {}".format(n_elements, failures))
 
 
 class Comparable:
@@ -117,4 +119,26 @@ def pp_dict(dct: dict) -> None:
 def pp_size(obj: object) -> None:
 	"""Prints to stdout a human-readable string of the memory usage of arbitrary Python objects. Ex: 8M for 8 megabytes."""
 	print(_hurrysize(sys.getsizeof(obj)))
+
+def sanitize_str(value: str) -> str:
+	"""Removes Unicode control (Cc) characters EXCEPT for tabs (\t), newlines (\n only), line separators (U+2028) and paragraph separators (U+2029)."""
+	return "".join(ch for ch in value if unicodedata.category(ch) != 'Cc' and ch not in {'\t', '\n', '\u2028', '\u2029'})
+
+def escape_for_properties(value: Any) -> str:
+	return sanitize_str(str(value).replace('\n', '\u2028'))
+
+def escape_for_tsv(value: Any) -> str:
+	return sanitize_str(str(value).replace('\n', '\u2028').replace('\t', ' '))
+	
+class Timeout:
+	def __init__(self, seconds: int = 10, error_message='Timeout'):
+		self.seconds = seconds
+		self.error_message = error_message
+	def handle_timeout(self, signum, frame):
+		raise TimeoutError(self.error_message)
+	def __enter__(self):
+		signal.signal(signal.SIGALRM, self.handle_timeout)
+		signal.alarm(self.seconds)
+	def __exit__(self, type, value, traceback):
+		signal.alarm(0)
 
