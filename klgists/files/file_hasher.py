@@ -9,10 +9,6 @@ from klgists.common.exceptions import HashValidationFailedException, NoSuchFileE
 
 class FileHasher:
 
-	algorithm = None
-	extension = None
-	buffer_size = None
-
 	def __init__(self, algorithm: Callable[[], Any]=hashlib.sha1, extension: str='.sha1', buffer_size: int = 16*1024):
 		self.algorithm = algorithm
 		self.extension = extension
@@ -26,13 +22,13 @@ class FileHasher:
 		return alg.hexdigest()
 
 	def add_hash(self, file_name: str) -> None:
-		with open(file_name + self.extension, 'w') as f:
+		with open(file_name + self.extension, 'w', encoding="utf8") as f:
 			s = self.hashsum(file_name)
 			f.write(s)
 
 	def check_hash(self, file_name: str) -> bool:
 		if not os.path.isfile(file_name + self.extension): return False 
-		with open(file_name + self.extension, 'r') as f:
+		with open(file_name + self.extension, 'r', encoding="utf8") as f:
 			hash_str = f.read().split()[0] # check only the first thing on the line before any spaces
 			return hash_str == self.hashsum(file_name)
 
@@ -45,7 +41,7 @@ class FileHasher:
 	def _o(self, file_name: str, opener, *args):
 		if not os.path.isfile(file_name + self.extension):
 			raise NoSuchFileException("Hash for file {} does not exist".format(file_name))
-		with open(file_name + self.extension, 'r') as f:
+		with open(file_name + self.extension, 'r', encoding="utf8") as f:
 			if f.read() != self.hashsum(file_name):
 				raise HashValidationFailedException("Hash for file {} does not match".format(file_name))
 		return opener(file_name, *args)

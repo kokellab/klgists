@@ -6,4 +6,4 @@ def replace_in_file(path: str, changes: Dict[str, str]) -> None:
 	with open(path) as f: data = f.read()
 	for key, value in changes.items():
 		data = re.sub(key, value, data, re.MULTILINE, re.DOTALL)
-	with open(path, 'w') as f: f.write(data)
+	with open(path, 'w', encoding="utf8") as f: f.write(data)

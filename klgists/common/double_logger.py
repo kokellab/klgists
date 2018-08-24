@@ -27,7 +27,7 @@ def init_logger(
 	formatter = logging.Formatter(format)
 
 	if log_path is not None:
-		handler = logging.FileHandler(log_path)
+		handler = logging.FileHandler(log_path, encoding='utf-8')
 		handler.setLevel(file_level)
 		handler.setFormatter(formatter)
 		logger.addHandler(handler)
