@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Callable, Optional
 from colorama import Fore, Style
 
+from klgists.common.exceptions import RefusingRequestException
 from klgists import logger
 
 
@@ -88,7 +89,8 @@ def prompt_and_delete(
 	:return: A Deletion enum reflecting the chosen action
 	"""
 
-	assert allow_dirs or not os.path.isdir(path), 'Cannot delete directory {}; only files are allowed'.format(path)
+	if not allow_dirs and os.path.isdir(path):
+		raise RefusingRequestException('Cannot delete directory {}; only files are allowed'.format(path))
 
 	choices = [Deletion.NO.name.lower(), Deletion.TRASH.name.lower(), Deletion.HARD.name.lower()]
 
@@ -99,8 +101,7 @@ def prompt_and_delete(
 			if dry:
 				logger.debug("Operating in dry mode. Would otherwise have deleted {}".format(path))
 			else:
-				if os.path.isdir(path): shutil.rmtree(path)
-				else: os.remove(path)
+				delete_fn(path)
 				logger.debug("Permanently deleted {}".format(path))
 			return Deletion.HARD
 

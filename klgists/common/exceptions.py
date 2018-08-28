@@ -96,6 +96,8 @@ class LockedException(RefusingRequestException): pass
 
 class MissingResourceException(UserError): pass
 
+class MissingEnvironmentVariableException(UserError, KeyError): pass
+
 class ParsingFailedException(UserError): pass
 
 
