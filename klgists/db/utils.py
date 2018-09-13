@@ -23,16 +23,16 @@ def blob_to_coerced_float16_array(bytes_obj: bytes):
 	return _blob_to_dt(bytes_obj, 'f', 4, np.float16)
 
 def byte_array_to_blob(arr: np.array):
-	return _dt_to_blob(arr - 128, '>b')
+	return _dt_to_blob(arr - 128, 'b')
 def float_array_to_blob(arr: np.array):
-	return _dt_to_blob(arr, '>f')
+	return _dt_to_blob(arr, 'f')
 def double_array_to_blob(arr: np.array):
-	return _dt_to_blob(arr, '>d')
+	return _dt_to_blob(arr, 'd')
 def short_array_to_blob(arr: np.array):
-	return _dt_to_blob(arr, '>H')
+	return _dt_to_blob(arr, 'H')
 def int_array_to_blob(arr: np.array):
-	return _dt_to_blob(arr, '>I')
+	return _dt_to_blob(arr, 'I')
 def long_array_to_blob(arr: np.array):
-	return _dt_to_blob(arr, '>Q')
+	return _dt_to_blob(arr, 'Q')
 def _dt_to_blob(arr: np.array, data_type_str: str) -> bytes:
 	return array(data_type_str, arr).tobytes()
