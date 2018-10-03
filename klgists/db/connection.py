@@ -119,4 +119,6 @@ class Connection:
 
 	def _connection_params(self):
 		local_bind_port = self._tunnel.local_bind_port if self._tunnel is not None else self._local_bind_port
-		return {'user': self._db_username, 'password': self._db_password, 'host': '127.0.0.1', 'port': local_bind_port}
+		return {'user': self._db_username, 'password':
+                        self._db_password, 'host': '127.0.0.1', 'port':
+                        local_bind_port} #'use_unicode':True, 'charset':"utf8"}
