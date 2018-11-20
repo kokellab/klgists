@@ -1,7 +1,11 @@
 import os, json, logging
 from typing import Tuple, Iterator, Dict, Optional, Union
 
-from sshtunnel import SSHTunnelForwarder
+try:
+	from sshtunnel import SSHTunnelForwarder
+except BaseException:
+	logging.exception("Couldn't import sshtunnel. Cannot make new tunnel.")
+
 import pymysql
 import peewee
 
