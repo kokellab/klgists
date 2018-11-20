@@ -21,7 +21,7 @@ class FlexibleLogger:
 		self.datetime_started = datetime.datetime.now()
 
 	def add_file(self, path: str, level: int = logging.DEBUG):
-		self._make_dirs(os.pardir(path))
+		self._make_dirs(os.path.dirname(path))
 		return self._add(logging.FileHandler(path), level)
 
 	def add_stdout(self, level: int = logging.INFO):
