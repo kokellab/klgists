@@ -5,7 +5,7 @@ from distutils.core import setup
 
 setup(
 	name='klgists',
-	version='0.1.1',
+	version='0.1.2',
 	description='A collection of Python snippets for the Kokel Lab',
 	author='Douglas Myers-Turnbull',
 	url='https://github.com/kokellab/klgists',
