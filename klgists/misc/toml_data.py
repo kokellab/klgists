@@ -1,5 +1,5 @@
 
-from typing import Iterator, Tuple, Dict, List
+from typing import Iterator, Dict, List, ItemsView, KeysView, ValuesView
 
 from klgists.common.exceptions import MissingConfigEntry
 
@@ -12,9 +12,6 @@ class TomlData:
 		data.sub('x.y')        # returns a new TomlData for {'z': 155}
 		data.nested_keys()     # returns all keys and sub-keys
 	"""
-
-	top = None  # type: Dict[str, object]
-
 	def __init__(self, top_level_item: Dict[str, object]):
 		assert top_level_item is not None
 		self.top = top_level_item
@@ -27,26 +24,65 @@ class TomlData:
 	def __getitem__(self, key: str) -> Dict[str, object]:
 		return self.sub(key).top
 
+	def get_str(self, key: str) -> str:
+		return str(self.__as(key, str))
+
+	def get_int(self, key: str) -> int:
+		# noinspection PyTypeChecker
+		return int(self.__as(key, int))
+
+	def get_bool(self, key: str) -> int:
+		# noinspection PyTypeChecker
+		return bool(self.__as(key, bool))
+
+	def get_str_list(self, key: str) -> List[str]:
+		return self.__as_list(key, str)
+
+	def get_int_list(self, key: str) -> List[int]:
+		return self.__as_list(key, int)
+
+	def get_float_list(self, key: str) -> List[int]:
+		return self.__as_list(key, int)
+
+	def get_bool_list(self, key: str) -> List[int]:
+		return self.__as_list(key, bool)
+
+	def get_float(self, key: str) -> int:
+		# noinspection PyTypeChecker
+		return int(self.__as(key, float))
+
+	def __as_list(self, key: str, clazz):
+		def to(v):
+			if not isinstance(v, clazz):
+				raise TypeError("{}={} is a {}, not {}".format(key, v, type(v), clazz))
+			return [to(v) for v in self[key]]
+
+	def __as(self, key: str, clazz):
+		v = self[key]
+		if isinstance(v, clazz):
+			return v
+		else:
+			raise TypeError("{}={} is a {}, not {}".format(key, v, type(v), clazz))
+
 	def sub(self, key: str):
 		"""Returns a new TomlData with its top set to items[1][2]..."""
 		items = key.split('.')
 		item = self.top
 		for i, s in enumerate(items):
 			if s not in item: raise MissingConfigEntry(
-				"{} is not in the TOML; failed at {}"\
-						.format(key, '.'.join(items[:i+1]))
+				"{} is not in the TOML; failed at {}"
+				.format(key, '.'.join(items[:i+1]))
 			)
 			item = item[s]
 		return TomlData(item)
 
-
-	def items(self) -> Iterator[Tuple[str, object]]:
+	def items(self) -> ItemsView[str, object]:
 		return self.top.items()
 
-	def keys(self) -> Iterator[str]:
+	def keys(self) -> KeysView[str]:
 		return self.top.keys()
 
-	def values(self) -> Iterator[object]:
+	def values(self) -> ValuesView[object]:
 		return self.top.values()
 
 	def nested_keys(self, separator='.') -> Iterator[str]:
@@ -65,3 +101,6 @@ class TomlData:
 				else: yield prefix + [key]
 
 		else: yield dictionary
+
+
+__all__ = ['TomlData']
