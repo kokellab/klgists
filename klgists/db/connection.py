@@ -1,11 +1,6 @@
 import os, json, logging
 from typing import Tuple, Iterator, Dict, Optional, Union
 
-try:
-	from sshtunnel import SSHTunnelForwarder
-except BaseException:
-	logging.exception("Couldn't import sshtunnel. Cannot make new tunnel.")
-
 import pymysql
 import peewee
 
@@ -57,6 +52,11 @@ class Connection:
 		self._ssh_port = ssh_port
 		self._db_port = db_port
 		if ssh_host is not None:
+			try:
+				from sshtunnel import SSHTunnelForwarder
+			except:
+				logging.error("Couldn't import sshtunnel. Cannot make new tunnel.")
+				raise
 			self._tunnel = SSHTunnelForwarder(
 				(self._ssh_host, self._ssh_port),
 				ssh_username=self._ssh_username, ssh_password=self._ssh_password,
