@@ -9,3 +9,5 @@ def delete_hidden_files(directory: str, filename_starts: Optional[Set[str]] = No
 		for s in filename_starts:
 			if os.path.basename(f).startswith(s): os.remove(f)
 
+
+__all__ = ['delete_hidden_files']

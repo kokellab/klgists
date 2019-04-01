@@ -1,7 +1,7 @@
 
 from typing import Callable
 import pandas as pd
-from klgists.files.dl_and_rezip import dl_and_rezip # see https://gist.github.com/dmyersturnbull/a6591676fc98da355c5250d48e26844e
+from klgists.files.dl_and_rezip import dl_and_rezip
 
 
 def _load(filter_fn: Callable[[pd.DataFrame], pd.DataFrame]=pd.DataFrame.dropna) -> pd.DataFrame:
@@ -22,7 +22,6 @@ class TissueTable(object):
 		tt = TissueTable()
 		tt.tissue('MKNK2') # returns a DataFrame with mean expression of MKNK2 per tissue type. MKN2 is the HGNC symbol.
 	"""
-
 	def __init__(self):
 		self.df = _load()
 
@@ -39,3 +38,6 @@ class TissueTable(object):
 
 	def cell_type(self, name: str):
 		return self.level(name, group_by='Cell type')
+
+
+__all__ = ['TissueTable']

@@ -10,14 +10,12 @@ from scipy._lib.six import xrange
 from scipy.signal.wavelets import cwt, ricker
 from scipy.stats import scoreatpercentile
 
+from scipy.signal._peak_finding_utils import (_local_maxima_1d, _select_by_peak_distance, _peak_prominences, _peak_widths)
 
 
-from scipy.signal._peak_finding_utils import (_local_maxima_1d, _select_by_peak_distance,
-                                  _peak_prominences, _peak_widths)
-
-
-__all__ = ['argrelmin', 'argrelmax', 'argrelextrema', 'peak_prominences',
-           'peak_widths', 'find_peaks', 'find_peaks_cwt']
+# TODO Are there any copyright issues with this?
+# TODO Is this still valid?
+# TODO Also document
 
 
 def _boolrelextrema(data, comparator, axis=0, order=1, mode='clip'):
@@ -1229,3 +1227,7 @@ def find_peaks_cwt(vector, widths, wavelet=None, max_distances=None,
     max_locs.sort()
 
     return max_locs
+
+
+__all__ = ['argrelmin', 'argrelmax', 'argrelextrema', 'peak_prominences', 'peak_widths', 'find_peaks', 'find_peaks_cwt']
+

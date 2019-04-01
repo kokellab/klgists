@@ -1,11 +1,15 @@
 import warnings
 import numpy as np
-from typing import Iterable, Mapping, Callable, Any, Tuple
-def converge(sampler: Callable[[None], Iterable[float]],
-							 statistic:Callable[[np.ndarray], float]=np.mean,
-							 ε:float=0.01, min_iters:int=3, max_iters:int=50,
-							 noter:Callable[[int, float, float, Iterable[float]], Any]=lambda i, estimate, delta, samples: print('Iteration {}: {:.3f}, δ=={:.3f}'.format(i, estimate, delta))
-			) -> Tuple[float, Iterable[float]]:
+from typing import Iterable, Callable, Any, Tuple
+
+# TODO should this be deprecated?
+
+def converge(
+		sampler: Callable[[None], Iterable[float]],
+		statistic:Callable[[np.ndarray], float]=np.mean,
+		ε:float=0.01, min_iters:int=3, max_iters:int=50,
+		noter:Callable[[int, float, float, Iterable[float]], Any]=lambda i, estimate, delta, samples: print('Iteration {}: {:.3f}, δ=={:.3f}'.format(i, estimate, delta))
+) -> Tuple[float, Iterable[float]]:
 	"""Repeatedly sample something until the mean (or other statistic) converges to within ε.
 
 	Example usage:
@@ -53,3 +57,6 @@ def converge(sampler: Callable[[None], Iterable[float]],
 	if i >= max_iters:
 		warnings.warn('Estimatation exceeded max_iters=={} without converging'.format(max_iters))
 	return collected_samples, statistic(collected_samples)
+
+
+__all__ = ['converge']

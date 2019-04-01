@@ -2,6 +2,10 @@ import contextlib
 import sys
 from io import StringIO
 
+
+from klgists.common import decorator
+
+@decorator
 @contextlib.contextmanager
 def silenced(no_stdout=True, no_stderr=True):
     """
@@ -27,3 +31,6 @@ def silenced(no_stdout=True, no_stderr=True):
             sys.stdout = save_stdout
         if no_stderr and save_stderr is not None:
             sys.stderr = save_stderr
+
+
+__all__ = ['silenced']

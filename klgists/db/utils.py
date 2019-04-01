@@ -1,7 +1,9 @@
 import struct
 from array import array
 import numpy as np
+from warnings import warn
 
+warn("Do not use klgists.db.utils. Use DbUtils instead.", DeprecationWarning)
 
 def blob_to_byte_array(bytes_obj: bytes):
 	return _blob_to_dt(bytes_obj, 'b', 1, np.ubyte) + 128

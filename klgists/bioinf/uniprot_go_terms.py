@@ -2,7 +2,8 @@
 from klgists.common.silenced import silenced
 
 import re
-import uniprot # from https://github.com/boscoh/uniprot
+# from https://github.com/boscoh/uniprot
+import uniprot
 import pandas as pd
 import os
 import wget
@@ -88,11 +89,6 @@ class GoTermsAtLevel:
 	"""
 	Example: go_term_ancestors_for_uniprot_id_as_df('P42681', 2)
 	"""
-
-	obo = None  # type: obo_parser.GODag
-	substruct = None  # type: UniProtGoTerms
-
-
 	def __init__(self) -> None:
 		if os.path.exists('gene_ontology.1_2.obo'):
 			self.obo = obo_parser.GODag('gene_ontology.1_2.obo')
@@ -126,7 +122,7 @@ class GoTermsAtLevel:
 		def traverse_up(term, buildup_set, level):
 			if term.level == level:
 				buildup_set.add(term)
-			if (term.has_parent):
+			if term.has_parent:
 				return [traverse_up(p, buildup_set, level) for p in term.parents]
 			return None
 		terms = set()
@@ -158,3 +154,6 @@ class GoTermsAtLevel:
 		for term in self.go_term_ancestors_for_uniprot_id(uniprot_id, level, kinds_allowed):
 			df.loc[len(df)] = pd.Series({'ID': term.id, 'name': term.name, 'level': term.level})
 		return df.set_index('ID')
+
+
+__all__ = ['FlatGoTerm', 'UniProtGoTerms', 'GoTermsAtLevel']

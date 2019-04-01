@@ -2,7 +2,6 @@ import os, json, sys
 import unicodedata
 from itertools import chain
 import signal
-from datetime import date, datetime
 import operator
 from datetime import date, datetime
 from typing import Callable, TypeVar, Iterable, Optional, List, Any
@@ -43,6 +42,10 @@ def try_index_of(element: List[T], list_element: T) -> Optional[T]:
 		return index_element
 	except ValueError:
 		return None
+
+def decorator(cls):
+	return cls
+
 
 T = TypeVar('T')
 

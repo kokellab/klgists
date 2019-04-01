@@ -37,3 +37,6 @@ def sevenz(dir_to_sevenz: str, sevenz_path: str, overwrite: OverwriteChoice = Ov
 
 	wrap_cmd_call([_7z_executable, 'a', sevenz_path, dir_to_sevenz])
 	file_hasher.add_hash(sevenz_path)  # will overwrite regardless
+
+
+__all__ = ['sevenz']

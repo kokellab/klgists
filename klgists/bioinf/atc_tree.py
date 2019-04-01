@@ -3,9 +3,9 @@ import json
 import requests
 import re
 from datetime import datetime
+from typing import Iterator, Set
 pjoin = os.path.join
 pexists = os.path.exists
-from typing import List, Iterator, Optional, Set, Dict
 
 
 class Atc:
@@ -21,7 +21,7 @@ class Atc:
 	def __neq__(self, o):
 		return self != o
 	def __hash__(self):
-		  return hash(self.code)
+		return hash(self.code)
 	def __lt__(self, o):
 		return isinstance(o, Atc) and self.code < o.code
 	def __gt__(self, o):
@@ -121,8 +121,7 @@ class AtcParser:
 			os.makedirs(self.cache_dir)
 	
 	def load(self, force_download: bool = False):
-		atcs = {}
-		atcs['/'] = Atc.root()
+		atcs = {'/': Atc.root()}
 		if not force_download and pexists(pjoin(self.cache_dir, 'is-done')):
 			print("Loading from cache...")
 			self._load_from_cache(atcs)

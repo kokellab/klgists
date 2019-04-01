@@ -3,6 +3,7 @@ import re
 from typing import Optional
 from klgists.files.wrap_cmd_call import wrap_cmd_call
 
+
 def find_matlab_version(matlab_path: str) -> Optional[str]:
 	"""Calls MATLAB to get its version.
 	Note: This takes ~30 seconds.
@@ -16,3 +17,6 @@ def find_matlab_version(matlab_path: str) -> Optional[str]:
 	else:
 		warnings.warn('MATLAB responded with output that does not appear to contain version information')
 		return None
+
+
+__all__ = ['find_matlab_version']

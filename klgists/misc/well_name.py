@@ -42,3 +42,6 @@ assert [well_index_from_name(x, n_columns = 4) for x in ['A01', 'A02', 'A03', 'A
 
 # these are much faster
 standards = {(r, c): [well_name(i, n_rows=r, n_columns=c) for i in range(0, r*c)] for r, c in [(12, 8), (8, 12), (24, 16), (16, 24)]}
+
+
+__all__ = ['well_name', 'wells_of_row', 'wells_of_rows', 'well_index_from_name']

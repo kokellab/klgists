@@ -41,3 +41,6 @@ def dl_and_rezip(url: str, base_filename: str):
 		dled_filename = wget.download(url)
 		rezip(dled_filename, base_filename)
 		logger.info("Done—file at {}".format(base_filename))
+
+
+__all__ = ['gz', 'rezip', 'dl_and_rezip']

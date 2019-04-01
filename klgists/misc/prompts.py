@@ -1,6 +1,7 @@
 import shutil
 import os
 import time
+import stat
 from enum import Enum
 from typing import Callable, Optional
 from colorama import Fore, Style
@@ -87,6 +88,7 @@ def prompt_and_delete(
 	:param dry: If True, will only return the Deletion object to be handled outside
 	:param allow_ignore: Allow entering an empty string to mean ignore
 	:return: A Deletion enum reflecting the chosen action
+	:param delete_fn: Function that actually deletes
 	"""
 
 	if not allow_dirs and os.path.isdir(path):
@@ -128,3 +130,6 @@ def prompt_and_delete(
 		#logger.debug("Received user input {}".format(command))
 		polled = poll(command)
 		if polled is not None: return polled
+
+
+__all__ = ['prompt_yes_no', 'slow_delete', 'prompt_and_delete', 'deletion_fn']

@@ -1,7 +1,7 @@
 import numpy as np
 import struct
 from array import array
-
+from warnings import warn
 
 def _blob_to_dt(bytes_obj: bytes, data_type_str: str, data_type_len: int, dtype):
 	return np.array(
@@ -14,6 +14,8 @@ def _dt_to_blob(arr: np.array, data_type_str: str) -> bytes:
 
 
 class DbUtils:
+
+	warn("Some DbUtils functions are incompatible with Windows.")
 
 	def blob_to_byte_array(bytes_obj: bytes):
 		return _blob_to_dt(bytes_obj, 'b', 1, np.ubyte) + 128

@@ -3,12 +3,14 @@ import sys
 import getpass
 import platform
 import psutil
-import cpuinfo
 import socket
 from typing import Dict, Any, Optional
 from klgists.misc.commit_hash import git_commit_hash
 from klgists.common.datetime_utils import now
 
+
+# TODO 'cpu': cpuinfo.get_cpu_info()['brand'],
+# unfortunately on Windows this causes a new Python interpreter to be launched
 
 def find_environment_info(extras: Optional[Dict[str, Any]]=None) -> Dict[str, str]:
 	"""Get a dictionary of some system and environment information."""
@@ -23,8 +25,10 @@ def find_environment_info(extras: Optional[Dict[str, Any]]=None) -> Dict[str, st
 			'disk_free': psutil.disk_usage('.').free,
 			'memory_used': psutil.virtual_memory().used,
 			'memory_available': psutil.virtual_memory().available,
-			'cpu': cpuinfo.get_cpu_info()['brand'],
 			'sauronx_hash': git_commit_hash(),
 			'environment_info_capture_datetime': now().isoformat()
 	}
 	return  {k: str(v) for k, v in {**mains, **extras}.items()}
+
+
+__all__ = ['find_environment_info']

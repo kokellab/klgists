@@ -4,8 +4,7 @@ import pandas as pd
 import numpy as np
 from typing import Optional
 
-def bootstrap_subtract(X: pd.DataFrame, Y: pd.DataFrame, n_bootstrap_samples: int=200,
-		random_seed: Optional[int]=None) -> pd.DataFrame:
+def bootstrap_subtract(X: pd.DataFrame, Y: pd.DataFrame, n_bootstrap_samples: int=200, random_seed: Optional[int]=None) -> pd.DataFrame:
 	"""Bootstraps over mean(X) - mean(Y).
 		X and Y are n*k Pandas DataFrames of k replicates.
 		**NOTE:** X and Y must be single-indexed, each with an unnamed index and unnamed columns.
@@ -22,3 +21,6 @@ def bootstrap_subtract(X: pd.DataFrame, Y: pd.DataFrame, n_bootstrap_samples: in
 	R = pd.concat([_boot() for _ in range(0, n_bootstrap_samples)])
 	R.columns = ['index', 'value']
 	return R
+
+
+__all__ = ['bootstrap_subtract']

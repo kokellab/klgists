@@ -8,5 +8,9 @@ def git_commit_hash(git_repo_dir: str='.') -> str:
 	if exit_code != 0: raise ValueError("Got nonzero exit code {} from git rev-parse".format(exit_code))
 	return out.decode('utf-8').rstrip()
 
+
+__all__ = ['git_commit_hash']
+
+
 if __name__ == '__main__':
 	print(git_commit_hash())

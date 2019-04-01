@@ -8,11 +8,6 @@ class FlexibleLogger:
 	Usage:
 	FlexibleLogger().add_stdout().add_file('abc.log')
 	"""
-
-	_underlying = None
-	_formatter = None # type: logging.Formatter
-	datetime_started = None  # type: datetime.datetime
-
 	def __init__(self, name: Optional[str] = None, formatter = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')):
 		"""Initializes a logger that can write to a log file and/or stdout."""
 		self._underlying = logging.getLogger(name)
@@ -43,7 +38,6 @@ class FlexibleLogger:
 			os.makedirs(output_dir)
 		elif not os.path.isdir(output_dir):
 			raise PathIsNotDirectoryException("{} already exists and is not a directory".format(output_dir))
-
 
 
 class LoggingFormatterBuilder:

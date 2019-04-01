@@ -64,3 +64,5 @@ def walk_until_level(some_dir, level: Optional[int]=None) -> Iterator[typing.Tup
 			if level is None or num_sep + level <= num_sep_this:
 					del dirs[:]
 
+
+__all__ = ['scan_for_files', 'walk_until', 'walk_until_level']

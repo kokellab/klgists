@@ -3,11 +3,13 @@
 import os
 import logging
 from typing import Optional
+from deprecated import deprecated
 
 
+@deprecated(reason="Use klgists.common.flexible_logger instead.")
 def init_logger(
 	log_path: Optional[str]=None,
-	format: str='%(asctime)s %(levelname)-8s: %(message)s',
+	format_str: str='%(asctime)s %(levelname)-8s: %(message)s',
 	to_std: bool=True,
 	child_logger_name: Optional[str]=None,
 	std_level = logging.INFO,
@@ -24,7 +26,7 @@ def init_logger(
 		logger = logging.getLogger(child_logger_name)
 	logger.setLevel(logging.NOTSET)
 
-	formatter = logging.Formatter(format)
+	formatter = logging.Formatter(format_str)
 
 	if log_path is not None:
 		handler = logging.FileHandler(log_path, encoding='utf-8')
@@ -37,3 +39,6 @@ def init_logger(
 		handler.setLevel(std_level)
 		handler.setFormatter(formatter)
 		logger.addHandler(handler)
+
+
+__all__ = ['init_logger']

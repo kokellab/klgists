@@ -35,10 +35,12 @@ def gen_video(
 	])
 
 
-def video_from_frames(video_path: str, input_frames_dir: str,
-					  video_chunk_dict: Optional[dict] = None, video_frame_rate: Optional[float] = None,
-					  input_image_extension: str = '.jpg', video_file_extension: str = '.mkv',
-					  encoding: str = 'libx264', crf: Optional[int] = None) -> None:
+def video_from_frames(
+		video_path: str, input_frames_dir: str,
+		video_chunk_dict: Optional[dict] = None, video_frame_rate: Optional[float] = None,
+		input_image_extension: str = '.jpg', video_file_extension: str = '.mkv',
+		encoding: str = 'libx264', crf: Optional[int] = None
+) -> None:
 	"""
 	To generate multiple named videos, set video_path as a target directory and supply a dictionary of the form {video_name: (start_ms, end_ms)} as well as the frame rate.
 	DEPRECATED: Use gen_video instead.
@@ -46,10 +48,8 @@ def video_from_frames(video_path: str, input_frames_dir: str,
 
 	logging.info("Extracting frames from {}".format(input_frames_dir))
 
-	if ((video_chunk_dict is not None) and (video_frame_rate is not None)):
-		video_path = {pjoin(video_path, x): (int(np.ceil((video_chunk_dict[x][0] / 1000) * video_frame_rate)),
-											 int(np.floor((video_chunk_dict[x][1] / 1000) * video_frame_rate))) for x in
-					  video_chunk_dict.keys()}
+	if (video_chunk_dict is not None) and (video_frame_rate is not None):
+		video_path = {pjoin(video_path, x): (int(np.ceil((video_chunk_dict[x][0] / 1000) * video_frame_rate)), int(np.floor((video_chunk_dict[x][1] / 1000) * video_frame_rate))) for x in video_chunk_dict.keys()}
 		for x in video_path:
 			with tempfile.NamedTemporaryFile(mode='w') as fp:
 				for n in range(video_path[x][0], video_path[x][1]):
@@ -62,8 +62,8 @@ def video_from_frames(video_path: str, input_frames_dir: str,
 					video_file_extension))
 				wrap_cmd_call(ffmpeg)
 	else:
-		ffmpeg = shlex.split(
-			"ffmpeg -f concat -r %s -safe 0 -i %s -vf scale=trunc(iw/2)*2:trunc(ih/2)*2 -c:v %s %s -pix_fmt yuv420p -y %s%s" % (
-			video_frame_rate, pjoin(input_frames_dir, '%06d%s' % input_image_extension), encoding,
-			("-crf %s" % crf) if crf is not None else '', x, video_file_extension))
+		ffmpeg = shlex.split("ffmpeg -f concat -r %s -safe 0 -i %s -vf scale=trunc(iw/2)*2:trunc(ih/2)*2 -c:v %s %s -pix_fmt yuv420p -y %s%s" % (video_frame_rate, pjoin(input_frames_dir, '%06d%s' % input_image_extension), encoding, ("-crf %s" % crf) if crf is not None else '', x, video_file_extension))
 		wrap_cmd_call(ffmpeg)
+
+
+__all__ = ['gen_video', 'video_from_frames']

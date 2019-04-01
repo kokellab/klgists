@@ -6,7 +6,7 @@ import seaborn as sns
 
 def prettify_plot(
 		plot_fn: Callable[[], Figure],
-		style :str='whitegrid',
+		style: str='whitegrid',
 		bounds: Tuple[int, int]=(40, 20), font_scale: float=3,
 		x_lim: Optional[Tuple[Optional[float], Optional[float]]]=None,
 		y_lim: Optional[Tuple[Optional[float], Optional[float]]]=None,
@@ -26,3 +26,6 @@ def prettify_plot(
 	if y_ticks is not None:
 		plot.axes.set_xticks(y_ticks)
 	return plot
+
+
+__all__ = ['prettify_plot']

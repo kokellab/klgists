@@ -20,3 +20,6 @@ def colored_barplot(
 		ax.set_yticks(y_ticks)
 	ax.set_xticklabels(x, rotation=label_rotation)
 	return plot, ax
+
+
+__all__ = ['colored_barplot']

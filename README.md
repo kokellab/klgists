@@ -3,6 +3,8 @@ A package of Python Gists for the Kokel Lab.
 
 Many of these these were taken from [dmyersturnbull's Gist](https://gist.github.com/dmyersturnbull). This repository should be assumed to contain the most recent versions.
 
+Since version 0.2.0, klgists is only compatible with Python 3.7+.
+
 [![CircleCI](https://circleci.com/gh/kokellab/klgists.svg?style=shield)](https://circleci.com/gh/kokellab/klgists)
 
 

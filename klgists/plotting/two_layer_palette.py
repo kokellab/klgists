@@ -61,17 +61,6 @@ class TwoLayerPalette:
 		print(palette.palette_map())
 		sns.palplot(palette.palette())
 	"""
-
-	class_names = None
-	top_level_colors = None
-	subclass_dict = None
-	subclass_difference_coefficient = None
-	out_of_bounds_warner = warnings.warn
-
-	cycler = default_cycler
-
-	palette_map = None
-
 	def __init__(
 			self,
 			class_names: List[str], subclasses_in_class: Dict[str, List[str]],
@@ -103,11 +92,9 @@ class TwoLayerPalette:
 		self.top_level_colors = top_level_colors
 
 		self.subclass_difference_coefficient = subclass_difference_coefficient
-		if cycler is not None:
-			self.cycler = cycler
-			assert len(cycler) > 0
-		if out_of_bounds_warner is not None:
-			self.out_of_bounds_warner = out_of_bounds_warner
+		self.cycler = cycler
+		assert cycler is None or len(cycler) > 0
+		self.out_of_bounds_warner = out_of_bounds_warner
 
 		self.palette_map = self._palette_map()
 
@@ -139,6 +126,8 @@ class TwoLayerPalette:
 
 	def _bound(self, f: float, axis: str, clazz: str, subclass: str) -> Optional[float]:
 		if self.out_of_bounds_warner is not None and (f > 1 or f < 0):
-			#return None
 			self.out_of_bounds_warner("RGB color value {} for {} is not between 0 and 1, inclusive, for class={} and subclass={}".format(f, axis, clazz, subclass))
 		return max(min(f, 1.0), 0.0)
+
+
+__all__ = ['TwoLayerPalette']

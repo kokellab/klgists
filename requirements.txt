@@ -1,7 +1,7 @@
 dill == 0.2.9
 PyMySQL == 0.9.3
 ChemSpiPy == 2.0.0
-h5py == 2.9.0
+h5py == 2.7.0
 numpy == 1.15.4
 scipy == 1.2.1
 scikit-learn == 0.20.3
@@ -26,3 +26,4 @@ colorama == 0.4.1
 py-cpuinfo == 5.0.0
 hurry.filesize == 0.9
 ipython == 7.3.0
+deprecated == 1.2.5

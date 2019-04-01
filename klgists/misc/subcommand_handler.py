@@ -23,13 +23,6 @@ class SubcommandHandler:
 	:param error_handler: Called logging any exception except for KeyboardInterrupt or SystemExit (exceptions in here are ignored)
 	:param cancel_handler: Called after logging a KeyboardInterrupt or SystemExit (exceptions in here are ignored)
 	"""
-
-	parser = None  # type: argparse.ArgumentParser
-	target = None  # type: Any
-	temp_dir = None  # type: str
-	error_handler = None  # type: Callable[[BaseException], None]
-	cancel_handler = None  # type: Callable[[Union[KeyboardInterrupt, SystemExit]], None]
-
 	def __init__(self,
 			parser: argparse.ArgumentParser, target: Any,
 			temp_dir: Optional[str] = None,
@@ -63,15 +56,15 @@ class SubcommandHandler:
 				remake_dirs(self.temp_dir)
 				logger.debug("Created temp dir at {}".format(self.temp_dir))
 			getattr(self.target, subcommand)()
-		except (NaturalExpectedException) as e:
+		except NaturalExpectedException as e:
 			pass  # ignore totally
-		except (KeyboardInterrupt) as e:
+		except KeyboardInterrupt as e:
 			try:
 				logger.fatal("Received cancellation signal", exc_info=True)
 				self.cancel_handler(e)
 			except BaseException: pass
 			raise e
-		except (SystemExit) as e:
+		except SystemExit as e:
 			try:
 				logger.fatal("Received system exit signal", exc_info=True)
 				self.cancel_handler(e)
@@ -91,3 +84,6 @@ class SubcommandHandler:
 					try:
 						os.remove(self.temp_dir)
 					except IOError: pass
+
+
+__all__ = ['SubcommandHandler']

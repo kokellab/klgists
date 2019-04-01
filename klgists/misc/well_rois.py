@@ -1,13 +1,9 @@
+import typing
 from typing import List, Dict
 from klgists.common.exceptions import Edge, Axis, RoiOutOfBoundsError, FlippedRoiBoundsError, NegativeRoiBoundsError
 
+
 class Roi:
-
-	x0 = None  # type: float
-	y0 = None  # type: float
-	x1 = None  # type: float
-	y1 = None  # type: float
-
 	def __init__(self, x0: int, y0: int, x1: int, y1: int) -> None:
 		if x0 < 0: raise NegativeRoiBoundsError("x0 is negative ({})".format(x0)).on_edge(Edge.LEFT)
 		if y0 < 0: raise NegativeRoiBoundsError("y0 is negative ({})".format(y0)).on_edge(Edge.TOP)
@@ -24,14 +20,6 @@ class Roi:
 
 
 class WellRoi(Roi):
-
-	row_index = None  # type: int
-	column_index = None  # type: int
-	x0 = None  # type: float
-	y0 = None  # type: float
-	x1 = None  # type: float
-	y1 = None  # type: float
-
 	def __init__(self, row: int, column: int, x0: int, y0: int, x1: int, y1: int) -> None:
 		if row < 0: raise ValueError("Row is negative ({})".format(row))
 		if column < 0: raise ValueError("Column is negative ({})".format(row))
@@ -45,17 +33,11 @@ class WellRoi(Roi):
 
 
 class PlateRois:
-
-	n_rows = None  # type: int
-	n_columns = None  # type: int
-	image_roi = None  # type: Roi
-	well_rois = None  # type: Dict[(int, int), WellRoi]
-
 	def __init__(self, n_rows: int, n_columns: int, image_roi: Roi, top_left_roi: Roi, padx: float, pady: float):
 		self.n_rows = n_rows
 		self.n_columns = n_columns
 		self.image_roi = image_roi
-		self._well_rois = self._get_roi_coordinates(top_left_roi, padx, pady)
+		self.well_rois = self._get_roi_coordinates(top_left_roi, padx, pady)
 
 	def __repr__(self) -> str:
 		return "PlateRois(img={}; wells={}".format(self.image_roi, self.well_rois.values())
@@ -71,24 +53,22 @@ class PlateRois:
 		except (IndexError, AttributeError):
 			raise TypeError("Must look up well ROIs by (row, column) tuple indices.")
 
-	def _get_roi_coordinates(self, top_left_roi: Roi, padx: float, pady: float) -> List[WellRoi]:
-
+	def _get_roi_coordinates(self, top_left_roi: Roi, padx: float, pady: float) -> Dict[typing.Tuple[int, int], WellRoi]:
 		tl = top_left_roi
 		width = top_left_roi.x1 - top_left_roi.x0
 		height = top_left_roi.y1 - top_left_roi.y0
-
 		# make sure the wells don't extend outside the image bounds
 		if tl.x0 < self.image_roi.x0:
-			raise RoiOutOfBoundsError().on_edge(Edge.LEFT)
+			raise RoiOutOfBoundsError("").on_edge(Edge.LEFT)
 		wells_x_edge = tl.x0 + self.n_columns * width + (self.n_columns - 1) * padx
 		if wells_x_edge > self.image_roi.x1:
-			raise RoiOutOfBoundsError().on_edge(Edge.RIGHT)
+			raise RoiOutOfBoundsError("").on_edge(Edge.RIGHT)
 		if tl.y0 < self.image_roi.y0:
-			raise RoiOutOfBoundsError().on_edge(Edge.TOP)
+			raise RoiOutOfBoundsError("").on_edge(Edge.TOP)
 		wells_y_edge = tl.y0 + self.n_rows * height + (self.n_rows - 1) * pady
 		if wells_y_edge > self.image_roi.y1:
-			raise RoiOutOfBoundsError().on_edge(Edge.BOTTOM)
-
+			raise RoiOutOfBoundsError("").on_edge(Edge.BOTTOM)
+		# now build
 		rois = {}
 		x = tl.x0
 		y = tl.y0
@@ -98,7 +78,7 @@ class PlateRois:
 				x += width + padx
 			y += height + pady
 			x = tl.x0
-
 		return rois
+
 
 __all__ = ['Roi', 'WellRoi', 'PlateRois']

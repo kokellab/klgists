@@ -1,6 +1,10 @@
 import numpy as np
-import math
 from scipy.special import gamma
+
+
+# TODO Is this still valid?
+# TODO Also document
+
 
 def z_factor(pos_hist,neg_hist):
     nm = np.mean(neg_hist)

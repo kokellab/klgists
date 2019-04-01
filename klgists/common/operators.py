@@ -32,3 +32,6 @@ def neq(a, b):
 	"""Not approximately equal. This takes 1e-09 * max(abs(a), abs(b)), which may not be appropriate."""
 	"""Example: 5 %eq% 5.000000000000001"""
 	return abs(a - b) >= 1e-09 * max(abs(a), abs(b))
+
+
+__all__ = ['approxeq', 'isa', 'o', 'eq', 'neq']

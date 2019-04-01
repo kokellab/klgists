@@ -4,16 +4,11 @@ import numpy as np
 from matplotlib.axes import Axes
 
 
-
 def _oround(x: float, digits: Optional[int] = None) -> float:
 	return x if digits is None else round(x, digits)
 
 
 class AxisTicks:
-	rounding_digits = None
-	floor = None
-	ceiling = None
-
 	def __init__(self, floor: Optional[float] = None, ceiling: Optional[float] = None, rounding_digits: Optional[float] = None) -> None:
 		"""Calculates new bounds for an axis based on the ticks.
 		:param  floor: If None, sets the minimum bound based on the data
@@ -49,11 +44,6 @@ class TickBounder:
 	You can see the proposed new bound without changing the Axes using:
 		ticker.adjusted(ax)  # returns a ((x0, x1), (y0, y1)) tuple
 	"""
-
-	x_ticks = None
-	y_ticks = None
-	major = None
-
 	def __init__(self, x_ticks: Optional[AxisTicks] = None, y_ticks: Optional[AxisTicks] = None, use_major_ticks: bool = True) -> None:
 		self.x_ticks = x_ticks
 		self.y_ticks = y_ticks
@@ -71,7 +61,11 @@ class TickBounder:
 		xmin, xmax, ymin, ymax = (list(ax.get_xlim())[0], list(ax.get_xlim())[1], list(ax.get_ylim())[0], list(ax.get_ylim())[1])
 		xs = ax.xaxis.get_majorticklocs() if self.major else ax.get_xticks()
 		ys = ax.yaxis.get_majorticklocs() if self.major else ax.get_yticks()
+		# TODO wrong return type! Which one is right?
 		return (
 			(xmin, xmax) if self.x_ticks is None else self.x_ticks.adjusted(xs, xmin, xmax),
 			(ymin, ymax) if self.y_ticks is None else self.y_ticks.adjusted(ys, ymin, ymax)
 		)
+
+
+__all__ = ['AxisTicks', 'TickBounder']

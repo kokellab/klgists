@@ -31,3 +31,6 @@ def groupby_parallel(
 		got = result.get()
 	logger("\nProcessed {} rows in {:.1f}s".format(len(got), time.time() - start))
 	return pd.concat(got)
+
+
+__all__ = ['groupby_parallel']

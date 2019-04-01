@@ -5,7 +5,6 @@ import pymysql
 import peewee
 
 
-
 class Connection:
 	"""Convenient way to open a database connection through an SSH tunnel for Pewee or raw SQL.
 	You can use an existing tunnel by giving it a local port (local_bind_port) or have it create a new one by giving it an SSH hostname.
@@ -21,27 +20,27 @@ class Connection:
 	The JSON file will need to specify a value for each argument in the constructor.
 	"""
 
-	_ssh_username = None
-	_ssh_password = None
-	_db_username = None
-	_db_password = None
-	_db_name = None
-	_ssh_host = None
-	_ssh_port = None
-	_local_bind_port = None
-	_db_port = None
 
-	_tunnel = None
-	plain_sql_database = None
-	peewee_database = None
-
-	def __init__(self,
+	def __init__(
+			self,
 			db_name: str, db_username: str, db_password: str,
 			ssh_host: Optional[str] = None,
 			local_bind_port: Optional[int] = None,
 			ssh_port: int = 22,
 			db_port: int = 3306
 	):
+		self._ssh_username = None
+		self._ssh_password = None
+		self._db_username = None
+		self._db_password = None
+		self._db_name = None
+		self._ssh_host = None
+		self._ssh_port = None
+		self._local_bind_port = None
+		self._db_port = None
+		self._tunnel = None
+		self.plain_sql_database = None
+		self.peewee_database = None
 		if (ssh_host is None) == (local_bind_port is None):
 			raise ValueError("Must specify either an SSH host to create a tunnel, or the local bind port of an existing tunnel (but not both)")
 		self._local_bind_port = local_bind_port
@@ -123,6 +122,12 @@ class Connection:
 
 	def _connection_params(self):
 		local_bind_port = self._tunnel.local_bind_port if self._tunnel is not None else self._local_bind_port
-		return {'user': self._db_username, 'password':
-                        self._db_password, 'host': '127.0.0.1', 'port':
-                        local_bind_port} #'use_unicode':True, 'charset':"utf8"}
+		return {
+			'user': self._db_username,
+			'password': self._db_password,
+			'host': '127.0.0.1',
+			'port': local_bind_port
+		}
+
+
+__all__ = ['Connection']

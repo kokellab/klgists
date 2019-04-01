@@ -105,3 +105,6 @@ def wrap_cmd_call(cmd: List[str], stdout=subprocess.PIPE, stderr=subprocess.PIPE
 		raise ExternalCommandFailed("Got nonzero exit code {} from '{}'".format(exit_code, ' '.join(cmd)), cmd, exit_code, out, err)
 	_log(out, err, logger.debug)
 	return out, err
+
+
+__all__ = ['wrap_cmd_call', 'stream_cmd_call']

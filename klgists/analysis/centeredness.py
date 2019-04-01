@@ -22,4 +22,7 @@ def centeredness(data: np.ndarray) -> np.float64:
 	weight = np.fromfunction(w, data.shape)
 	# max value has all the positive values in the center and all the negative in the corner
 	mx = (weight.max() * data[data > 0]).sum() + (weight.min() * data[data < 0]).sum()
-	return (np.asarray(np.sum(data * weight) / mx))
+	return np.asarray(np.sum(data * weight) / mx)
+
+
+__all__ = ['centeredness']

@@ -45,3 +45,6 @@ class FileHasher:
 			if f.read() != self.hashsum(file_name):
 				raise HashValidationFailedException("Hash for file {} does not match".format(file_name))
 		return opener(file_name, *args)
+
+
+__all__ = ['FileHasher']

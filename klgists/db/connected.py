@@ -2,6 +2,11 @@ import pymysql
 import contextlib
 from typing import Tuple, List, Dict, Iterator
 
+select = None
+execute = None
+
+# TODO the global variable definitions here don't make sense
+
 @contextlib.contextmanager
 def connected(connection: pymysql.connections.Connection):
 	"""A context with global convenience functions for MySQL/MariaDB queries. Specifically:
@@ -11,7 +16,6 @@ def connected(connection: pymysql.connections.Connection):
 	"""
 
 	try:
-
 		global select, execute
 		def execute(statement: str, vals: Tuple=()) -> None:
 			with connection.cursor() as cursor:
@@ -26,3 +30,6 @@ def connected(connection: pymysql.connections.Connection):
 
 	finally:
 		connection.close()
+
+
+__all__ = ['connected']
