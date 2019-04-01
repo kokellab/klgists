@@ -4,7 +4,9 @@ from itertools import chain
 import signal
 import operator
 from datetime import date, datetime
-from typing import Callable, TypeVar, Iterable, Optional, List, Any
+from typing import Callable, TypeVar, Iterable, Optional, List, Any, Sequence, Mapping
+from hurry.filesize import size as hsize
+from klgists.common.exceptions import LookupFailedException, MultipleMatchesException, ParsingFailedException
 
 def look(obj: object, attrs: str) -> any:
 	if not isinstance(attrs, str) and isinstance(attrs, Iterable): attrs = '.'.join(attrs)
@@ -47,8 +49,6 @@ def decorator(cls):
 	return cls
 
 
-T = TypeVar('T')
-
 def exists(keep_predicate: Callable[[T], bool], seq: Iterable[T]) -> bool:
 	"""Efficient existential quantifier for a filter() predicate.
 	Returns true iff keep_predicate is true for one or more elements."""
@@ -77,6 +77,57 @@ def zip_strict(*args):
 		raise IndexError("Too few elements ({}) along axis {}".format(n_elements, failures[0]))
 	elif len(failures) < len(iters):
 		raise IndexError("Too few elements ({}) along axes {}".format(n_elements, failures))
+
+
+def only(sequence: Iterable[Any]) -> Any:
+	"""
+	Returns either the SINGLE (ONLY) UNIQUE ITEM in the sequence or raises an exception.
+	Each item must have __hash__ defined on it.
+	:param sequence: A list of any items (untyped)
+	:return: The first item the sequence.
+	:raises: ValarLookupError If the sequence is empty
+	:raises: MultipleMatchesException If there is more than one unique item.
+	"""
+	st = set(sequence)
+	if len(st) > 1:
+		raise MultipleMatchesException("More then 1 item in {}".format(sequence))
+	if len(st) == 0:
+		raise LookupFailedException("Empty sequence")
+	return next(iter(st))
+
+
+def read_lines_file(path: str, ignore_comments: bool = False) -> Sequence[str]:
+	"""
+	Returns a list of lines in a file, potentially ignoring comments.
+	:param path: Read the file at this local path
+	:param ignore_comments: Ignore lines beginning with #, excluding whitespace
+	:return: The lines, with surrounding whitespace stripped
+	"""
+	lines = []
+	with open(path) as f:
+		line = f.readline().strip()
+		if not ignore_comments or not line.startswith('#'):
+			lines.append(line)
+	return lines
+
+
+def read_properties_file(path: str) -> Mapping[str, str]:
+	"""
+	Reads a .properties file, which is a list of lines with key=value pairs (with an equals sign).
+	Lines beginning with # are ignored.
+	Each line must contain exactly 1 equals sign.
+	:param path: Read the file at this local path
+	:return: A dict mapping keys to values, both with surrounding whitespace stripped
+	"""
+	lines = read_lines_file(path, ignore_comments=False)
+	dct = {}
+	for i, line in enumerate(lines):
+		if line.startswith('#'): continue
+		if line.count('=') != 1:
+			raise ParsingFailedException("Bad line {} in {}".format(i+1, path))
+		parts = line.split('=')
+		dct[parts[0].strip()] = parts[1].strip()
+	return dct
 
 
 class Comparable:
@@ -121,7 +172,7 @@ def pp_dict(dct: dict) -> None:
 
 def pp_size(obj: object) -> None:
 	"""Prints to stdout a human-readable string of the memory usage of arbitrary Python objects. Ex: 8M for 8 megabytes."""
-	print(_hurrysize(sys.getsizeof(obj)))
+	print(hsize(sys.getsizeof(obj)))
 
 def sanitize_str(value: str) -> str:
 	"""Removes Unicode control (Cc) characters EXCEPT for tabs (\t), newlines (\n only), line separators (U+2028) and paragraph separators (U+2029)."""

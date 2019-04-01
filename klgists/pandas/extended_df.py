@@ -3,8 +3,8 @@ from typing import Sequence, Set, Any
 import pandas as pd
 from pandas.core.frame import DataFrame as _InternalDataFrame
 from klgists.pandas import cfirst as _cfirst
-from kale.core import Tools
-import kale.core.abcd as abcd
+from klgists.common import only
+import klgists.common.abcd as abcd
 
 
 class InvalidExtendedDataFrameError(Exception): pass
@@ -94,7 +94,7 @@ class BaseExtendedDataFrame(PrettyInternalDataFrame, metaclass=abcd.ABCMeta):
 		:param column: The name of the column
 		:return: The value
 		"""
-		return Tools.only(self[column].unique())
+		return _only(self[column].unique())
 
 	def cfirst(self, cols: Sequence[str]):
 		"""
