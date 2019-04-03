@@ -3,7 +3,7 @@ from typing import Sequence, Set, Any
 import pandas as pd
 from pandas.core.frame import DataFrame as _InternalDataFrame
 from klgists.pandas import cfirst as _cfirst
-from klgists.common import only
+from klgists.common import only as _only
 import klgists.common.abcd as abcd
 
 
