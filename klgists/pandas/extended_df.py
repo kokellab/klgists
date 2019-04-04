@@ -75,7 +75,7 @@ class BaseExtendedDataFrame(PrettyInternalDataFrame, metaclass=abcd.ABCMeta):
 		:return: A true, shallow copy with its __class__ set to pd.DataFrame
 		"""
 		df = df.copy()
-		df.__class__ = cls
+		df.__class__ = pd.DataFrame
 		return df
 
 	def to_vanilla(self, df: BaseExtendedDataFrame) -> pd.DataFrame:
