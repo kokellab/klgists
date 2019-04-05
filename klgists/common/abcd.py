@@ -17,6 +17,12 @@ from deprecated import deprecated
 from klgists.common import decorator
 
 
+
+#############
+# TODO The arguments to these decorators don't work
+#############
+
+
 class SpecialStr:
 	"""
 	A string that can be displayed with Jupyter with line breaks and tabs.
@@ -34,10 +40,14 @@ class _InfoSpecialStr(SpecialStr):
 		if len(self.s) == 0: return self.s
 		lines = self.s.split('\n')
 		built = '<strong>' + lines[0] + '</strong><br/>\n'
-		for line in lines[1:-1]:
-			k, v = line[:line.index('=')], line[line.index('='):]
-			built += '&emsp;&emsp;&emsp;&emsp;<strong>' + k + '</strong>' + v + '<br/>\n'
-		built += '<strong>)</strong>'
+		if len(lines) > 1:
+			for line in lines[1:-1]:
+				if '=' in line:
+					k, v = line[:line.index('=')], line[line.index('='):]
+					built += '&emsp;&emsp;&emsp;&emsp;<strong>' + k + '</strong>' + v + '<br/>\n'
+				else:
+					built += line + '<br />\n'
+		built += '<strong>)</strong>\n'
 		return built
 
 
@@ -153,7 +163,7 @@ def auto_repr(
 @decorator
 def auto_str(
 		cls,
-		exclude: Optional[Callable[[str], bool]] = lambda a: a.startswith('__'),
+		exclude: Optional[Callable[[str], bool]] = lambda a: a.startswith('_'),
 		with_address: bool = False
 ):
 	def __str(self):
@@ -164,7 +174,7 @@ def auto_str(
 @decorator
 def auto_html(
 		cls,
-		exclude: Optional[Callable[[str], bool]] = lambda a: lambda b: b.startswith('__'),
+		exclude: Optional[Callable[[str], bool]] = lambda a: lambda b: b.startswith('_'),
 		with_address: bool = True
 ):
 	def __html(self):
@@ -175,7 +185,8 @@ def auto_html(
 @decorator
 def auto_repr_str(
 		cls,
-		exclude_simple: Optional[Callable[[str], bool]] = lambda a: a.startswith('__'),
+		exclude_simple: Optional[Callable[[str], bool]] = lambda a: a.startswith('_'),
+		exclude_html: Optional[Callable[[str], bool]] = lambda a: a.startswith('_'),
 		exclude_all: Optional[Callable[[str], bool]] = lambda a: False
 ):
 	"""
@@ -189,6 +200,7 @@ def auto_repr_str(
 		repr(point) == Point(angle=0.3, radius=4, _style='point' @ 0x5528ca3)
 		str(point) == Point(angle=0.3, radius=4)
 		_repr_html_(point) == Point(angle=0.3, radius=4 @ 0x5528ca3)
+	:param exclude_html: Exclude for _repr_html
 	:param exclude_simple: Exclude attributes matching these names in human-readable strings (str and _repr_html)
 	:param exclude_all: Exclude these attributes in all the functions
 	:param cls: The class
@@ -197,7 +209,7 @@ def auto_repr_str(
 	def __str(self):
 		return _gen_str(self, exclude=exclude_simple, with_address=False)
 	def __html(self):
-		return SpecialStr(_gen_str(self, exclude=exclude_simple, with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
+		return SpecialStr(_gen_str(self, exclude=exclude_html, with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
 	def __repr(self):
 		return _gen_str(self, exclude=exclude_all, with_address=True)
 	cls.__str__ = __str
@@ -206,15 +218,16 @@ def auto_repr_str(
 	return cls
 
 @decorator
-def auto_info(cls):
+def auto_info(cls, exclude: Optional[Callable[[str], bool]] = lambda a: a.startswith('_')):
 	"""
 	Decorator.
 	Auto-adds a function 'info' that outputs a pretty multi-line representation of the instance and its attributes.
+	:param exclude:
 	:param cls: The class
 	:return: The same class
 	"""
 	def __info(self):
-		return _InfoSpecialStr(_gen_str(self, delim='\n\t', eq=' = ', opening='(\n\t', closing='\n)', with_address=False))
+		return _InfoSpecialStr(_gen_str(self, delim='\n\t', eq=' = ', opening='(\n\t', closing='\n)', with_address=False, exclude=exclude))
 	cls.info = __info
 	return cls
 
@@ -228,9 +241,9 @@ def auto_obj(cls):
 	:return: The same class with added methods
 	"""
 	def __str(self):
-		return _gen_str(self, exclude=lambda a: a.startswith('__'), with_address=False)
+		return _gen_str(self, exclude=lambda a: a.startswith('_'), with_address=False)
 	def __html(self):
-		return SpecialStr(_gen_str(self, exclude=lambda a: a.startswith('__'), with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>'))
+		return SpecialStr(_gen_str(self, exclude=lambda a: a.startswith('_'), with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>'))
 	def __repr(self):
 		return _gen_str(self, exclude=lambda _: False, with_address=True)
 	def __hash(self):
