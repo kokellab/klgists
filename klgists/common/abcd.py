@@ -2,37 +2,29 @@
 A collection of decorators.
 """
 
-from warnings import warn
-from typing import Optional, Any, Callable
+from typing import Optional, Callable, Set
+import signal
+from functools import wraps
 from abc import abstractmethod, ABC, ABCMeta
-try:
-	from dataclasses import dataclass
-except ImportError:
-	warn("Could not import dataclass: Are you using Python 3.7+?")
-	dataclass = None
-
+from functools import total_ordering
+from dataclasses import dataclass
 from overrides import overrides
 from deprecated import deprecated
 
 from klgists.common import decorator
 
 
-
-#############
-# TODO The arguments to these decorators don't work
-#############
-
-
-class SpecialStr:
+class SpecialStr(str):
 	"""
 	A string that can be displayed with Jupyter with line breaks and tabs.
 	"""
 	def __init__(self, s: str):
-		self.s = s
+		super().__init__()
+		self.s = str(s)
 	def __repr__(self): return repr(self.s)
 	def __str__(self): return str(self.s)
 	def _repr_html_(self):
-		return self.s.replace('\n', '<br />').replace('\t', '&emsp;&emsp;&emsp;&emsp;')
+		return str(self.s.replace('\n', '<br />').replace('\t', '&emsp;&emsp;&emsp;&emsp;'))
 
 
 class _InfoSpecialStr(SpecialStr):
@@ -48,100 +40,74 @@ class _InfoSpecialStr(SpecialStr):
 				else:
 					built += line + '<br />\n'
 		built += '<strong>)</strong>\n'
-		return built
+		return str(built)
 
 
-@deprecated
-@decorator
-def auto_comparator(cls, with_equality: bool = False):
-	"""
-	Decorator. DEPRECATED. Use klgists.core.abcd instead.
-	On a class that has __lt__ defined, auto-adds __le__, __get__, __le__, and optionally __eq__ and __ne__.
-	__le__, __get__, and __le__ will be defined in the obvious way using __lt__.
-	__eq__ will be defined as not __lt__ and not __gt__, and __ne__ as not __eq__.
-	:param cls: The class
-	:param with_equality: Also add __eq__ and __ne__
-	:return: The class back
-	"""
-	def __eq(self, other):
-		return not self < other and not other < self
-	def __ne(self, other):
-		return self < other or other < self
-	def __gt(self, other):
-		return other < self
-	def __ge(self, other):
-		return not self < other
-	def __le(self, other):
-		return not other < self
-	cls.__gt__ = __gt
-	cls.__ge__ = __ge
-	cls.__le__ = __le
-	if with_equality:
-		cls.__eq__ = __eq
-		cls.__ne__ = __ne
-
-def _var_items(obj, exclude):
+def _var_items(obj, only, exclude):
 	return [
 		(key, value)
 		for key, value in vars(obj).items()
+		if (only is None) or (key in only)
 		if not exclude(key)
 	]
 
-def _var_values(obj, exclude):
+def _var_values(obj, only, exclude):
 	items = vars(obj).items()
-	return [value for key, value in items if not exclude(key) and value is not None]
+	return [value for key, value in items if ((only is None) or key in only) and not exclude(key) and value is not None]
 
-def _auto_hash(self, exclude: Optional[Callable[[str], bool]] = None):
+def _auto_hash(self, only: Optional[Set[str]], exclude: Optional[Callable[[str], bool]]):
 	if exclude is None: exclude = lambda _: False
-	return hash(_var_values(self, exclude))
+	return hash(_var_values(self, only, exclude))
 
-def _auto_eq(self, other, exclude: Optional[Callable[[str], bool]] = None):
+def _auto_eq(self, other, only: Optional[Set[str]], exclude: Optional[Callable[[str], bool]]):
 	if type(self) != type(other):
 		raise TypeError("Type {} is not the same as type {}".format(type(self), type(other)))
 	if exclude is None: exclude = lambda _: False
-	if exclude is None: exclude = {}
-	return _var_values(self, exclude) == _var_values(other, exclude)
+	return _var_values(self, only=only, exclude=exclude) == _var_values(other, only, exclude)
 
 
 @decorator
-def auto_eq(cls, exclude: Optional[Callable[[str], bool]] = None):
+def auto_eq(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = None):
 	"""
 	Decorator.
 	Auto-adds a __hash__ function by hashing its attributes.
-	:param cls: The class
+	:param only: Only include these attributes
 	:param exclude: Exclude these attributes
-	:return: The same class
 	"""
-	def __eq(self):
-		return _auto_eq(self, exclude)
-	cls.__eq__ = __eq
-	return cls
+	def dec(cls):
+		def __eq(self, other):
+			return _auto_eq(self, other, only, exclude)
+		cls.__eq__ = __eq
+		return cls
+	return dec
 
 
 @decorator
-def auto_hash(cls, exclude: Optional[Callable[[str], bool]] = None):
+def auto_hash(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = None):
 	"""
 	Decorator.
 	Auto-adds a __hash__ function by hashing its attributes.
-	:param cls: The class
+	:param only: Only include these attributes
 	:param exclude: Exclude these attributes
-	:return: The same class
 	"""
-	def __hash(self):
-		return _auto_hash(self, exclude)
-	cls.__hash__ = __hash
-	return cls
+	def dec(cls):
+		def __hash(self):
+			return _auto_hash(self, only, exclude)
+		cls.__hash__ = __hash
+		return cls
+	return dec
 
 
 def _gen_str(
 		self,
+		only: Optional[Set[str]] = None,
 		exclude: Optional[Callable[[str], bool]] = None,
 		bold_surround: Callable[[str], str] = str, em_surround: Callable[[str], str] = str,
 		delim: str = ', ', eq: str = '=', opening: str = '(', closing: str = ')',
 		with_address: bool = True
 ):
 	if exclude is None: exclude = lambda _: False
-	_vars = _var_items(self, exclude)
+	_vars = _var_items(self, only, exclude)
 	return (
 		bold_surround(self.__class__.__name__) +
 		opening +
@@ -152,39 +118,46 @@ def _gen_str(
 
 @decorator
 def auto_repr(
-		cls,
-		exclude: Optional[Callable[[str], bool]] = lambda a: False
+		only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = lambda a: False
 ):
-	def __repr(self):
-		return _gen_str(self, exclude=exclude, with_address=True)
-	cls.__repr__ = __repr
-	return cls
+	def dec(cls):
+		def __repr(self):
+			return _gen_str(self, only=only, exclude=exclude, with_address=True)
+		cls.__repr__ = __repr
+		return cls
+	return dec
+
 
 @decorator
 def auto_str(
-		cls,
+		only: Optional[Set[str]] = None,
 		exclude: Optional[Callable[[str], bool]] = lambda a: a.startswith('_'),
 		with_address: bool = False
 ):
-	def __str(self):
-		return _gen_str(self, exclude=exclude, with_address=with_address)
-	cls.__str__ = __str
-	return cls
+	def dec(cls):
+		def __str(self):
+			return _gen_str(self, only=only, exclude=exclude, with_address=with_address)
+		cls.__str__ = __str
+		return cls
+	return dec
+
 
 @decorator
 def auto_html(
-		cls,
+		only: Optional[Set[str]] = None,
 		exclude: Optional[Callable[[str], bool]] = lambda a: lambda b: b.startswith('_'),
 		with_address: bool = True
 ):
-	def __html(self):
-		return SpecialStr(_gen_str(self, exclude=exclude, with_address=with_address, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
-	cls._repr_html = __html
-	return cls
+	def dec(cls):
+		def __html(self):
+			return SpecialStr(_gen_str(self, only=only, exclude=exclude, with_address=with_address, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
+		cls._repr_html = __html
+		return cls
+	return dec
+
 
 @decorator
 def auto_repr_str(
-		cls,
 		exclude_simple: Optional[Callable[[str], bool]] = lambda a: a.startswith('_'),
 		exclude_html: Optional[Callable[[str], bool]] = lambda a: a.startswith('_'),
 		exclude_all: Optional[Callable[[str], bool]] = lambda a: False
@@ -203,59 +176,150 @@ def auto_repr_str(
 	:param exclude_html: Exclude for _repr_html
 	:param exclude_simple: Exclude attributes matching these names in human-readable strings (str and _repr_html)
 	:param exclude_all: Exclude these attributes in all the functions
-	:param cls: The class
-	:return: The same class
 	"""
-	def __str(self):
-		return _gen_str(self, exclude=exclude_simple, with_address=False)
-	def __html(self):
-		return SpecialStr(_gen_str(self, exclude=exclude_html, with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
-	def __repr(self):
-		return _gen_str(self, exclude=exclude_all, with_address=True)
-	cls.__str__ = __str
-	cls.__repr__ = __repr
-	cls._repr_html_ = __html
-	return cls
+	def dec(cls):
+		def __str(self):
+			return _gen_str(self, only=None, exclude=exclude_simple, with_address=False)
+		def __html(self):
+			return SpecialStr(_gen_str(self, only=None, exclude=exclude_html, with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
+		def __repr(self):
+			return _gen_str(self, only=None, exclude=exclude_all, with_address=True)
+		cls.__str__ = __str
+		cls.__repr__ = __repr
+		cls._repr_html_ = __html
+		return cls
+	return dec
+
 
 @decorator
-def auto_info(cls, exclude: Optional[Callable[[str], bool]] = lambda a: a.startswith('_')):
+def auto_info(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = lambda a: a.startswith('_')):
 	"""
 	Decorator.
 	Auto-adds a function 'info' that outputs a pretty multi-line representation of the instance and its attributes.
+	:param only:
 	:param exclude:
-	:param cls: The class
-	:return: The same class
 	"""
-	def __info(self):
-		return _InfoSpecialStr(_gen_str(self, delim='\n\t', eq=' = ', opening='(\n\t', closing='\n)', with_address=False, exclude=exclude))
-	cls.info = __info
-	return cls
+	def dec(cls):
+		def __info(self):
+			return _InfoSpecialStr(_gen_str(self, delim='\n\t', eq=' = ', opening='(\n\t', closing='\n)', with_address=False, only=only, exclude=exclude))
+		cls.info = __info
+		return cls
+	return dec
 
 
 @decorator
-def auto_obj(cls):
+def auto_obj():
 	"""
 	Auto-adds __eq__, __hash__, __repr__, __str__, and _repr_html_.
 	See the decorators for auto_eq, auto_hash, and auto_repr for more details.
-	:param cls: The class
-	:return: The same class with added methods
 	"""
 	def __str(self):
 		return _gen_str(self, exclude=lambda a: a.startswith('_'), with_address=False)
 	def __html(self):
-		return SpecialStr(_gen_str(self, exclude=lambda a: a.startswith('_'), with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>'))
+		return SpecialStr(_gen_str(self, only=None, exclude=lambda a: a.startswith('_'), with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>'))
 	def __repr(self):
 		return _gen_str(self, exclude=lambda _: False, with_address=True)
 	def __hash(self):
-		return _auto_hash(self, None)
+		return _auto_hash(self, only=None, exclude=None)
 	def __eq(self):
-		return _auto_eq(self, None)
-	cls.__eq__ = __eq
-	cls.__str__ = __str
-	cls.__repr__ = __repr
-	cls.__hash__ = __hash
-	cls._repr_html_ = __html
-	return cls
+		return _auto_eq(self, None, only=None, exclude=None)
+	def dec(cls):
+		cls.__eq__ = __eq
+		cls.__str__ = __str
+		cls.__repr__ = __repr
+		cls.__hash__ = __hash
+		cls._repr_html_ = __html
+		return cls
+	return dec
+
+
+@decorator
+def float_type(attribute: str):
+	"""
+	Decorator.
+	Auto-adds a __float__ using the __float__ of some attribute.
+	Used to annotate a class as being "essentially an float".
+	:param attribute: The name of the attribute of this class
+	"""
+	def dec(cls):
+		cls.__float__ = lambda: float(getattr(cls, attribute))
+		return cls
+	return dec
+
+@decorator
+def int_type(attribute: str):
+	"""
+	Decorator.
+	Auto-adds an __int__ using the __int__ of some attribute.
+	Used to annotate a class as being "essentially an integer".
+	:param attribute: The name of the attribute of this class
+	"""
+	def dec(cls):
+		cls.__float__ = lambda: float(getattr(cls, attribute))
+		return cls
+	return dec
+
+
+@decorator
+def iterable_over(attribute: str):
+	"""
+	Decorator.
+	Auto-adds an __iter__ over elements in an iterable attribute.
+	Used to annotate a class as being "essentially an iterable" over some elements.
+	:param attribute: The name of the attribute of this class
+	"""
+	def dec(cls):
+		cls.__iter__ = lambda: iter(getattr(cls, attribute))
+		return cls
+	return dec
+
+
+@decorator
+def collection_over(attribute: str):
+	"""
+	Decorator.
+	Auto-adds an __iter__ and __len__ over elements in a collection attribute.
+	Used to annotate a class as being "essentially a collection" over some elements.
+	:param attribute: The name of the attribute of this class
+	"""
+	def dec(cls):
+		cls.__iter__ = lambda: iter(getattr(cls, attribute))
+		cls.__len__ = lambda: len(getattr(cls, attribute))
+		return cls
+	return dec
+
+
+
+@decorator
+def sequence_over(attribute: str):
+	"""
+	Decorator.
+	Auto-adds __getitem__ and __len__ over elements in an iterable attribute.
+	Used to annotate a class as being "essentially a list" over some elements.
+	:param attribute: The name of the attribute of this class
+	"""
+	def dec(cls):
+		cls.__getitem__ = lambda e: getattr(cls, attribute)[e]
+		cls.__len__ = lambda: len(getattr(cls, attribute))
+		return cls
+	return dec
+
+
+@decorator
+def auto_timeout(seconds: int):
+	def dec(func):
+		def _handle_timeout(the_signal, the_frame):
+			raise TimeoutError("The call timed out")
+		def my_fn(*args, **kwargs):
+			signal.signal(signal.SIGALRM, _handle_timeout)
+			signal.alarm(seconds)
+			try:
+				result = func(*args, **kwargs)
+			finally:
+				signal.alarm(0)
+			return result
+		return wraps(func)(my_fn)
+	return dec
 
 
 @decorator
@@ -263,8 +327,6 @@ def override_recommended(cls):
 	"""
 	Decorator.
 	Overriding this class is generally recommended (but not required).
-	:param cls: The class
-	:return: The same class
 	"""
 	return cls
 
@@ -277,8 +339,6 @@ def internal(cls):
 	"""
 	Decorator.
 	This class or package is meant to be used only by code within this project.
-	:param cls: The class
-	:return: The same class
 	"""
 	return cls
 
@@ -287,8 +347,6 @@ def external(cls):
 	"""
 	Decorator.
 	This class or package is meant to be used *only* by code outside this project.
-	:param cls: The class
-	:return: The same class
 	"""
 	return cls
 
@@ -301,8 +359,6 @@ def reserved(cls):
 	"""
 	Decorator.
 	This package, class, or function is empty but is declared for future use.
-	:param cls: The class
-	:return: The same class
 	"""
 	return cls
 
@@ -315,13 +371,10 @@ def not_thread_safe(cls):
 	return cls
 
 @decorator
-def builder(cls, builds: Optional[Any] = None):
+def builder(cls):
 	"""
 	Decorator.
 	This class implements a builder pattern.
-	:param cls: The class
-	:param builds: The class this builder creates
-	:return: The same class
 	"""
 	return cls
 
@@ -330,8 +383,6 @@ def tools(cls):
 	"""
 	Decorator.
 	This class only defines static utility functions.
-	:param cls: The class
-	:return: The same class
 	"""
 	return cls
 
@@ -340,8 +391,6 @@ def cache(cls):
 	"""
 	Decorator.
 	This class implements some kind of cache.
-	:param cls: The class
-	:return: The same class
 	"""
 	return cls
 
@@ -350,8 +399,6 @@ def caching(cls):
 	"""
 	Decorator.
 	Instances of this class cache objects.
-	:param cls: The class
-	:return: The same class
 	"""
 	return cls
 
@@ -360,8 +407,6 @@ def final(cls):
 	"""
 	Decorator.
 	This class should not be inherited from.
-	:param cls: The class
-	:return: The same class
 	"""
 	return cls
 
@@ -370,7 +415,11 @@ __all__ = [
 	'decorator',
 	'dataclass',
 	'auto_repr_str', 'auto_str', 'auto_repr', 'auto_html', 'auto_info',
-	'auto_eq', 'auto_hash', 'auto_comparator',
+	'auto_eq', 'auto_hash', 'total_ordering',
+	'auto_timeout',
+	'iterable_over', 'collection_over', 'sequence_over',
+	'float_type', 'int_type',
+	'auto_timeout',
 	'abstractmethod', 'ABC', 'ABCMeta',
 	'override_recommended', 'overrides',
 	'deprecated', 'final', 'might_change',
