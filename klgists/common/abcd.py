@@ -304,6 +304,23 @@ def sequence_over(attribute: str):
 		return cls
 	return dec
 
+@decorator
+def auto_singleton(cls):
+	"""
+	Makes it so the constructor returns a singleton instance.
+	The constructor CANNOT take arguments.
+	Example usage:
+	>>> @auto_singleton
+	>>> class MyClass: pass
+	>>> mysingleton = MyClass()
+	"""
+	instances = {}
+	def get_instance():
+		if cls not in instances:
+			instances[cls] = cls()
+		return instances[cls]
+	return get_instance
+
 
 @decorator
 def auto_timeout(seconds: int):
