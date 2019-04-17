@@ -57,7 +57,7 @@ def _var_values(obj, only, exclude):
 
 def _auto_hash(self, only: Optional[Set[str]], exclude: Optional[Callable[[str], bool]]):
 	if exclude is None: exclude = lambda _: False
-	return hash(_var_values(self, only, exclude))
+	return hash(tuple(_var_values(self, only, exclude)))
 
 def _auto_eq(self, other, only: Optional[Set[str]], exclude: Optional[Callable[[str], bool]]):
 	if type(self) != type(other):
