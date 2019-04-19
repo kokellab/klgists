@@ -6,7 +6,7 @@ import operator
 from datetime import date, datetime
 from typing import Callable, TypeVar, Iterable, Optional, List, Any, Sequence, Mapping
 from hurry.filesize import size as hsize
-from klgists.common.exceptions import LookupFailedException, MultipleMatchesException, ParsingFailedException
+from klgists.common.exceptions import LookupFailedException, MultipleMatchesException, ParsingFailedException, LengthMismatchError
 
 def look(obj: object, attrs: str) -> any:
 	if not isinstance(attrs, str) and isinstance(attrs, Iterable): attrs = '.'.join(attrs)
@@ -74,10 +74,17 @@ def zip_strict(*args):
 		if len(failures) == 0:
 			yield tuple(values)
 	if len(failures) == 1:
-		raise IndexError("Too few elements ({}) along axis {}".format(n_elements, failures[0]))
+		raise LengthMismatchError("Too few elements ({}) along axis {}".format(n_elements, failures[0]))
 	elif len(failures) < len(iters):
-		raise IndexError("Too few elements ({}) along axes {}".format(n_elements, failures))
+		raise LengthMismatchError("Too few elements ({}) along axes {}".format(n_elements, failures))
 
+def zip_strict_list(*args) -> List[Any]:
+	"""Same as zip_strict, but converts to a list and can provide a more detailed error message."""
+	args = [list(x) for x in args]
+	try:
+		return list(zip_strict(*args))
+	except LengthMismatchError:
+		raise LengthMismatchError("Length mismatch in zip_strict: Sizes are {}".format([len(x) for x in args]))
 
 def only(sequence: Iterable[Any]) -> Any:
 	"""
@@ -131,7 +138,10 @@ def read_properties_file(path: str) -> Mapping[str, str]:
 
 
 class Comparable:
-	"""A class that's comparable. Just implement __lt__. Credit ot Alex Martelli on https://stackoverflow.com/questions/1061283/lt-instead-of-cmp"""
+	"""
+	A class that's comparable. Just implement __lt__. Credit ot Alex Martelli on https://stackoverflow.com/questions/1061283/lt-instead-of-cmp
+	DEPRECATED. Use Python @total_ordering instead.
+	"""
 
 	def __eq__(self, other):
 		return not self < other and not other < self
@@ -183,7 +193,8 @@ def escape_for_properties(value: Any) -> str:
 
 def escape_for_tsv(value: Any) -> str:
 	return sanitize_str(str(value).replace('\n', '\u2028').replace('\t', ' '))
-	
+
+
 class Timeout:
 	def __init__(self, seconds: int = 10, error_message='Timeout'):
 		self.seconds = seconds

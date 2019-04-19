@@ -2,8 +2,8 @@
 A collection of decorators.
 """
 
-from typing import Optional, Callable, Set
-import signal
+from typing import Optional, Callable, Set, Type
+import signal, time
 from functools import wraps
 from abc import abstractmethod, ABC, ABCMeta
 from functools import total_ordering
@@ -74,6 +74,7 @@ def auto_eq(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], b
 	:param only: Only include these attributes
 	:param exclude: Exclude these attributes
 	"""
+	@wraps(auto_eq)
 	def dec(cls):
 		def __eq(self, other):
 			return _auto_eq(self, other, only, exclude)
@@ -90,6 +91,7 @@ def auto_hash(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str],
 	:param only: Only include these attributes
 	:param exclude: Exclude these attributes
 	"""
+	@wraps(auto_hash)
 	def dec(cls):
 		def __hash(self):
 			return _auto_hash(self, only, exclude)
@@ -120,6 +122,7 @@ def _gen_str(
 def auto_repr(
 		only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = lambda a: False
 ):
+	@wraps(auto_repr)
 	def dec(cls):
 		def __repr(self):
 			return _gen_str(self, only=only, exclude=exclude, with_address=True)
@@ -134,6 +137,7 @@ def auto_str(
 		exclude: Optional[Callable[[str], bool]] = lambda a: a.startswith('_'),
 		with_address: bool = False
 ):
+	@wraps(auto_str)
 	def dec(cls):
 		def __str(self):
 			return _gen_str(self, only=only, exclude=exclude, with_address=with_address)
@@ -148,6 +152,7 @@ def auto_html(
 		exclude: Optional[Callable[[str], bool]] = lambda a: lambda b: b.startswith('_'),
 		with_address: bool = True
 ):
+	@wraps(auto_html)
 	def dec(cls):
 		def __html(self):
 			return SpecialStr(_gen_str(self, only=only, exclude=exclude, with_address=with_address, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
@@ -177,6 +182,7 @@ def auto_repr_str(
 	:param exclude_simple: Exclude attributes matching these names in human-readable strings (str and _repr_html)
 	:param exclude_all: Exclude these attributes in all the functions
 	"""
+	@wraps(auto_repr_str)
 	def dec(cls):
 		def __str(self):
 			return _gen_str(self, only=None, exclude=exclude_simple, with_address=False)
@@ -199,6 +205,7 @@ def auto_info(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str],
 	:param only:
 	:param exclude:
 	"""
+	@wraps(auto_info)
 	def dec(cls):
 		def __info(self):
 			return _InfoSpecialStr(_gen_str(self, delim='\n\t', eq=' = ', opening='(\n\t', closing='\n)', with_address=False, only=only, exclude=exclude))
@@ -223,6 +230,7 @@ def auto_obj():
 		return _auto_hash(self, only=None, exclude=None)
 	def __eq(self):
 		return _auto_eq(self, None, only=None, exclude=None)
+	@wraps(auto_obj)
 	def dec(cls):
 		cls.__eq__ = __eq
 		cls.__str__ = __str
@@ -234,6 +242,74 @@ def auto_obj():
 
 
 @decorator
+def takes_seconds_named(x, *args, **kwargs):
+	"""
+	Prints a statement like "Call to calc_distances took 15.2s." after the function returns.
+	"""
+	t0 = time.monotonic()
+	results = x(*args, **kwargs)
+	print("Call to {} took {}s.".format(x.__name__, round(time.monotonic()-t0, 1)))
+	return results
+
+
+@decorator
+def takes_seconds(x, *args, **kwargs):
+	"""
+	Prints a statement like "Done. Took 15.2s." after the function returns.
+	"""
+	t0 = time.monotonic()
+	results = x(*args, **kwargs)
+	print("Done. Took {}s.".format(round(time.monotonic()-t0, 1)))
+	return results
+
+
+@decorator
+def mutable(cls):
+	return cls
+
+@decorator
+def immutable(mutableclass):
+	"""
+	Decorator for making a slot-based class immutable.
+	Taken almost verbatim from https://code.activestate.com/recipes/578233-immutable-class-decorator/
+	Written by Oren Tirosh and released under the MIT license.
+	"""
+	if not isinstance(type(mutableclass), type):
+		raise TypeError('@immutable: must be applied to a new-style class')
+	if not hasattr(mutableclass, '__slots__'):
+		raise TypeError('@immutable: class must have __slots__')
+	class immutableclass(mutableclass):
+		__slots__ = ()  # No __dict__, please
+		def __new__(cls, *args, **kw):
+			new = mutableclass(*args, **kw)  # __init__ gets called while still mutable
+			new.__class__ = immutableclass  # locked for writing now
+			return new
+		def __init__(self, *args, **kw):  # Prevent re-init after __new__
+			pass
+	# Copy class identity:
+	immutableclass.__name__ = mutableclass.__name__
+	immutableclass.__module__ = mutableclass.__module__
+	# Make read-only:
+	for name, member in mutableclass.__dict__.items():
+		if hasattr(member, '__set__'):
+			setattr(immutableclass, name, property(member.__get__))
+	return immutableclass
+
+
+@decorator
+def copy_docstring(from_obj: Type):
+	"""
+	Decorator.
+	Copies the docstring from `from_obj` to this function or class.
+	"""
+	@wraps(copy_docstring)
+	def dec(myobj):
+		myobj.__doc__ = from_obj.__doc__
+		return myobj
+	return dec
+
+
+@decorator
 def float_type(attribute: str):
 	"""
 	Decorator.
@@ -241,6 +317,7 @@ def float_type(attribute: str):
 	Used to annotate a class as being "essentially an float".
 	:param attribute: The name of the attribute of this class
 	"""
+	@wraps(float_type)
 	def dec(cls):
 		cls.__float__ = lambda: float(getattr(cls, attribute))
 		return cls
@@ -254,6 +331,7 @@ def int_type(attribute: str):
 	Used to annotate a class as being "essentially an integer".
 	:param attribute: The name of the attribute of this class
 	"""
+	@wraps(int_type)
 	def dec(cls):
 		cls.__float__ = lambda: float(getattr(cls, attribute))
 		return cls
@@ -268,6 +346,7 @@ def iterable_over(attribute: str):
 	Used to annotate a class as being "essentially an iterable" over some elements.
 	:param attribute: The name of the attribute of this class
 	"""
+	@wraps(iterable_over)
 	def dec(cls):
 		cls.__iter__ = lambda: iter(getattr(cls, attribute))
 		return cls
@@ -282,6 +361,7 @@ def collection_over(attribute: str):
 	Used to annotate a class as being "essentially a collection" over some elements.
 	:param attribute: The name of the attribute of this class
 	"""
+	@wraps(collection_over)
 	def dec(cls):
 		cls.__iter__ = lambda: iter(getattr(cls, attribute))
 		cls.__len__ = lambda: len(getattr(cls, attribute))
@@ -298,6 +378,7 @@ def sequence_over(attribute: str):
 	Used to annotate a class as being "essentially a list" over some elements.
 	:param attribute: The name of the attribute of this class
 	"""
+	@wraps(sequence_over)
 	def dec(cls):
 		cls.__getitem__ = lambda e: getattr(cls, attribute)[e]
 		cls.__len__ = lambda: len(getattr(cls, attribute))
@@ -324,6 +405,7 @@ def auto_singleton(cls):
 
 @decorator
 def auto_timeout(seconds: int):
+	@wraps(auto_timeout)
 	def dec(func):
 		def _handle_timeout(the_signal, the_frame):
 			raise TimeoutError("The call timed out")
@@ -433,6 +515,10 @@ __all__ = [
 	'dataclass',
 	'auto_repr_str', 'auto_str', 'auto_repr', 'auto_html', 'auto_info',
 	'auto_eq', 'auto_hash', 'total_ordering',
+	'copy_docstring',
+	'auto_singleton',
+	'takes_seconds', 'takes_seconds_named',
+	'mutable', 'immutable',
 	'auto_timeout',
 	'iterable_over', 'collection_over', 'sequence_over',
 	'float_type', 'int_type',

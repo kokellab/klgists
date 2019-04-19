@@ -6,6 +6,12 @@ Projects can/should subclass from these in addition to the normal Python ones.
 from enum import Enum
 
 
+class LengthMismatchError(IndexError): pass
+
+
+class OutOfRangeError(IndexError): pass
+
+
 class NaturalExpectedException(Exception): pass
 
 class HelpRequestedException(NaturalExpectedException): pass

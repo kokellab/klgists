@@ -1,9 +1,12 @@
 from __future__ import annotations
-from typing import Sequence, Set, Any
+import typing
+from typing import Sequence, Set, Any, Callable, Union
+import multiprocessing
 import pandas as pd
 from pandas.core.frame import DataFrame as _InternalDataFrame
 from klgists.pandas import cfirst as _cfirst
 from klgists.common import only as _only
+from klgists.pandas.groupby_parallel import groupby_parallel as _groupby_parallel
 import klgists.common.abcd as abcd
 
 
@@ -51,6 +54,57 @@ class BaseExtendedDataFrame(PrettyInternalDataFrame, metaclass=abcd.ABCMeta):
 		"""
 		super(BaseExtendedDataFrame, self).__init__(data=data, index=index, columns=columns, dtype=dtype, copy=copy)
 
+	def only(self, column: str) -> Any:
+		"""
+		Returns the single unique value in a column.
+		Raises an error if zero or more than one value is in the column.
+		:param column: The name of the column
+		:return: The value
+		"""
+		return _only(self[column].unique())
+
+	def cfirst(self, cols: Sequence[str]):
+		"""
+		Returns a new DataFrame with the specified columns appearing first.
+		:param cols: A list of columns
+		:return: A non-copy
+		"""
+		# noinspection PyTypeChecker
+		return self.__class__.convert(_cfirst(self, cols))
+
+	def n_rows(self) -> int:
+		return len(self)
+
+	def n_columns(self) -> int:
+		return len(self.columns)
+
+	def n_index_columns(self) -> int:
+		return len(self.index.names)
+
+	def apply_parallel(
+			self,
+			function: Callable[[typing.Tuple[str, pd.DataFrame]], Union[pd.DataFrame, pd.Series]],
+			n_cores: int = multiprocessing.cpu_count() - 1,
+			logger: Callable[[str], None] = print,
+			**groupby_kwargs
+	) -> pd.DataFrame:
+		"""
+		Performs Pandas `groupby` followed by `apply(function)`, using Multiprocessing to split over `n_cores` CPUs.
+		:param function:
+		:param n_cores:
+		:param logger:
+		:param groupby_kwargs: Will be passed to Pandas groupby.
+		:return:
+		"""
+		return _groupby_parallel(self.groupby(**groupby_kwargs), function, num_cpus=n_cores, logger=logger)
+
+
+class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, metaclass=abcd.ABCMeta):
+	"""
+	An extended DataFrame with convert() and vanilla() methods.
+	"""
+	pass
+
 	@classmethod
 	@abcd.override_recommended
 	def convert(cls, df: pd.DataFrame) -> BaseExtendedDataFrame:
@@ -87,36 +141,9 @@ class BaseExtendedDataFrame(PrettyInternalDataFrame, metaclass=abcd.ABCMeta):
 		"""
 		return self.__class__.vanilla(df)
 
-	def only(self, column: str) -> Any:
-		"""
-		Returns the single unique value in a column.
-		Raises an error if zero or more than one value is in the column.
-		:param column: The name of the column
-		:return: The value
-		"""
-		return _only(self[column].unique())
-
-	def cfirst(self, cols: Sequence[str]):
-		"""
-		Returns a new DataFrame with the specified columns appearing first.
-		:param cols: A list of columns
-		:return: A non-copy
-		"""
-		# noinspection PyTypeChecker
-		return self.__class__.convert(_cfirst(self, cols))
-
-	def n_rows(self) -> int:
-		return len(self)
-
-	def n_columns(self) -> int:
-		return len(self.columns)
-
-	def n_index_columns(self) -> int:
-		return len(self.index.names)
-
 
 @abcd.final
-class TrivialExtendedDataFrame(BaseExtendedDataFrame):
+class TrivialExtendedDataFrame(ConvertibleExtendedDataFrame):
 	"""
 	A concrete BaseExtendedDataFrame that does not require special columns.
 	Overrides a number of DataFrame methods to convert before returning.
@@ -168,7 +195,7 @@ class TrivialExtendedDataFrame(BaseExtendedDataFrame):
 		return self.__class__.convert(super(TrivialExtendedDataFrame, self).drop(labels=labels, axis=axis, index=index, columns=columns, level=level, inplace=inplace, errors=errors))
 
 
-class ExtendedDataFrame(BaseExtendedDataFrame):
+class ExtendedDataFrame(ConvertibleExtendedDataFrame):
 	"""
 	A concrete BaseExtendedDataFrame that has required columns and index names.
 	"""
