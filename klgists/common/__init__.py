@@ -112,9 +112,10 @@ def read_lines_file(path: str, ignore_comments: bool = False) -> Sequence[str]:
 	"""
 	lines = []
 	with open(path) as f:
-		line = f.readline().strip()
-		if not ignore_comments or not line.startswith('#'):
-			lines.append(line)
+		for line in f.readlines():
+			line = line.strip()
+			if not ignore_comments or not line.startswith('#'):
+				lines.append(line)
 	return lines
 
 
