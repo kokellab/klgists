@@ -1,6 +1,6 @@
 from __future__ import annotations
 import typing
-from typing import Sequence, Set, Any, Callable, Union
+from typing import Sequence, Set, Any, Callable, Union, Iterable
 import multiprocessing
 import pandas as pd
 from pandas.core.frame import DataFrame as _InternalDataFrame
@@ -71,6 +71,12 @@ class BaseExtendedDataFrame(PrettyInternalDataFrame, metaclass=abcd.ABCMeta):
 		"""
 		# noinspection PyTypeChecker
 		return self.__class__.convert(_cfirst(self, cols))
+
+	def drop_cols(self, cols: Iterable[str]):
+		df = self.copy()
+		for c in cols:
+			df = df.drop(c, axis=1)
+		return df
 
 	def n_rows(self) -> int:
 		return len(self)
