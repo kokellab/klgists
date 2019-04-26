@@ -106,6 +106,31 @@ class __WB(abcd.ABC):
 	def all_indices(self) -> Sequence[int]:
 		return list(range(self.base, self.n_rows*self.n_columns+self.base))
 
+	def simple_range(self, a, b):
+		ar, ac = self.label_to_rc(a)
+		br, bc = self.label_to_rc(b)
+		if ar == br:
+			for c in range(ac, bc + 1):
+				yield self.rc_to_label(ar, c)
+		elif ac == bc:
+			for r in range(ar, br):
+				yield self.rc_to_label(r, ac)
+		else:
+			raise ValueError("{}-{} is not a simple range".format(a, b))
+
+	def block_range(self, a, b):
+		ar, ac = self.label_to_rc(a)
+		br, bc = self.label_to_rc(b)
+		for r in range(ar, br + 1):
+			for c in range(ac, bc + 1):
+				yield self.rc_to_label(r, c)
+
+	def traversal_range(self, a, b):
+		ai = self.label_to_index(a)
+		bi = self.label_to_index(b)
+		for i in range(ai, bi + 1):
+			yield self.index_to_label(i)
+
 	def __check_rc_range(self, row: int, column: int):
 		if row < self.base or row > self.n_rows * self.n_columns or column < self.base or column > self.n_rows * self.n_columns + self.base - 1:
 			raise OutOfRangeError("{}-based coordinates {} out of range".format(self.base, (row, column)))
