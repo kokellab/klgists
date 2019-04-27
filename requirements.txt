@@ -11,12 +11,12 @@ matplotlib == 3.0.3
 seaborn == 0.9.0
 goatools == 0.8.12
 wget == 3.2
-altair == 2.4.1
+altair == 3.0.0
 colorama == 0.4.1
-peewee == 3.9.3
+peewee == 3.9.5
 uniprot == 1.3
 toml == 0.10.0
-psutil == 5.6.1
+psutil == 5.6.2
 requests == 2.21.0
 terminaltables == 3.1.0
 cryptography == 2.6.1
@@ -25,6 +25,8 @@ infix == 1.2
 colorama == 0.4.1
 py-cpuinfo == 5.0.0
 hurry.filesize == 0.9
-ipython == 7.4.0
+ipython == 7.5.0
 deprecated == 1.2.5
 typecheck-decorator == 1.3
+pytest == 4.4.1
+hypothesis == 4.18.0

@@ -114,7 +114,7 @@ def read_lines_file(path: str, ignore_comments: bool = False) -> Sequence[str]:
 	with open(path) as f:
 		for line in f.readlines():
 			line = line.strip()
-			if not ignore_comments or not line.startswith('#'):
+			if not ignore_comments or not line.startswith('#') and not len(line.strip()) == 0:
 				lines.append(line)
 	return lines
 
@@ -127,14 +127,15 @@ def read_properties_file(path: str) -> Mapping[str, str]:
 	:param path: Read the file at this local path
 	:return: A dict mapping keys to values, both with surrounding whitespace stripped
 	"""
-	lines = read_lines_file(path, ignore_comments=False)
 	dct = {}
-	for i, line in enumerate(lines):
-		if line.startswith('#'): continue
-		if line.count('=') != 1:
-			raise ParsingFailedException("Bad line {} in {}".format(i+1, path))
-		parts = line.split('=')
-		dct[parts[0].strip()] = parts[1].strip()
+	with open(path) as f:
+		for i, line in enumerate(f.readlines()):
+			line = line.strip()
+			if len(line) == 0 or line.startswith('#'): continue
+			if line.count('=') != 1:
+				raise ParsingFailedException("Bad line {} in {}".format(i, path))
+			parts = line.split('=')
+			dct[parts[0].strip()] = parts[1].strip()
 	return dct
 
 
