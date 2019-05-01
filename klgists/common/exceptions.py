@@ -3,6 +3,8 @@ The motivation here is simply that Python lacks some standard exceptions that I 
 Projects can/should subclass from these in addition to the normal Python ones.
 """
 
+# TODO some of these are too specific
+
 from enum import Enum
 
 

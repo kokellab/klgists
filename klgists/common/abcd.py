@@ -310,6 +310,19 @@ def copy_docstring(from_obj: Type):
 
 
 @decorator
+def append_docstring(from_obj: Type):
+	"""
+	Decorator.
+	Appends the docstring from `from_obj` to the docstring for this function or class.
+	"""
+	@wraps(append_docstring)
+	def dec(myobj):
+		myobj.__doc__ += from_obj.__doc__
+		return myobj
+	return dec
+
+
+@decorator
 def float_type(attribute: str):
 	"""
 	Decorator.
@@ -515,7 +528,7 @@ __all__ = [
 	'dataclass',
 	'auto_repr_str', 'auto_str', 'auto_repr', 'auto_html', 'auto_info',
 	'auto_eq', 'auto_hash', 'total_ordering',
-	'copy_docstring',
+	'copy_docstring', 'append_docstring',
 	'auto_singleton',
 	'takes_seconds', 'takes_seconds_named',
 	'mutable', 'immutable',

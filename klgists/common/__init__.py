@@ -49,21 +49,17 @@ def decorator(cls):
 	return cls
 
 
-def exists(keep_predicate: Callable[[T], bool], seq: Iterable[T]) -> bool:
-	"""Efficient existential quantifier for a filter() predicate.
-	Returns true iff keep_predicate is true for one or more elements."""
-	for e in seq:
-		if keep_predicate(e): return True  # short-circuit
-	return False
-
-
 def zip_strict(*args):
 	"""Same as zip(), but raises an IndexError if the lengths don't match."""
+	# we need to catch these cases before or they'll fail
+	# in particular, 1 element would fail with a LengthMismatchError
+	# and 0 elements would loop forever
+	if len(args) < 2:
+		return zip(*args)
 	iters = [iter(axis) for axis in args]
 	n_elements = 0
 	failures = []
 	while len(failures) == 0:
-		n_elements += 1
 		values = []
 		failures = []
 		for axis, iterator in enumerate(iters):
@@ -73,18 +69,18 @@ def zip_strict(*args):
 				failures.append(axis)
 		if len(failures) == 0:
 			yield tuple(values)
-	if len(failures) == 1:
-		raise LengthMismatchError("Too few elements ({}) along axis {}".format(n_elements, failures[0]))
-	elif len(failures) < len(iters):
-		raise LengthMismatchError("Too few elements ({}) along axes {}".format(n_elements, failures))
+		elif len(failures) == 1:
+			raise LengthMismatchError("Too few elements ({}) along axis {}".format(n_elements, failures[0]))
+		elif len(failures) < len(iters):
+			raise LengthMismatchError("Too few elements ({}) along axes {}".format(n_elements, failures))
+		n_elements += 1
 
 def zip_strict_list(*args) -> List[Any]:
 	"""Same as zip_strict, but converts to a list and can provide a more detailed error message."""
-	args = [list(x) for x in args]
 	try:
 		return list(zip_strict(*args))
 	except LengthMismatchError:
-		raise LengthMismatchError("Length mismatch in zip_strict: Sizes are {}".format([len(x) for x in args]))
+		raise LengthMismatchError("Length mismatch in zip_strict: Sizes are {}".format([len(x) for x in args])) from None
 
 def only(sequence: Iterable[Any]) -> Any:
 	"""
@@ -137,28 +133,6 @@ def read_properties_file(path: str) -> Mapping[str, str]:
 			parts = line.split('=')
 			dct[parts[0].strip()] = parts[1].strip()
 	return dct
-
-
-class Comparable:
-	"""
-	A class that's comparable. Just implement __lt__. Credit ot Alex Martelli on https://stackoverflow.com/questions/1061283/lt-instead-of-cmp
-	DEPRECATED. Use Python @total_ordering instead.
-	"""
-
-	def __eq__(self, other):
-		return not self < other and not other < self
-
-	def __ne__(self, other):
-		return self < other or other < self
-
-	def __gt__(self, other):
-		return other < self
-
-	def __ge__(self, other):
-		return not self < other
-
-	def __le__(self, other):
-		return not other < self
 
 
 def json_serial(obj):

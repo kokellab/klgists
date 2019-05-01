@@ -1,7 +1,7 @@
 import itertools
 from functools import partial
 import typing
-from typing import List, Iterable, Iterator, Sequence
+from typing import List, Iterable, Iterator, Sequence, Type
 
 from klgists.common import abcd
 from klgists.common.exceptions import OutOfRangeError
@@ -31,17 +31,6 @@ def wells_of_rows(row_indices: Iterable[int], n_rows: int=8, n_columns: int=12) 
 def well_index_from_name(name: str, n_rows: int=8, n_columns: int=12) -> int:
 	return (ord(name[0])%32)*n_columns - 1 - (n_columns - int(name[1:]))
 
-# tests
-assert well_name(0) == 'A01'
-assert well_name(-1) == 'H12'
-assert well_name(-15) == 'G10'
-assert wells_of_row(0, n_columns=4) == ['A01', 'A02', 'A03', 'A04']
-assert wells_of_row(0, n_columns=2) == ['A01', 'A02']
-assert wells_of_row(3, n_columns=2) == ['D01', 'D02']
-assert wells_of_row(13, n_rows=14, n_columns=2) == ['N01', 'N02']
-assert wells_of_row(2, n_columns=200)[-1] == 'C200'
-assert [well_index_from_name(x) for x in ['A01', 'H12', 'G10']] == [0, 95, 81]
-assert [well_index_from_name(x, n_columns = 4) for x in ['A01', 'A02', 'A03', 'A04']] == [0,1,2,3]
 
 # these are much faster
 standards = {(r, c): [well_name(i, n_rows=r, n_columns=c) for i in range(0, r*c)] for r, c in [(12, 8), (8, 12), (24, 16), (16, 24)]}
@@ -50,7 +39,7 @@ standards = {(r, c): [well_name(i, n_rows=r, n_columns=c) for i in range(0, r*c)
 @abcd.auto_eq(only=['base', 'n_rows', 'n_columns'])
 @abcd.auto_hash(only=['base', 'n_rows', 'n_columns'])
 @abcd.total_ordering
-class __WB(abcd.ABC):
+class _WB(abcd.ABC):
 	"""
 	A set of conversion utils between well labels, indices, and coordinates.
 	This class is preferred over the functions above.
@@ -68,7 +57,7 @@ class __WB(abcd.ABC):
 		self.base = self.get_base()
 
 	@classmethod
-	@abcd.abstractmethod
+	#@abcd.abstractmethod
 	def get_base(cls) -> int:
 		raise NotImplementedError()
 
@@ -106,26 +95,26 @@ class __WB(abcd.ABC):
 	def all_indices(self) -> Sequence[int]:
 		return list(range(self.base, self.n_rows*self.n_columns+self.base))
 
-	def simple_range(self, a, b):
+	def simple_range(self, a: str, b: str) -> Iterator[str]:
 		ar, ac = self.label_to_rc(a)
 		br, bc = self.label_to_rc(b)
 		if ar == br:
 			for c in range(ac, bc + 1):
 				yield self.rc_to_label(ar, c)
 		elif ac == bc:
-			for r in range(ar, br):
+			for r in range(ar, br + 1):
 				yield self.rc_to_label(r, ac)
 		else:
 			raise ValueError("{}-{} is not a simple range".format(a, b))
 
-	def block_range(self, a, b):
+	def block_range(self, a: str, b: str) -> Iterator[str]:
 		ar, ac = self.label_to_rc(a)
 		br, bc = self.label_to_rc(b)
 		for r in range(ar, br + 1):
 			for c in range(ac, bc + 1):
 				yield self.rc_to_label(r, c)
 
-	def traversal_range(self, a, b):
+	def traversal_range(self, a: str, b: str) -> Iterator[str]:
 		ai = self.label_to_index(a)
 		bi = self.label_to_index(b)
 		for i in range(ai, bi + 1):
@@ -152,7 +141,17 @@ class __WB(abcd.ABC):
 		return "WB{}({}×{})".format(self.base, self.n_rows, self.n_columns)
 
 
-class WB1(__WB):
+class WbFactory:
+
+	@classmethod
+	def new(cls, base: int) -> Type[_WB]:
+		new_class = type('WB{}'.format(base), (_WB,), {})
+		new_class.get_base = lambda c: base
+		return new_class
+
+
+@abcd.immutable
+class WB1(_WB):
 	"""
 	Map of a plate with conversions between labels, indices, and (row, column) pairs.
 	ALL of these methods assume 1-based indices (1 is the first index and (1,1) is the first coordinate).
@@ -163,7 +162,8 @@ class WB1(__WB):
 		return 1
 
 
-class WB0(__WB):
+@abcd.immutable
+class WB0(_WB):
 	"""
 	Map of a plate with conversions between labels, indices, and (row, column) pairs.
 	ALL of these methods assume 0-based indices (1 is the first index and (0,0) is the first coordinate).
@@ -176,4 +176,4 @@ class WB0(__WB):
 
 
 
-__all__ = ['WB1', 'WB0', 'well_name', 'wells_of_row', 'wells_of_rows', 'well_index_from_name']
+__all__ = ['WB1', 'WB0']
