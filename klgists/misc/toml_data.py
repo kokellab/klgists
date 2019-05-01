@@ -90,16 +90,12 @@ class TomlData:
 			yield separator.join(lst)
 
 	def nested_key_lists(self, dictionary: Dict[str, object], prefix=None) -> Iterator[List[str]]:
-
 		prefix = prefix[:] if prefix else []
-
 		if isinstance(dictionary, dict):
 			for key, value in dictionary.items():
-
 				if isinstance(value, dict):
 					for result in self.nested_key_lists(value, [key] + prefix): yield result
 				else: yield prefix + [key]
-
 		else: yield dictionary
 
 

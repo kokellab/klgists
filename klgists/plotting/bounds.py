@@ -13,7 +13,7 @@ class AxisTicks:
 		"""Calculates new bounds for an axis based on the ticks.
 		:param  floor: If None, sets the minimum bound based on the data
 		:param  ceiling: If None, sets the maximum bound based on the data
-		:param  round_digits: Minor argument that rounds the final bounds to some number of digits
+		:param  rounding_digits: Minor argument that rounds the final bounds to some number of digits
 		"""
 		self.rounding_digits = rounding_digits
 		self.floor = floor

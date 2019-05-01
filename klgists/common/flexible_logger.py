@@ -3,6 +3,7 @@ from typing import Optional
 
 from klgists.common.exceptions import PathIsNotDirectoryException
 
+
 class FlexibleLogger:
 	"""
 	Usage:

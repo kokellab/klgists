@@ -1,4 +1,5 @@
 from typing import TypeVar, Optional, Iterator, Dict, Callable, Iterable, Generic, List
+from abc import ABC
 from datetime import datetime
 import operator, logging
 import sys
@@ -33,7 +34,7 @@ class FacadePolicy(Generic[K]):
 		pass
 
 
-class MemoryLimitingPolicy(FacadePolicy, Generic[K]):
+class MemoryLimitingPolicy(FacadePolicy, Generic[K], ABC):
 
 	def __init__(self, max_memory_bytes: Optional[int] = None, max_fraction_available_bytes: Optional[float] = None):
 		self._max_memory_bytes = max_memory_bytes
@@ -128,6 +129,7 @@ class DfFacade(Generic[K]):
 			self._policy.added(key, value)
 			self.archive()
 			return value
+
 	def __call__(self,  key: K) -> pd.DataFrame:
 		return self[key]
 

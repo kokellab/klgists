@@ -5,7 +5,7 @@ from typing import Iterable, Callable, Any, Tuple
 # TODO should this be deprecated?
 
 def converge(
-		sampler: Callable[[None], Iterable[float]],
+		sampler: Callable[[], Iterable[float]],
 		statistic:Callable[[np.ndarray], float]=np.mean,
 		ε:float=0.01, min_iters:int=3, max_iters:int=50,
 		noter:Callable[[int, float, float, Iterable[float]], Any]=lambda i, estimate, delta, samples: print('Iteration {}: {:.3f}, δ=={:.3f}'.format(i, estimate, delta))
