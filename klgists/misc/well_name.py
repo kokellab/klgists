@@ -150,7 +150,6 @@ class WbFactory:
 		return new_class
 
 
-@abcd.immutable
 class WB1(_WB):
 	"""
 	Map of a plate with conversions between labels, indices, and (row, column) pairs.
@@ -162,7 +161,6 @@ class WB1(_WB):
 		return 1
 
 
-@abcd.immutable
 class WB0(_WB):
 	"""
 	Map of a plate with conversions between labels, indices, and (row, column) pairs.
