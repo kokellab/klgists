@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os, json, sys, io
 import unicodedata
 from itertools import chain
@@ -7,7 +8,7 @@ import re
 from contextlib import contextmanager, redirect_stdout
 from datetime import date, datetime
 from pathlib import Path
-from typing import Iterator, TypeVar, Iterable, Optional, List, Any, Sequence, Mapping
+from typing import Iterator, TypeVar, Iterable, Optional, List, Any, Sequence, Mapping, overload
 from hurry.filesize import size as hsize
 from klgists.common.exceptions import LookupFailedException, MultipleMatchesException, ParsingFailedException, LengthMismatchError
 
@@ -26,6 +27,40 @@ def flatten(*iterable):
 class DevNull:
 	def write(self, msg): pass
 
+T = TypeVar('T', covariant=True)
+
+class frozenlist(Sequence):
+	"""
+	An immutable sequence backed by a list.
+	The sole advantage over a tuple is the list-like __str__ with square brackets, which may be less confusing to a user.
+	"""
+	def __init__(self, *items: Iterable[T]):
+		self.__items = list(items)
+
+	@overload
+	def __getitem__(self, i: int) -> T:
+		return self.__items[i]
+
+	@overload
+	def __getitem__(self, s: slice) -> frozenlist[T]:
+		return frozenlist(self.__items[s])
+
+	def __getitem__(self, item) -> T:
+		if isinstance(item, slice):
+			return self[item]
+		else:
+			return self[item]
+
+	def __len__(self) -> int:
+		return len(self.__items)
+
+	def __repr__(self):
+		return repr(self.__items)
+
+	def __str__(self):
+		return repr(self.__items)
+
+
 pjoin = os.path.join
 pexists = os.path.exists
 plexists = os.path.lexists
@@ -33,36 +68,6 @@ pfile = os.path.isfile
 pdir = os.path.isfile
 pdirname = os.path.dirname
 pfsize = os.path.getsize
-
-def pempty(s: str):
-	"""
-	Assesses whether the path is "empty" OR does not exist.
-	Returns False if the path exists or is either:
-		- A socket or block device (even if "empty" -- does not attempt to read)
-		- A nonempty file
-		- A directory containing subpaths
-		- A symlink to a nonempty file
-	Currently DOES NOT HANDLE: Symlinks to anything other than a file. Will raise a TypeError.
-	"""
-	if not pexists(s): return True
-	s = Path(s)
-	if s.is_block_device() or s.is_socket():
-		return False
-	elif s.is_dir():
-		# short-circuit
-		for _ in s.iterdir():
-			return False
-		return True
-	elif s.is_symlink():
-		target = Path(os.readlink(str(s)))
-		if not target.exists():
-			return True
-		if target.is_file():
-			return s.lstat().st_size == 0
-		# TODO if dir without infinite loops
-	elif s.is_file():
-		return s.stat().st_size == 0
-	raise TypeError("Unknown path type {}".format(s))
 
 def pardir(path: str, depth: int=1):
 	for _ in range(-1, depth):

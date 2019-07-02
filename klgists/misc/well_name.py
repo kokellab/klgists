@@ -1,39 +1,8 @@
-import itertools
-from functools import partial
 import typing
-from typing import List, Iterable, Iterator, Sequence, Type
+from typing import Iterator, Sequence, Type
 
 from klgists.common import abcd
 from klgists.common.exceptions import OutOfRangeError
-
-
-def well_name(index: int, n_rows: int=8, n_columns: int=12) -> str:
-	"""Returns a 3-character well identifier like A52. Note that the default is landscape indexing (8 rows and 12 columns).
-	Limited to plates with no more than 26 rows.
-	Modified from https://stackoverflow.com/questions/19170420/converting-well-number-to-the-identifier-on-a-96-well-plate.
-	"""
-	index = int(index)
-	if n_rows > 52:  # a 1536-well plate has 32 rows and 48 columns, so this won't work with that
-		raise OutOfRangeError('Well names are limited to plates with 26 rows!')
-	if index >= n_rows * n_columns:
-		raise OutOfRangeError('Well index {} is out of range (max is {})'.format(index, n_rows*n_columns))
-	return [chr(i) for i in range(0x41, 0x41 + n_rows)][index // n_columns] + '%02d' % (index % n_columns + 1,)
-
-def wells_of_row(row_index: int, n_rows: int=8, n_columns: int=12) -> List[str]:
-	"""Returns an ordered list of well names. row_index starts at 0."""
-	return [well_name(i, n_rows=n_rows, n_columns=n_columns) for i in range(row_index*n_columns, (row_index+1)*n_columns)]
-
-def wells_of_rows(row_indices: Iterable[int], n_rows: int=8, n_columns: int=12) -> Iterator[str]:
-	"""Returns an ordered list of well names. row_index starts at 0."""
-	# surprisingly, this is MUCH faster than a for loop and list.extend
-	return itertools.chain.from_iterable(map(partial(wells_of_row, n_rows=n_rows, n_columns=n_columns), row_indices))
-
-def well_index_from_name(name: str, n_rows: int=8, n_columns: int=12) -> int:
-	return (ord(name[0])%32)*n_columns - 1 - (n_columns - int(name[1:]))
-
-
-# these are much faster
-standards = {(r, c): [well_name(i, n_rows=r, n_columns=c) for i in range(0, r*c)] for r, c in [(12, 8), (8, 12), (24, 16), (16, 24)]}
 
 
 @abcd.auto_eq(only=['base', 'n_rows', 'n_columns'])

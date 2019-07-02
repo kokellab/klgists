@@ -4,9 +4,9 @@ import getpass
 import platform
 import psutil
 import socket
+from datetime import datetime
 from typing import Dict, Any, Optional
-from klgists.misc.commit_hash import git_commit_hash
-from klgists.common.datetime_utils import now
+from klgists.misc.git import GitTools
 
 
 # TODO 'cpu': cpuinfo.get_cpu_info()['brand'],
@@ -25,8 +25,8 @@ def find_environment_info(extras: Optional[Dict[str, Any]]=None) -> Dict[str, st
 			'disk_free': psutil.disk_usage('.').free,
 			'memory_used': psutil.virtual_memory().used,
 			'memory_available': psutil.virtual_memory().available,
-			'sauronx_hash': git_commit_hash(),
-			'environment_info_capture_datetime': now().isoformat()
+			'sauronx_hash': GitTools.commit_hash(),
+			'environment_info_capture_datetime': datetime.now().isoformat()
 	}
 	return  {k: str(v) for k, v in {**mains, **extras}.items()}
 

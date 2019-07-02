@@ -77,8 +77,7 @@ class SpiderRecovery:
 						return next(iter(no_sterocenters))
 					elif len(no_sterocenters) > 1:
 						warnings.warn(
-							"There are somehow {} compounds with the same connectivity and no defined sterocenters for {}".format(
-								len(no_sterocenters), name))
+							"There are somehow {} compounds with the same connectivity and no defined sterocenters for {}".format(len(no_sterocenters), name))
 
 		return None  # give up
 

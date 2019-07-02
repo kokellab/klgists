@@ -43,57 +43,7 @@ class BaseExtendedDataFrame(PrettyInternalDataFrame, metaclass=abcd.ABCMeta):
 	An abstract Pandas DataFrame subclass with additional methods.
 	"""
 	def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False):
-		"""
-		Constructor. Delegates to pd.DataFrame.__init__.
-		Does not call BaseExtendedDataFrame.convert().
-		Consequently, the instance is not guaranteed to be conformant.
-		:param data:
-		:param index:
-		:param columns:
-		:param dtype:
-		:param copy:
-		"""
 		super(BaseExtendedDataFrame, self).__init__(data=data, index=index, columns=columns, dtype=dtype, copy=copy)
-
-	def sort_natural(self, column: str, alg: int = ns.INT):
-		df = self.copy().reset_index()
-		zzz = natsorted([s for s in df[column]], alg=alg)
-		df['__sort'] = df[column].map(lambda s: zzz.index(s))
-		df = df.sort_values('__sort')
-		df = df.drop('__sort', axis=1).reset_index()
-		return df
-
-	def sort_natural_index(self, alg: int = ns.INT):
-		df = self.copy().reset_index()
-		zzz = natsorted([s for s in df.index], alg=alg)
-		df['__sort'] = df.index.map(lambda s: zzz.index(s))
-		df = df.sort_values('__sort')
-		df = df.drop('__sort', axis=1).reset_index()
-		return df
-
-	def only(self, column: str) -> Any:
-		"""
-		Returns the single unique value in a column.
-		Raises an error if zero or more than one value is in the column.
-		:param column: The name of the column
-		:return: The value
-		"""
-		return _only(self[column].unique())
-
-	def cfirst(self, cols: Sequence[str]):
-		"""
-		Returns a new DataFrame with the specified columns appearing first.
-		:param cols: A list of columns
-		:return: A non-copy
-		"""
-		# noinspection PyTypeChecker
-		return self.__class__.convert(_cfirst(self, cols))
-
-	def drop_cols(self, cols: Iterable[str]):
-		df = self.copy()
-		for c in cols:
-			df = df.drop(c, axis=1)
-		return df
 
 	def n_rows(self) -> int:
 		return len(self)
@@ -163,6 +113,47 @@ class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, metaclass=abcd.ABCMeta
 		:return: A true, shallow copy with its __class__ set to pd.DataFrame
 		"""
 		return self.__class__.vanilla(df)
+
+	def sort_natural(self, column: str, alg: int = ns.INT):
+		df = self.copy().reset_index()
+		zzz = natsorted([s for s in df[column]], alg=alg)
+		df['__sort'] = df[column].map(lambda s: zzz.index(s))
+		df = df.sort_values('__sort')
+		return df.__class__.convert(df).drop_cols(['__sort', 'level_0'])
+
+	def sort_natural_index(self, alg: int = ns.INT):
+		df = self.copy().reset_index()
+		zzz = natsorted([s for s in df.index], alg=alg)
+		df['__sort'] = df.index.map(lambda s: zzz.index(s))
+		df = df.sort_values('__sort')
+		df = df.drop('__sort', axis=1).reset_index()
+		return df.__class__.convert(df).drop_cols(['__sort', 'level_0'])
+
+	def only(self, column: str) -> Any:
+		"""
+		Returns the single unique value in a column.
+		Raises an error if zero or more than one value is in the column.
+		:param column: The name of the column
+		:return: The value
+		"""
+		return _only(self[column].unique())
+
+	def cfirst(self, cols: Sequence[str]):
+		"""
+		Returns a new DataFrame with the specified columns appearing first.
+		:param cols: A list of columns
+		:return: A non-copy
+		"""
+		# noinspection PyTypeChecker
+		return self.__class__.convert(_cfirst(self, cols))
+
+	def drop_cols(self, cols: Iterable[str]):
+		df = self.copy()
+		if isinstance(cols, str): cols = [cols]
+		for c in cols:
+			if c in self.columns:
+				df = df.drop(c, axis=1)
+		return self.__class__.convert(df)
 
 
 @abcd.final

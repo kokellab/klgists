@@ -1,7 +1,6 @@
-
 import os
 import typing
-from typing import Iterator, Optional, Callable
+from typing import Iterator, Optional, Callable, Set
 
 
 def is_proper_file(path: str) -> bool:
@@ -18,8 +17,6 @@ def scantree(path: str, follow_symlinks: bool=False) -> Iterator[str]:
 			yield from scantree(entry.path)
 		elif is_proper_file(entry.path):
 			yield entry.path
-
-scan_for_proper_files = scantree
 
 
 def scan_for_files(path: str, follow_symlinks: bool=False) -> Iterator[str]:
@@ -63,6 +60,14 @@ def walk_until_level(some_dir, level: Optional[int]=None) -> Iterator[typing.Tup
 			num_sep_this = root.count(os.path.sep)
 			if level is None or num_sep + level <= num_sep_this:
 					del dirs[:]
+
+
+def delete_hidden_files(directory: str, filename_starts: Optional[Set[str]] = None) -> None:
+	"""Deletes any files beginning with '.' or '~'"""
+	if filename_starts is None: filename_starts = {'.', '~'}
+	for f in scan_for_files(directory):
+		for s in filename_starts:
+			if os.path.basename(f).startswith(s): os.remove(f)
 
 
 __all__ = ['scan_for_files', 'walk_until', 'walk_until_level']

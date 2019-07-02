@@ -1,6 +1,7 @@
+from pathlib import Path
 import os, io, shutil, gzip, platform, re
 from enum import Enum
-from typing import Iterator, Iterable
+from typing import Iterator, Iterable, Mapping
 
 import dill
 
@@ -13,6 +14,36 @@ class OverwriteChoice(Enum):
 	WARN = 2
 	IGNORE = 3
 	OVERWRITE = 4
+
+def pempty(s: str):
+	"""
+	Assesses whether the path is "empty" OR does not exist.
+	Returns False if the path exists or is either:
+		- A socket or block device (even if "empty" -- does not attempt to read)
+		- A nonempty file
+		- A directory containing subpaths
+		- A symlink to a nonempty file
+	Currently DOES NOT HANDLE: Symlinks to anything other than a file. Will raise a TypeError.
+	"""
+	if not pexists(s): return True
+	s = Path(s)
+	if s.is_block_device() or s.is_socket():
+		return False
+	elif s.is_dir():
+		# short-circuit
+		for _ in s.iterdir():
+			return False
+		return True
+	elif s.is_symlink():
+		target = Path(os.readlink(str(s)))
+		if not target.exists():
+			return True
+		if target.is_file():
+			return s.lstat().st_size == 0
+		# TODO if dir without infinite loops
+	elif s.is_file():
+		return s.stat().st_size == 0
+	raise TypeError("Unknown path type {}".format(s))
 
 def fix_path(path: str) -> str:
 	# ffmpeg won't recognize './' and will simply not write images!
@@ -47,12 +78,14 @@ assert ' ' not in _bad_chars
 def _sanitize_bit(p: str) -> str:
 	for b in _bad_chars: p = p.replace(b, '-')
 	return p
+
 def pjoin_sanitized_rel(*pieces: Iterable[any]) -> str:
 	"""Builds a path from a hierarchy, sanitizing the path by replacing /, :, <, >, ", ', \, |, ?, *, <DEL>, and control characters 0–32 with a hyphen-minus (-).
 	Each input to pjoin_sanitized must refer only to a single directory or file (cannot contain a path separator).
 	This means that you cannot have an absolute path (it would begin with os.path (probably /); use pjoin_sanitized_abs for this.
 	"""
 	return pjoin(*[_sanitize_bit(str(bit)) for bit in pieces])
+
 def pjoin_sanitized_abs(*pieces: Iterable[any]) -> str:
 	"""Same as pjoin_sanitized_rel but starts with os.sep (the root directory)."""
 	return pjoin(os.sep, pjoin_sanitized_rel(*pieces))
@@ -79,6 +112,13 @@ def remake_dirs(output_dir: str):
 	elif os.path.exists(output_dir):
 		raise PathIsNotDirectoryException("{} already exists and is not a directory".format(output_dir))
 	make_dirs(output_dir)
+
+def replace_in_file(path: str, changes: Mapping[str, str]) -> None:
+	"""Uses re.sub repeatedly to modify (AND REPLACE) a file's content."""
+	with open(path) as f: data = f.read()
+	for key, value in changes.items():
+		data = re.sub(key, value, data, re.MULTILINE, re.DOTALL)
+	with open(path, 'w', encoding="utf8") as f: f.write(data)
 
 
 def lines(file_name: str, known_encoding='utf-8') -> Iterator[str]:

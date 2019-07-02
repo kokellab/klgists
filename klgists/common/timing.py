@@ -75,10 +75,10 @@ class TimingTools:
 				yield thing
 				t1 = time.monotonic()
 				if i % every_i == 0:
-					log.write("Processed {} in {}.\n".format(every_i, Tools.delta_time_to_str(t1 - t0)))
+					log.write("Processed {} in {}.\n".format(every_i, TimingTools.delta_time_to_str(t1 - t0)))
 				i += 1
 			now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-			log.write("Processed {}/{} in {}. Done at {}.\n".format(i, i, Tools.delta_time_to_str(
+			log.write("Processed {}/{} in {}. Done at {}.\n".format(i, i, TimingTools.delta_time_to_str(
 				time.monotonic() - initial_start_time), now))
 		finally:
 			if none is not None: none.close()
