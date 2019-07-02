@@ -10,6 +10,7 @@ pandas == 0.24.2
 matplotlib == 3.0.3
 seaborn == 0.9.0
 goatools == 0.8.12
+natsort == 6.0.0
 wget == 3.2
 altair == 3.0.0
 colorama == 0.4.1

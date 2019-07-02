@@ -128,6 +128,8 @@ class NoSuchPathException(PathException, FileNotFoundError): pass
 
 class NoSuchFileException(NoSuchPathException): pass
 
+class IllegalFilenameException(PathException): pass
+
 class NoSuchDirectoryException(NoSuchPathException): pass
 
 class PathAlreadyExistsException(PathException): pass

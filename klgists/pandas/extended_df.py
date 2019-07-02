@@ -3,6 +3,7 @@ import typing
 from typing import Sequence, Set, Any, Callable, Union, Iterable
 import multiprocessing
 import pandas as pd
+from natsort import ns, natsorted
 from pandas.core.frame import DataFrame as _InternalDataFrame
 from klgists.pandas import cfirst as _cfirst
 from klgists.common import only as _only
@@ -53,6 +54,22 @@ class BaseExtendedDataFrame(PrettyInternalDataFrame, metaclass=abcd.ABCMeta):
 		:param copy:
 		"""
 		super(BaseExtendedDataFrame, self).__init__(data=data, index=index, columns=columns, dtype=dtype, copy=copy)
+
+	def sort_natural(self, column: str, alg: int = ns.INT):
+		df = self.copy().reset_index()
+		zzz = natsorted([s for s in df[column]], alg=alg)
+		df['__sort'] = df[column].map(lambda s: zzz.index(s))
+		df = df.sort_values('__sort')
+		df = df.drop('__sort', axis=1).reset_index()
+		return df
+
+	def sort_natural_index(self, alg: int = ns.INT):
+		df = self.copy().reset_index()
+		zzz = natsorted([s for s in df.index], alg=alg)
+		df['__sort'] = df.index.map(lambda s: zzz.index(s))
+		df = df.sort_values('__sort')
+		df = df.drop('__sort', axis=1).reset_index()
+		return df
 
 	def only(self, column: str) -> Any:
 		"""
@@ -284,4 +301,4 @@ class ExtendedDataFrame(ConvertibleExtendedDataFrame):
 		return []
 
 
-__all__ = ['BaseExtendedDataFrame', 'TrivialExtendedDataFrame', 'ExtendedDataFrame', 'InvalidExtendedDataFrameError']
+__all__ = ['BaseExtendedDataFrame', 'TrivialExtendedDataFrame', 'ExtendedDataFrame', 'InvalidExtendedDataFrameError', 'ns']
