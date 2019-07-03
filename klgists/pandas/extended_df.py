@@ -14,7 +14,7 @@ import klgists.common.abcd as abcd
 class InvalidExtendedDataFrameError(Exception): pass
 
 
-class PrettyInternalDataFrame(_InternalDataFrame, metaclass=abcd.ABCMeta):
+class PrettyInternalDataFrame(_InternalDataFrame, abcd.ABC):
 	"""
 	A DataFrame with an overridden _repr_html_ that shows the dimensions at the top.
 	"""
@@ -38,12 +38,17 @@ class PrettyInternalDataFrame(_InternalDataFrame, metaclass=abcd.ABCMeta):
 			return "{} rows × {} columns".format(len(self), len(self.columns))
 
 
-class BaseExtendedDataFrame(PrettyInternalDataFrame, metaclass=abcd.ABCMeta):
+class BaseExtendedDataFrame(PrettyInternalDataFrame, abcd.ABC):
 	"""
 	An abstract Pandas DataFrame subclass with additional methods.
 	"""
 	def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False):
 		super(BaseExtendedDataFrame, self).__init__(data=data, index=index, columns=columns, dtype=dtype, copy=copy)
+
+	@classmethod
+	def _change(cls, df):
+		df.__class__ = cls
+		return df
 
 	def n_rows(self) -> int:
 		return len(self)
@@ -71,8 +76,17 @@ class BaseExtendedDataFrame(PrettyInternalDataFrame, metaclass=abcd.ABCMeta):
 		"""
 		return _groupby_parallel(self.groupby(**groupby_kwargs), function, num_cpus=n_cores, logger=logger)
 
+	def only(self, column: str) -> Any:
+		"""
+		Returns the single unique value in a column.
+		Raises an error if zero or more than one value is in the column.
+		:param column: The name of the column
+		:return: The value
+		"""
+		return _only(self[column].unique())
 
-class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, metaclass=abcd.ABCMeta):
+
+class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, abcd.ABC):
 	"""
 	An extended DataFrame with convert() and vanilla() methods.
 	"""
@@ -80,7 +94,7 @@ class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, metaclass=abcd.ABCMeta
 
 	@classmethod
 	@abcd.override_recommended
-	def convert(cls, df: pd.DataFrame) -> BaseExtendedDataFrame:
+	def convert(cls, df: pd.DataFrame):
 		"""
 		Converts a vanilla Pandas DataFrame to cls.
 		Sets the index appropriately, permitting the required columns and index names to be either columns or index names.
@@ -89,8 +103,40 @@ class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, metaclass=abcd.ABCMeta
 		:return: A non-copy
 		"""
 		df.__class__ = cls
-		# noinspection PyTypeChecker
 		return df
+
+	def cfirst(self, cols: Sequence[str]):
+		"""
+		Returns a new DataFrame with the specified columns appearing first.
+		:param cols: A list of columns
+		:return: A non-copy
+		"""
+		# noinspection PyTypeChecker
+		return self.convert(_cfirst(self, cols))
+
+	def sort_natural(self, column: str, alg: int = ns.INT):
+		df = self.copy().reset_index()
+		zzz = natsorted([s for s in df[column]], alg=alg)
+		df['__sort'] = df[column].map(lambda s: zzz.index(s))
+		df.__class__ = self.__class__
+		df = df.sort_values('__sort').drop_cols(['__sort', 'level_0', 'index'])
+		return self.convert(df)
+
+	def sort_natural_index(self, alg: int = ns.INT):
+		df = self.copy().reset_index()
+		zzz = natsorted([s for s in df.index], alg=alg)
+		df['__sort'] = df.index.map(lambda s: zzz.index(s))
+		df.__class__ = self.__class__
+		df = df.sort_values('__sort').drop_cols(['__sort', 'level_0', 'index'])
+		return self.convert(df)
+
+	def drop_cols(self, cols: Iterable[str]):
+		df = self.copy()
+		if isinstance(cols, str): cols = [cols]
+		for c in cols:
+			if c in self.columns:
+				df = df.drop(c, axis=1)
+		return self.convert(df)
 
 	@classmethod
 	@abcd.override_recommended
@@ -114,47 +160,6 @@ class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, metaclass=abcd.ABCMeta
 		"""
 		return self.__class__.vanilla(df)
 
-	def sort_natural(self, column: str, alg: int = ns.INT):
-		df = self.copy().reset_index()
-		zzz = natsorted([s for s in df[column]], alg=alg)
-		df['__sort'] = df[column].map(lambda s: zzz.index(s))
-		df = df.sort_values('__sort')
-		return df.__class__.convert(df).drop_cols(['__sort', 'level_0'])
-
-	def sort_natural_index(self, alg: int = ns.INT):
-		df = self.copy().reset_index()
-		zzz = natsorted([s for s in df.index], alg=alg)
-		df['__sort'] = df.index.map(lambda s: zzz.index(s))
-		df = df.sort_values('__sort')
-		df = df.drop('__sort', axis=1).reset_index()
-		return df.__class__.convert(df).drop_cols(['__sort', 'level_0'])
-
-	def only(self, column: str) -> Any:
-		"""
-		Returns the single unique value in a column.
-		Raises an error if zero or more than one value is in the column.
-		:param column: The name of the column
-		:return: The value
-		"""
-		return _only(self[column].unique())
-
-	def cfirst(self, cols: Sequence[str]):
-		"""
-		Returns a new DataFrame with the specified columns appearing first.
-		:param cols: A list of columns
-		:return: A non-copy
-		"""
-		# noinspection PyTypeChecker
-		return self.__class__.convert(_cfirst(self, cols))
-
-	def drop_cols(self, cols: Iterable[str]):
-		df = self.copy()
-		if isinstance(cols, str): cols = [cols]
-		for c in cols:
-			if c in self.columns:
-				df = df.drop(c, axis=1)
-		return self.__class__.convert(df)
-
 
 @abcd.final
 class TrivialExtendedDataFrame(ConvertibleExtendedDataFrame):
@@ -164,49 +169,49 @@ class TrivialExtendedDataFrame(ConvertibleExtendedDataFrame):
 	"""
 
 	def drop_duplicates(self, **kwargs):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).drop_duplicates(**kwargs))
+		return self._change(super(ConvertibleExtendedDataFrame, self).drop_duplicates(**kwargs))
 
 	def reindex(self, *args, **kwargs):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).reindex(*args, **kwargs))
+		return self._change(super(ConvertibleExtendedDataFrame, self).reindex(*args, **kwargs))
 
 	def sort_values(self, by, axis=0, ascending=True, inplace=False,  kind='quicksort', na_position='last'):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).sort_values(by=by, axis=axis, ascending=ascending, inplace=inplace, kind=kind, na_position=na_position))
+		return self._change(super(ConvertibleExtendedDataFrame, self).sort_values(by=by, axis=axis, ascending=ascending, inplace=inplace, kind=kind, na_position=na_position))
 
 	def reset_index(self, level=None, drop=False, inplace=False, col_level=0, col_fill=''):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).reset_index(level=level, drop=drop, inplace=inplace, col_level=col_level, col_fill=col_fill))
+		return self._change(super(ConvertibleExtendedDataFrame, self).reset_index(level=level, drop=drop, inplace=inplace, col_level=col_level, col_fill=col_fill))
 
 	def set_index(self, keys, drop=True, append=False, inplace=False, verify_integrity=False):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).set_index(keys=keys, drop=drop, append=append, inplace=inplace, verify_integrity=verify_integrity))
+		return self._change(super(ConvertibleExtendedDataFrame, self).set_index(keys=keys, drop=drop, append=append, inplace=inplace, verify_integrity=verify_integrity))
 
 	def dropna(self, axis=0, how='any', thresh=None, subset=None, inplace=False):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).dropna(axis=axis, how=how, thresh=thresh, subset=subset, inplace=inplace))
+		return self._change(super(ConvertibleExtendedDataFrame, self).dropna(axis=axis, how=how, thresh=thresh, subset=subset, inplace=inplace))
 
 	def fillna(self, value=None, method=None, axis=None, inplace=False, limit=None, downcast=None, **kwargs):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).fillna(value=value, method=method, axis=axis, inplace=inplace, limit=limit, downcast=downcast, **kwargs))
+		return self._change(super(ConvertibleExtendedDataFrame, self).fillna(value=value, method=method, axis=axis, inplace=inplace, limit=limit, downcast=downcast, **kwargs))
 
 	def ffill(self, axis=None, inplace=False, limit=None, downcast=None):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).ffill(axis=axis, inplace=inplace, limit=limit, downcast=downcast))
+		return self._change(super(ConvertibleExtendedDataFrame, self).ffill(axis=axis, inplace=inplace, limit=limit, downcast=downcast))
 
 	def bfill(self, axis=None, inplace=False, limit=None, downcast=None):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).bfill(axis=axis, inplace=inplace, limit=limit, downcast=downcast))
+		return self._change(super(ConvertibleExtendedDataFrame, self).bfill(axis=axis, inplace=inplace, limit=limit, downcast=downcast))
 
 	def abs(self):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).abs())
+		return self._change(super(ConvertibleExtendedDataFrame, self).abs())
 
 	def rename(self, *args, **kwargs):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).rename(*args, **kwargs))
+		return self._change(super(ConvertibleExtendedDataFrame, self).rename(*args, **kwargs))
 
 	def replace(self, to_replace=None, value=None, inplace=False, limit=None, regex=False, method='pad'):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).replace(to_replace=to_replace, value=value, inplace=inplace, limit=limit, regex=regex, method=method))
+		return self._change(super(ConvertibleExtendedDataFrame, self).replace(to_replace=to_replace, value=value, inplace=inplace, limit=limit, regex=regex, method=method))
 
 	def applymap(self, func):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).applymap(func))
+		return self._change(super(ConvertibleExtendedDataFrame, self).applymap(func))
 
 	def astype(self, dtype, copy=True, errors='raise', **kwargs):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).astype(dtype=dtype, copy=copy, errors=errors, **kwargs))
+		return self._change(super(ConvertibleExtendedDataFrame, self).astype(dtype=dtype, copy=copy, errors=errors, **kwargs))
 
 	def drop(self, labels=None, axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
-		return self.__class__.convert(super(TrivialExtendedDataFrame, self).drop(labels=labels, axis=axis, index=index, columns=columns, level=level, inplace=inplace, errors=errors))
+		return self._change(super(ConvertibleExtendedDataFrame, self).drop(labels=labels, axis=axis, index=index, columns=columns, level=level, inplace=inplace, errors=errors))
 
 
 class ExtendedDataFrame(ConvertibleExtendedDataFrame):
