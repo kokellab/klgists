@@ -5,7 +5,7 @@ from hypothesis.strategies import integers
 import re
 
 from klgists.misc.well_name import *
-from klgists.misc.well_name import WbFactory, well_name, wells_of_row, well_index_from_name
+from klgists.misc.well_name import WbFactory
 
 
 class TestWellBase:
@@ -43,15 +43,12 @@ class TestWellBase:
 		assert list(wb.block_range('A01', 'C02')) == ['A01', 'A02', 'B01', 'B02', 'C01', 'C02']
 		assert list(wb.traversal_range('A01', 'B02')) == ['A01', 'A02', 'A03', 'A04', 'B01', 'B02']
 
-	def test_simple(self):
+	def test_parse(self):
+		wb = ParsingWB1(4, 4)
+		assert wb.parse("A01-C01") == ['A01', 'B01', 'C01']
+		assert wb.parse("A1-C1") == ['A01', 'B01', 'C01']
+		assert wb.parse("A01...A03") == ['A01', 'A02', 'A03']
+		assert wb.parse("A01-A04") == ['A01', 'A02', 'A03', 'A04']
+		assert wb.parse("A01...B02") == ['A01', 'A02', 'A03', 'A04', 'B01', 'B02']
+		assert wb.parse("A01*B02") == ['A01', 'A02', 'B01', 'B02']
 
-		assert well_name(0) == 'A01'
-		assert well_name(-1) == 'H12'
-		assert well_name(-15) == 'G10'
-		assert wells_of_row(0, n_columns=4) == ['A01', 'A02', 'A03', 'A04']
-		assert wells_of_row(0, n_columns=2) == ['A01', 'A02']
-		assert wells_of_row(3, n_columns=2) == ['D01', 'D02']
-		assert wells_of_row(13, n_rows=14, n_columns=2) == ['N01', 'N02']
-		assert wells_of_row(2, n_columns=200)[-1] == 'C200'
-		assert [well_index_from_name(x) for x in ['A01', 'H12', 'G10']] == [0, 95, 81]
-		assert [well_index_from_name(x, n_columns=4) for x in ['A01', 'A02', 'A03', 'A04']] == [0, 1, 2, 3]

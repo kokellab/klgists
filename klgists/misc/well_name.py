@@ -1,4 +1,4 @@
-import typing
+import typing, re
 from typing import Iterator, Sequence, Type
 
 from klgists.common import abcd
@@ -14,16 +14,17 @@ class _WB(abcd.ABC):
 	This class is preferred over the functions above.
 	Short for "Well Base".
 	This superclass is hidden. Use only the subclasses WB0 and WB1.
+	Limited to plates with no more than 26 rows.
 	"""
 	def __init__(self, n_rows: int, n_columns: int):
+		self.base = self.get_base()
 		self.n_rows = n_rows
 		self.n_columns = n_columns
 		self.n_wells = n_rows * n_columns
-		self.__well_name0 = lambda i: well_name(i, n_rows, n_columns)
-		self.__well_index0 = lambda i: well_index_from_name(i, n_rows, n_columns)
+		self.__well_name0 = self._ind_to_label
+		self.__well_index0 = self._label_to_ind
 		self.__well_rc0 = lambda i: (i//n_columns, i % n_columns)
 		self.__rc_to_i0 = lambda r, c:  self.n_columns*r + c
-		self.base = self.get_base()
 
 	@classmethod
 	#@abcd.abstractmethod
@@ -109,6 +110,21 @@ class _WB(abcd.ABC):
 	def __str__(self):
 		return "WB{}({}×{})".format(self.base, self.n_rows, self.n_columns)
 
+	def _ind_to_label(self, index: int) -> str:
+		"""Returns a 3-character well identifier like A52. Note that the default is landscape indexing (8 rows and 12 columns).
+
+		Modified from https://stackoverflow.com/questions/19170420/converting-well-number-to-the-identifier-on-a-96-well-plate.
+		"""
+		index = int(index)
+		if self.n_rows > 52:  # a 1536-well plate has 32 rows and 48 columns, so this won't work with that
+			raise OutOfRangeError('Well names are limited to plates with 26 rows!')
+		if index >= self.n_rows * self.n_columns:
+			raise OutOfRangeError('Well index {} is out of range (max is {})'.format(index, self.n_rows * self.n_columns))
+		return [chr(i) for i in range(0x41, 0x41 + self.n_rows)][index // self.n_columns] + '%02d' % (index % self.n_columns + 1,)
+
+	def _label_to_ind(self, name: str) -> int:
+		return (ord(name[0]) % 32) * self.n_columns - 1 - (self.n_columns - int(name[1:]))
+
 
 class WbFactory:
 
@@ -117,6 +133,46 @@ class WbFactory:
 		new_class = type('WB{}'.format(base), (_WB,), {})
 		new_class.get_base = lambda c: base
 		return new_class
+
+
+class ParsingWB(_WB, abcd.ABC):
+	"""
+	An abstract WB that can parse expressions.
+	Usage:
+		>>> class ParsingWB1(WB1, ParsingWB): pass
+	"""
+
+	_pattern = re.compile(r''' *([A-H][0-9]{1,2}) *(?:(\-|–|\*|(?:\.\.\.)|…) *([A-H][0-9]{1,2}))? *''')
+
+	def parse(self, expression: str) -> Sequence[str]:
+		"""
+		Returns the labels from the expression, inclusive.
+		Examples:
+			A01-A10   (sequence in a single row)
+			A01-E01   (sequence in a single column)
+			A01*C01   (a rectangular block)
+			A01...C01 (a traversal of the wells in order)
+		"""
+		trav = []
+		for txt in expression.split(','):
+			trav.extend(self._parse(txt))
+		return trav
+
+	def _parse(self, expression: str):
+		match = ParsingWB._pattern.fullmatch(expression)
+		if match is None:
+			raise ValueError("{} is wrong".format(expression))
+		a, x, b = match.group(1), match.group(2), match.group(3)
+		if x is None:
+			return self.simple_range(a, a)
+		elif x in {'-', '–'}:
+			return self.simple_range(a, b)
+		elif x == '*':
+			return self.block_range(a, b)
+		elif x in {'...', '…'}:
+			return self.traversal_range(a, b)
+		else:
+			assert False, "WHAT?"
 
 
 class WB1(_WB):
@@ -141,6 +197,8 @@ class WB0(_WB):
 	def get_base(cls):
 		return 0
 
+class ParsingWB0(WB0, ParsingWB): pass
+class ParsingWB1(WB1, ParsingWB): pass
 
 
-__all__ = ['WB1', 'WB0']
+__all__ = ['WB1', 'WB0', 'ParsingWB0', 'ParsingWB1']
