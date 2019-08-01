@@ -161,12 +161,17 @@ class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, abcd.ABC):
 		return self.__class__.vanilla(df)
 
 
-@abcd.final
 class TrivialExtendedDataFrame(ConvertibleExtendedDataFrame):
 	"""
 	A concrete BaseExtendedDataFrame that does not require special columns.
 	Overrides a number of DataFrame methods to convert before returning.
 	"""
+
+	def __getitem__(self, item):
+		if isinstance(item, str) and item in self.index.names:
+			return self.index.get_level_values(item)
+		else:
+			return super(Lookup, self).__getitem__(item)
 
 	def drop_duplicates(self, **kwargs):
 		return self._change(super(ConvertibleExtendedDataFrame, self).drop_duplicates(**kwargs))
@@ -212,6 +217,13 @@ class TrivialExtendedDataFrame(ConvertibleExtendedDataFrame):
 
 	def drop(self, labels=None, axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
 		return self._change(super(ConvertibleExtendedDataFrame, self).drop(labels=labels, axis=axis, index=index, columns=columns, level=level, inplace=inplace, errors=errors))
+
+
+@abcd.final
+class FinalExtendedDataFrame(TrivialExtendedDataFrame):
+	"""
+	A ready-to-go TrivialExtendedDataFrame that should not be overridden.
+	"""
 
 
 class ExtendedDataFrame(ConvertibleExtendedDataFrame):
@@ -297,4 +309,4 @@ class ExtendedDataFrame(ConvertibleExtendedDataFrame):
 		return []
 
 
-__all__ = ['BaseExtendedDataFrame', 'TrivialExtendedDataFrame', 'ExtendedDataFrame', 'InvalidExtendedDataFrameError', 'ns']
+__all__ = ['BaseExtendedDataFrame', 'TrivialExtendedDataFrame', 'FinalExtendedDataFrame', 'ExtendedDataFrame', 'InvalidExtendedDataFrameError', 'ns']
