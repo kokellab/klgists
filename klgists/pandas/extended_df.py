@@ -171,7 +171,7 @@ class TrivialExtendedDataFrame(ConvertibleExtendedDataFrame):
 		if isinstance(item, str) and item in self.index.names:
 			return self.index.get_level_values(item)
 		else:
-			return super(Lookup, self).__getitem__(item)
+			return super(TrivialExtendedDataFrame, self).__getitem__(item)
 
 	def drop_duplicates(self, **kwargs):
 		return self._change(super(ConvertibleExtendedDataFrame, self).drop_duplicates(**kwargs))
