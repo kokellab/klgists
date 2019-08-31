@@ -1,8 +1,8 @@
-import sys, time
+import sys, time, logging
 from datetime import datetime
-from typing import Iterable, Optional, Iterator, Collection, Any, TypeVar
-from klgists.common import DelegatingWriter
-
+from typing import Iterable, Optional, Iterator, Collection, Any, TypeVar, Callable
+from klgists.common import DelegatingWriter, get_log_function
+logger = logging.getLogger('klgists')
 
 T = TypeVar('T')
 
@@ -52,22 +52,20 @@ class TimingTools:
 		return '−' + s if is_neg else s
 
 	@staticmethod
-	def loop(things: Iterable[T], log: Optional[str] = None, every_i: int = 10, n_total: Optional[int] = None) -> Iterator[T]:
+	def loop(things: Iterable[T], log: Union[None, str, Callable[[str], None]], every_i: int = 10, n_total: Optional[int] = None) -> Iterator[T]:
+		log = get_log_function(log)
 		if hasattr(things, '__len__') or n_total is not None:
 			# noinspection PyTypeChecker
 			yield from TimingTools.loop_timing(things, log, every_i, n_total)
 		else:
 			yield from TimingTools.loop_logging(things, log, every_i)
 
-
 	@staticmethod
-	def loop_logging(things: Iterable[T], log: Optional[str] = None, every_i: int = 10) -> Iterator[T]:
-		none = None if log is None else open(log, 'a')
-		logs = (sys.stdout,) if log is None else (sys.__stdout__, none)
-		log = DelegatingWriter(*logs)
+	def loop_logging(things: Iterable[T], log: Union[None, str, Callable[[str], None]] = None, every_i: int = 10) -> Iterator[T]:
+		log = get_log_function(log)
 		initial_start_time = time.monotonic()
 		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-		log.write("Started processing at {}.\n".format(now))
+		log("Started processing at {}.\n".format(now))
 		try:
 			i = 0
 			for thing in things:
@@ -75,34 +73,32 @@ class TimingTools:
 				yield thing
 				t1 = time.monotonic()
 				if i % every_i == 0:
-					log.write("Processed {} in {}.\n".format(every_i, TimingTools.delta_time_to_str(t1 - t0)))
+					log("Processed {} in {}.\n".format(every_i, TimingTools.delta_time_to_str(t1 - t0)))
 				i += 1
 			now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-			log.write("Processed {}/{} in {}. Done at {}.\n".format(i, i, TimingTools.delta_time_to_str(
+			log("Processed {}/{} in {}. Done at {}.\n".format(i, i, TimingTools.delta_time_to_str(
 				time.monotonic() - initial_start_time), now))
 		finally:
 			if none is not None: none.close()
 
 	@staticmethod
-	def loop_timing(things: Collection[Any], log: Optional[str] = None, every_i: int = 10, n_total: Optional[int] = None):
-		none = None if log is None else open(log, 'a')
-		logs = (sys.stdout,) if log is None else (sys.__stdout__, none)
-		log = DelegatingWriter(*logs)
+	def loop_timing(things: Collection[Any], log: Union[None, str, Callable[[str], None]] = None, every_i: int = 10, n_total: Optional[int] = None):
+		log = get_log_function(log)
 		n_total = len(things) if n_total is None else n_total
 		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-		log.write("Started processing {} items at {}.\n".format(n_total, now))
+		log("Started processing {} items at {}.\n".format(n_total, now))
+		t0 = time.monotonic()
 		try:
 			initial_start_time = time.monotonic()
 			for i, thing in enumerate(things):
-				t0 = time.monotonic()
 				yield thing
 				t1 = time.monotonic()
 				if i % every_i == 0 and i < n_total - 1:
 					estimate = (t1 - initial_start_time) / (i + 1) * (n_total - i - 1)
-					log.write("Processed {}/{} in {}. Estimated {} left.\n".format(i + 1, n_total, TimingTools.delta_time_to_str(t1 - t0), TimingTools.delta_time_to_str(estimate)))
+					log("Processed {}/{} in {}. Estimated {} left.\n".format(i + 1, n_total, TimingTools.delta_time_to_str(t1 - t0), TimingTools.delta_time_to_str(estimate)))
 			now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-			log.write("Processed {}/{} in {}. Done at {}.\n".format(n_total, n_total, TimingTools.delta_time_to_str(
-				time.monotonic() - initial_start_time), now))
+			delta = TimingTools.delta_time_to_str(time.monotonic() - initial_start_time)
+			log("Processed {}/{} in {}. Done at {}.\n".format(n_total, n_total,delta, now))
 		finally:
 			if none is not None: none.close()
 

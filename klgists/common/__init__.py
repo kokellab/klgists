@@ -4,6 +4,7 @@ import unicodedata
 from itertools import chain
 import signal
 import operator
+import logging
 import re
 from contextlib import contextmanager, redirect_stdout
 from datetime import date, datetime
@@ -76,6 +77,57 @@ def pardir(path: str, depth: int=1):
 
 def grandpardir(path: str):
 	return pardir(path, 2)
+
+def get_log_function(log: Union[None, str, Callable[[str], None]]) -> Callable[[str], None]:
+	"""
+	Gets a logging function from user input.
+	The rules are:
+		- If None, uses logger.info
+		- If 'print' or 'stdout',  use sys.stdout.write
+		- If 'stderr', use sys.stderr.write
+		- If another str or int, try using that logger level (raises an error if invalid)
+		- If callable, returns it
+		- If it has a callable method called 'write', uses that
+	:return: A function of the log message that returns None
+	"""
+	if log is None:
+		return logger.info
+	elif log in ['print', 'stdout']:
+		return lambda msg: sys.stdout.write(msg)
+	elif log == 'stderr':
+		return lambda msg: sys.stderr.write(msg)
+	elif isinstance(log, int):
+		return getattr(logger, logging.getLevelName(log))
+	elif isinstance(log, str):
+		return getattr(logger, logging.getLevelName(log.upper()))
+	elif callable(log):
+		return log
+	elif hasattr(log, 'write') and getattr(log, 'write'):
+		return getattr(log, 'write')
+	else:
+		raise TypeError("Log type {} not known".format(type(log)))
+
+class LogWriter:
+	"""
+	A call to a logger at some level, pretending to be a writer.
+	Has a write method, as well as flush and close methods that do nothing.
+	"""
+	def __init__(self, level: Union[int, str]):
+		if isinstance(level, str): level = level.upper()
+		self.level = logging.getLevelName(level)
+
+	def write(self, msg: str):
+		getattr(logger, self.level)(msg)
+
+	def flush(self): pass
+	def close(self): pass
+
+	def __enter__(self):
+		return self
+
+	def __exit__(self, exc_type, exc_value, traceback):
+		self.close()
+
 
 class DelegatingWriter(object):
 	# we CANNOT override TextIOBase: It causes hangs
@@ -236,12 +288,13 @@ def zip_strict(*args):
 			raise LengthMismatchError("Too few elements ({}) along axes {}".format(n_elements, failures))
 		n_elements += 1
 
-def zip_strict_list(*args) -> List[Any]:
+def zip_list(*args) -> List[Any]:
 	"""Same as zip_strict, but converts to a list and can provide a more detailed error message."""
 	try:
 		return list(zip_strict(*args))
 	except LengthMismatchError:
 		raise LengthMismatchError("Length mismatch in zip_strict: Sizes are {}".format([len(x) for x in args])) from None
+zip_strict_list = zip_list  # for historical use
 
 def only(sequence: Iterable[Any]) -> Any:
 	"""
