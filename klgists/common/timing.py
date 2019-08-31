@@ -1,6 +1,6 @@
 import sys, time, logging
 from datetime import datetime
-from typing import Iterable, Optional, Iterator, Collection, Any, TypeVar, Callable
+from typing import Iterable, Optional, Iterator, Collection, Any, TypeVar, Callable, Union
 from klgists.common import DelegatingWriter, get_log_function
 logger = logging.getLogger('klgists')
 
