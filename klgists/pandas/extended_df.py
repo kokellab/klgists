@@ -19,6 +19,11 @@ class PrettyInternalDataFrame(_InternalDataFrame, abcd.ABC):
 	A DataFrame with an overridden _repr_html_ that shows the dimensions at the top.
 	"""
 
+	@property
+	def _constructor_expanddim(self):
+		# this raises a NotImplementedError in _InternalDataFrame, so let's override it here to prevent tools and IDEs from complaining
+		raise ValueError()
+
 	def _repr_html_(self):
 		"""
 		Renders HTML for display() in Jupyter notebooks.
@@ -44,6 +49,14 @@ class BaseExtendedDataFrame(PrettyInternalDataFrame, abcd.ABC):
 	"""
 	def __init__(self, data=None, index=None, columns=None, dtype=None, copy=False):
 		super(BaseExtendedDataFrame, self).__init__(data=data, index=index, columns=columns, dtype=dtype, copy=copy)
+
+	@classmethod
+	def read_csv(cls, *args, **kwargs):
+		return cls._change(pd.read_csv(*args, **kwargs))
+
+	@classmethod
+	def read_hdf(cls, *args, **kwargs):
+		return cls._change(pd.read_hdf(*args, **kwargs))
 
 	@classmethod
 	def _change(cls, df):
@@ -137,6 +150,14 @@ class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, abcd.ABC):
 			if c in self.columns:
 				df = df.drop(c, axis=1)
 		return self.convert(df)
+
+	@classmethod
+	def read_csv(cls, *args, **kwargs):
+		return cls.convert(pd.read_csv(*args, **kwargs))
+
+	@classmethod
+	def read_hdf(cls, *args, **kwargs):
+		return cls.convert(pd.read_hdf(*args, **kwargs))
 
 	@classmethod
 	@abcd.override_recommended
