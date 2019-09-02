@@ -56,51 +56,42 @@ class TimingTools:
 		log = get_log_function(log)
 		if hasattr(things, '__len__') or n_total is not None:
 			# noinspection PyTypeChecker
-			yield from TimingTools.loop_timing(things, log, every_i, n_total)
+			yield from TimingTools._loop_timing(things, log, every_i, n_total)
 		else:
-			yield from TimingTools.loop_logging(things, log, every_i)
+			yield from TimingTools._loop_logging(things, log, every_i)
 
 	@staticmethod
-	def loop_logging(things: Iterable[T], log: Union[None, str, Callable[[str], None]] = None, every_i: int = 10) -> Iterator[T]:
+	def _loop_logging(things: Iterable[T], log: Union[None, str, Callable[[str], None]] = None, every_i: int = 10) -> Iterator[T]:
 		log = get_log_function(log)
 		initial_start_time = time.monotonic()
 		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		log("Started processing at {}.\n".format(now))
-		try:
-			i = 0
-			for thing in things:
-				t0 = time.monotonic()
-				yield thing
-				t1 = time.monotonic()
-				if i % every_i == 0:
-					log("Processed {} in {}.\n".format(every_i, TimingTools.delta_time_to_str(t1 - t0)))
-				i += 1
-			now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-			log("Processed {}/{} in {}. Done at {}.\n".format(i, i, TimingTools.delta_time_to_str(
-				time.monotonic() - initial_start_time), now))
-		finally:
-			if none is not None: none.close()
+		for i, thing in enumerate(things):
+			t0 = time.monotonic()
+			yield thing
+			t1 = time.monotonic()
+			if i % every_i == 0:
+				log("Processed {} in {}.\n".format(every_i, TimingTools.delta_time_to_str(t1 - t0)))
+		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		log("Processed {}/{} in {}. Done at {}.\n".format(i, i, TimingTools.delta_time_to_str(time.monotonic() - initial_start_time), now))
 
 	@staticmethod
-	def loop_timing(things: Collection[Any], log: Union[None, str, Callable[[str], None]] = None, every_i: int = 10, n_total: Optional[int] = None):
+	def _loop_timing(things: Collection[Any], log: Union[None, str, Callable[[str], None]] = None, every_i: int = 10, n_total: Optional[int] = None):
 		log = get_log_function(log)
 		n_total = len(things) if n_total is None else n_total
 		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		log("Started processing {} items at {}.\n".format(n_total, now))
 		t0 = time.monotonic()
-		try:
-			initial_start_time = time.monotonic()
-			for i, thing in enumerate(things):
-				yield thing
-				t1 = time.monotonic()
-				if i % every_i == 0 and i < n_total - 1:
-					estimate = (t1 - initial_start_time) / (i + 1) * (n_total - i - 1)
-					log("Processed {}/{} in {}. Estimated {} left.\n".format(i + 1, n_total, TimingTools.delta_time_to_str(t1 - t0), TimingTools.delta_time_to_str(estimate)))
-			now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-			delta = TimingTools.delta_time_to_str(time.monotonic() - initial_start_time)
-			log("Processed {}/{} in {}. Done at {}.\n".format(n_total, n_total,delta, now))
-		finally:
-			if none is not None: none.close()
+		initial_start_time = time.monotonic()
+		for i, thing in enumerate(things):
+			yield thing
+			t1 = time.monotonic()
+			if i % every_i == 0 and i < n_total - 1:
+				estimate = (t1 - initial_start_time) / (i + 1) * (n_total - i - 1)
+				log("Processed {}/{} in {}. Estimated {} left.\n".format(i + 1, n_total, TimingTools.delta_time_to_str(t1 - t0), TimingTools.delta_time_to_str(estimate)))
+		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		delta = TimingTools.delta_time_to_str(time.monotonic() - initial_start_time)
+		log("Processed {}/{} in {}. Done at {}.\n".format(n_total, n_total,delta, now))
 
 	def __repr__(self): return self.__class__.__name__
 	def __str__(self): return self.__class__.__name__
