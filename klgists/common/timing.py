@@ -52,7 +52,7 @@ class TimingTools:
 		return '−' + s if is_neg else s
 
 	@staticmethod
-	def loop(things: Iterable[T], log: Union[None, str, Callable[[str], None]], every_i: int = 10, n_total: Optional[int] = None) -> Iterator[T]:
+	def loop(things: Iterable[T], log: Union[None, str, Callable[[str], None]] = None, every_i: int = 10, n_total: Optional[int] = None) -> Iterator[T]:
 		log = get_log_function(log)
 		if hasattr(things, '__len__') or n_total is not None:
 			# noinspection PyTypeChecker
