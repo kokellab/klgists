@@ -9,9 +9,11 @@ import re
 from contextlib import contextmanager, redirect_stdout
 from datetime import date, datetime
 from pathlib import Path
-from typing import Iterator, TypeVar, Iterable, Optional, List, Any, Sequence, Mapping, overload
+from typing import Iterator, TypeVar, Iterable, Optional, List, Any, Sequence, Mapping, overload, Union, Callable
 from hurry.filesize import size as hsize
 from klgists.common.exceptions import LookupFailedException, MultipleMatchesException, ParsingFailedException, LengthMismatchError
+
+logger = logging.getLogger('klgists')
 
 def look(obj: object, attrs: str) -> any:
 	if not isinstance(attrs, str) and isinstance(attrs, Iterable): attrs = '.'.join(attrs)
