@@ -1,3 +1,5 @@
+# list of all requirements
+# not named requirements.txt so that anaconda can list this as a pip dependency without overriding packages
 dill == 0.3.0
 PyMySQL == 0.9.3
 ChemSpiPy == 2.0.0
