@@ -36,7 +36,7 @@ def deletion_fn(path) -> Optional[Exception]:
 	# we need this because of Windows
 	chmod_err = None
 	try:
-		os.chmod(path, stat.S_IWRITE)
+		os.chmod(path, stat.S_IRWXU)
 	except Exception as e:
 		chmod_err = e
 	# another reason for returning exception:
