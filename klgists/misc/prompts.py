@@ -36,7 +36,7 @@ def deletion_fn(path) -> Optional[Exception]:
 	# we need this because of Windows
 	chmod_err = None
 	try:
-		os.chmod(path, stat.S_IWRITE)
+		os.chmod(path, stat.S_IRWXU)
 	except Exception as e:
 		chmod_err = e
 	# another reason for returning exception:
@@ -62,11 +62,11 @@ def slow_delete(path: str, wait: int = 5, delete_fn: Callable[[str], None] = del
 	print(Fore.BLUE + '...', end='')
 	chmod_err = delete_fn(path)
 	print(Fore.BLUE + ' deleted.')
-	#if chmod_err is not None:
-	#	try:
-	#		raise chmod_err
-	#	except:
-	#		logger.warning("Couldn't chmod {}".format(path), exc_info=True)
+	if chmod_err is not None:
+		try:
+			raise chmod_err
+		except:
+			logger.warning("Couldn't chmod {}".format(path), exc_info=True)
 	logger.debug("Deleted directory tree {}".format(path))
 
 
