@@ -4,7 +4,7 @@ import os
 import codecs
 import gzip
 
-from klgists.common.exceptions import HashValidationFailedException, NoSuchFileException
+from klgists.common.exceptions import HashValidationFailedException
 
 
 class FileHasher:
@@ -40,7 +40,7 @@ class FileHasher:
 
 	def _o(self, file_name: str, opener, *args):
 		if not os.path.isfile(file_name + self.extension):
-			raise NoSuchFileException("Hash for file {} does not exist".format(file_name))
+			raise FileNotFoundError("Hash for file {} does not exist".format(file_name))
 		with open(file_name + self.extension, 'r', encoding="utf8") as f:
 			if f.read() != self.hashsum(file_name):
 				raise HashValidationFailedException("Hash for file {} does not match".format(file_name))

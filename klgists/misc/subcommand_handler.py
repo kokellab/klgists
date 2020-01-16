@@ -8,7 +8,7 @@ from typing import List, Any, Callable, Optional, Union
 from colorama import Fore
 
 from klgists import logger
-from klgists.common.exceptions import PathIsNotDirectoryException
+from klgists.common.exceptions import InvalidDirectoryException
 from klgists.common import pexists, pdir
 from klgists.common.exceptions import NaturalExpectedException
 from klgists.files import remake_dirs
@@ -52,7 +52,7 @@ class SubcommandHandler:
 		try:
 			if self.temp_dir is not None:
 				if pexists(self.temp_dir) and pdir(self.temp_dir): shutil.rmtree(self.temp_dir)
-				elif pexists(self.temp_dir): raise PathIsNotDirectoryException(self.temp_dir)
+				elif pexists(self.temp_dir): raise InvalidDirectoryException(self.temp_dir)
 				remake_dirs(self.temp_dir)
 				logger.debug("Created temp dir at {}".format(self.temp_dir))
 			getattr(self.target, subcommand)()

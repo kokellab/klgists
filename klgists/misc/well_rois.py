@@ -1,12 +1,12 @@
 import typing
 from typing import List, Dict
-from klgists.common.exceptions import Edge, Axis, RoiOutOfBoundsError, FlippedRoiBoundsError, NegativeRoiBoundsError
+from klgists.common.exceptions import Edge, Axis, RoiOutOfBoundsError, FlippedRoiBoundsError, RoiOutOfBoundsError
 
 
 class Roi:
 	def __init__(self, x0: int, y0: int, x1: int, y1: int) -> None:
-		if x0 < 0: raise NegativeRoiBoundsError("x0 is negative ({})".format(x0)).on_edge(Edge.LEFT)
-		if y0 < 0: raise NegativeRoiBoundsError("y0 is negative ({})".format(y0)).on_edge(Edge.TOP)
+		if x0 < 0: raise RoiOutOfBoundsError("x0 is negative ({})".format(x0)).on_edge(Edge.LEFT)
+		if y0 < 0: raise RoiOutOfBoundsError("y0 is negative ({})".format(y0)).on_edge(Edge.TOP)
 		if x0 >= x1: raise FlippedRoiBoundsError("x0 ({}) is past (or equal to) x1 ({})".format(x0, x1)).on_axis(Axis.HORIZONTAL)
 		if y0 >= y1: raise FlippedRoiBoundsError("y0 ({}) is past (or equal to) y1 ({})".format(y0, y1)).on_axis(Axis.VERTICAL)
 		self.x0 = x0

@@ -16,12 +16,9 @@ class OutOfRangeError(IndexError): pass
 
 class NaturalExpectedException(Exception): pass
 
-class HelpRequestedException(NaturalExpectedException): pass
-
-
-class PreconditionFailedException(Exception): pass
 
 class MultipleMatchesException(Exception): pass
+
 
 class HashValidationFailedException(Exception): pass
 
@@ -35,7 +32,6 @@ class ImpossibleStateException(AssertionError):
 
 class ExternalDeviceNotFound(IOError): pass
 
-class TimeoutException(IOError): pass
 
 class ExternalCommandFailed(IOError):
 	def __init__(self, message, command: str, exit_code: int, stdout: str, stderr: str):
@@ -56,22 +52,20 @@ class ExternalCommandFailed(IOError):
 		else:
 			return " <no output>"
 
-class MissingComponentException(IOError): pass
-
-class InsufficientResourceException(OSError): pass
-
 
 # user errors
 
 class UserError(Exception): pass
 
-class MissingConfigEntry(UserError): pass
 
 class BadCommandError(UserError): pass
 
+
 class LookupFailedException(UserError): pass
 
+
 class BadConfigException(UserError): pass
+
 
 class Edge(Enum):
 	LEFT = 1
@@ -79,12 +73,14 @@ class Edge(Enum):
 	TOP = 3
 	BOTTOM = 4
 
+
 class Axis(Enum):
 	HORIZONTAL = 1
 	VERTICAL = 2
 
+
 class RoiError(BadConfigException):
-	def __init__(self, message, errors = None, edge: Edge = None, axis: Axis = None):
+	def __init__(self, message, errors=None):
 		super().__init__(message, errors)
 		self.edge = None
 		self.axis = None
@@ -93,10 +89,8 @@ class RoiError(BadConfigException):
 
 
 class RoiOutOfBoundsError(RoiError): pass
-class NegativeRoiBoundsError(RoiError): pass
 class FlippedRoiBoundsError(RoiError): pass
 
-class UserContradictionException(UserError): pass
 
 class RefusingRequestException(UserError): pass
 
@@ -113,27 +107,17 @@ class ParsingFailedException(UserError): pass
 
 class BoardUserError(UserError): pass
 
+
 class BadPinWriteValueException(BoardUserError): pass
 
-class NoSuchInputPinException(BoardUserError): pass
 
-class NoSuchOutputPinException(BoardUserError): pass
+class NoSuchPinException(BoardUserError): pass
 
 
 # path errors
 
 class PathException(IOError): pass
 
-class NoSuchPathException(PathException, FileNotFoundError): pass
+class InvalidFileException(PathException): pass
 
-class NoSuchFileException(NoSuchPathException): pass
-
-class IllegalFilenameException(PathException): pass
-
-class NoSuchDirectoryException(NoSuchPathException): pass
-
-class PathAlreadyExistsException(PathException): pass
-
-class PathIsNotFileException(PathAlreadyExistsException): pass
-
-class PathIsNotDirectoryException(PathAlreadyExistsException, NotADirectoryError): pass
+class InvalidDirectoryException(PathException): pass

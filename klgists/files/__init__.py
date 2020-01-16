@@ -6,7 +6,7 @@ from typing import Iterator, Iterable, Mapping
 import dill
 
 from klgists.common import pjoin, pexists, pfile, pdir, pdirname, plexists
-from klgists.common.exceptions import PathIsNotDirectoryException, MissingResourceException
+from klgists.common.exceptions import InvalidDirectoryException, MissingResourceException
 
 
 class OverwriteChoice(Enum):
@@ -93,24 +93,24 @@ def pjoin_sanitized_abs(*pieces: Iterable[any]) -> str:
 
 def make_dirs(output_dir: str):
 	"""Makes a directory if it doesn't exist.
-	May raise a PathIsNotDirectoryException.
+	May raise a InvalidDirectoryException.
 	"""
 	# '' can break on Windows
 	if output_dir == '': return
 	if not os.path.exists(output_dir):
 		os.makedirs(output_dir)
 	elif not os.path.isdir(output_dir):
-		raise PathIsNotDirectoryException("{} already exists and is not a directory".format(output_dir))
+		raise InvalidDirectoryException("{} already exists and is not a directory".format(output_dir))
 
 
 def remake_dirs(output_dir: str):
 	"""Makes a directory, remaking it if it already exists.
-	May raise a PathIsNotDirectoryException.
+	May raise a InvalidDirectoryException.
 	"""
 	if os.path.exists(output_dir) and os.path.isdir(output_dir):
 		shutil.rmtree(output_dir)
 	elif os.path.exists(output_dir):
-		raise PathIsNotDirectoryException("{} already exists and is not a directory".format(output_dir))
+		raise InvalidDirectoryException("{} already exists and is not a directory".format(output_dir))
 	make_dirs(output_dir)
 
 def replace_in_file(path: str, changes: Mapping[str, str]) -> None:

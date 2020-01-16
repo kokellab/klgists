@@ -1,7 +1,7 @@
 import os
 from warnings import warn
 from typing import Mapping
-from klgists.common.exceptions import IllegalFilenameException
+from klgists.common.exceptions import InvalidFileException
 
 
 class WindowsPaths:
@@ -35,11 +35,11 @@ class WindowsPaths:
 			while fixed.endswith(' ') or fixed.endswith('.') and fixed != '.':
 				fixed = fixed[:-1]
 			if bit.strip() == '':
-				raise IllegalFilenameException("Path {} has a node (#{}) that is empty or contains only whitespace".format(path, i))
+				raise InvalidFileException("Path {} has a node (#{}) that is empty or contains only whitespace".format(path, i))
 			if bit in bad_strs:
-				raise IllegalFilenameException("Path {} has node '{}' (#{}), which is reserved".format(path, bit, i))
+				raise InvalidFileException("Path {} has node '{}' (#{}), which is reserved".format(path, bit, i))
 			if len(bit) > 254:
-				raise IllegalFilenameException("Path {} has node '{}' (#{}), which has more than 254 characters".format(path, bit, i))
+				raise InvalidFileException("Path {} has node '{}' (#{}), which has more than 254 characters".format(path, bit, i))
 			return fixed
 		bits = path.split(sep)
 		if path.startswith(sep):

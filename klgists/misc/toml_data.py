@@ -1,7 +1,7 @@
 
 from typing import Iterator, Dict, List, ItemsView, KeysView, ValuesView
 
-from klgists.common.exceptions import MissingConfigEntry
+from klgists.common.exceptions import BadConfigException
 
 
 class TomlData:
@@ -69,7 +69,7 @@ class TomlData:
 		items = key.split('.')
 		item = self.top
 		for i, s in enumerate(items):
-			if s not in item: raise MissingConfigEntry(
+			if s not in item: raise BadConfigException(
 				"{} is not in the TOML; failed at {}"
 				.format(key, '.'.join(items[:i+1]))
 			)
