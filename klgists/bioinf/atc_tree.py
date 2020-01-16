@@ -18,22 +18,28 @@ class Atc:
 	
 	def __eq__(self, o):
 		return isinstance(o, Atc) and self.code == o.code
+
 	def __neq__(self, o):
 		return self != o
+
 	def __hash__(self):
 		return hash(self.code)
+
 	def __lt__(self, o):
 		return isinstance(o, Atc) and self.code < o.code
+
 	def __gt__(self, o):
 		return isinstance(o, Atc) and self.code > o.code
+
 	def __le__(self, o):
 		return isinstance(o, Atc) and self.code <= o.code
+
 	def __ge__(self, o):
 		return isinstance(o, Atc) and self.code >= o.code
 	
 	def __repr__(self):
-		#return "({:7}) → {:7} – {}".format(self.parent.code if self.parent is not None else '/', self.code, self.desc)
 		return "→{:7} – {}".format(self.code, self.desc)
+
 	def __str__(self): return repr(self)
 	
 	def is_root(self) -> bool:
@@ -107,6 +113,7 @@ class AtcTree:
 	
 	def __repr__(self):
 		return "AtcTree({} nodes @ {})".format(len(self._lookup), hex(id(self)))
+
 	def __str__(self):
 		return repr(self)
 
@@ -182,6 +189,7 @@ class AtcParser:
 	
 	def __repr__(self):
 		return self.__name__
+
 	def __str__(self): return repr(self)
 
 
