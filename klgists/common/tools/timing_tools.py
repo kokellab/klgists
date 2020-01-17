@@ -1,9 +1,8 @@
-import sys, time, logging
-from datetime import datetime
-from typing import Iterable, Optional, Iterator, Collection, Any, TypeVar, Callable, Union
-from klgists.common import DelegatingWriter, get_log_function
-logger = logging.getLogger('klgists')
+from klgists.common.tools import *
+from typing import Collection
+import time
 
+logger = logging.getLogger('klgists')
 T = TypeVar('T')
 
 
@@ -92,6 +91,22 @@ class TimingTools:
 		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		delta = TimingTools.delta_time_to_str(time.monotonic() - initial_start_time)
 		log("Processed {}/{} in {}. Done at {}.\n".format(n_total, n_total,delta, now))
+
+	@staticmethod
+	def parallel(items, function, n_cores: int = 2) -> None:
+		import itertools
+		import multiprocessing
+		t0 = time.monotonic()
+		print("\n[{}] Using {} cores...".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), n_cores))
+		with multiprocessing.Pool(n_cores) as pool:
+			queue = multiprocessing.Manager().Queue()
+			result = pool.starmap_async(function, items)
+			cycler = itertools.cycle('\|/―')
+			while not result.ready():
+				print("Percent complete: {:.0%} {}".format(queue.qsize() / len(items), next(cycler)), end='\r')
+				time.sleep(0.4)
+			got = result.get()
+		print("\n[{}] Processed {} items in {:.1f}s".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), len(got), time.monotonic() - t0))
 
 	def __repr__(self): return self.__class__.__name__
 	def __str__(self): return self.__class__.__name__

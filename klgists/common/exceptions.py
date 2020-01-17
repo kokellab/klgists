@@ -67,6 +67,9 @@ class LookupFailedException(UserError): pass
 class BadConfigException(UserError): pass
 
 
+class ParsingError(UserError): pass
+
+
 class Edge(Enum):
 	LEFT = 1
 	RIGHT = 2
