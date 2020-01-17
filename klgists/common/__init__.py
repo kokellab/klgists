@@ -217,20 +217,6 @@ def parse_bool(s: str) -> bool:
 		return True
 	raise ValueError("{} is not true/false".format(s))
 
-def tabs_to_list(s: str) -> Sequence[str]:
-	"""
-	Splits by tabs, but preserving quoted tabs, stripping quotes.
-	"""
-	pat = re.compile(r'''((?:[^\t"']|"[^"]*"|'[^']*')+)''')
-	# Don't strip double 2x quotes: ex ""55"" should be "55", not 55
-	def strip(i: str) -> str:
-		if i.endswith('"') or i.endswith("'"):
-			i = i[:-1]
-		if i.startswith('"') or i.startswith("'"):
-			i = i[1:]
-		return i.strip()
-	return [strip(i) for i in pat.findall(s)]
-
 def strip_off_start(s: str, pre: str) -> str:
 	"""
 	Strips the full string `pre` from the start of `str`.
@@ -354,27 +340,6 @@ def read_properties_file(path: str) -> Mapping[str, str]:
 			parts = line.split('=')
 			dct[parts[0].strip()] = parts[1].strip()
 	return dct
-
-
-def truncate(s: Optional[str], n: int, always_dots: bool=False) -> Optional[str]:
-	"""
-	Returns a string if it has `n` or fewer characters; otherwise truncates to length `n-1` and appends `…` (UTF character).
-	If `s` is None and `always_dots` is True, returns `n` copies of `.` (as a string).
-	If `s` is None otherwise, returns None.
-	:param s: The string
-	:param n: The maximum length, inclusive
-	:param always_dots: Use dots instead of returning None; see above
-	:return: A string or None
-	"""
-	if s is None and always_dots:
-		return '…'*n
-	if s is None:
-		return None
-	if len(s) > n:
-		nx = max(0, n - 1)
-		return s[:nx] + '…'
-	return s
-
 
 def json_serial(obj):
 	"""JSON serializer for objects not serializable by default json code.
