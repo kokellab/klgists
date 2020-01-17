@@ -1,6 +1,10 @@
+from klgists.common.tools.gist_tools import GistTools as Tools
 from klgists.common.iterators import *
-import pytest
+from klgists.common.exceptions import InvalidFileException, MultipleMatchesException
 
+import pytest
+import os
+import numpy as np
 
 class TestGists:
 	"""
@@ -57,6 +61,91 @@ class TestGists:
 		it = TieredIterator([[1,2], [5], ['a', 'b']])
 		assert len(it) == 2*1*2
 		assert list(it) == [(1,5,'a'), (1,5,'b'), (2,5,'a'), (2,5,'b')]
+
+	def test_sanitize_filename(self):
+		assert 'abc_xyz' == str(Tools.sanitize_filename('abc|xyz', False))
+		assert 'abc\\xyz' == str(Tools.sanitize_filename('abc\\xyz.', False))
+		assert 'xyz' == str(Tools.sanitize_filename('xyz...', False))
+		assert 'abc\\xyz\\n' == str(Tools.sanitize_filename('abc\\.\\xyz\\n.', False))
+		with pytest.raises(InvalidFileException):
+			Tools.sanitize_filename('x'*255)
+		with pytest.raises(InvalidFileException):
+			Tools.sanitize_filename('NUL')
+		with pytest.raises(InvalidFileException):
+			Tools.sanitize_filename('abc\\NUL')
+		with pytest.raises(InvalidFileException):
+			Tools.sanitize_filename('NUL\\abc')
+
+	def test_truncate(self):
+		assert '12…' == Tools.truncate('1234567', 3)
+		assert '…' == Tools.truncate('1234567', 1)
+		assert '…' == Tools.truncate('1234567', 0)
+		assert '…' == Tools.truncate('1234567', -1)
+		assert '12…' == Tools.truncate('1234567', 3)
+		assert '123' == Tools.truncate('123', 3)
+		assert '123' == Tools.truncate('123', 6)
+		assert None is Tools.truncate(None, 4)
+		assert '…………' == Tools.truncate(None, 4, True)
+
+	def test_is_empty(self):
+		assert not Tools.is_empty('a')
+		assert Tools.is_empty([])
+		assert not Tools.is_empty('None')
+		assert Tools.is_empty(None)
+		assert Tools.is_empty('')
+		assert Tools.is_empty([])
+		assert Tools.is_empty({})
+		assert Tools.is_empty(tuple())
+		assert not Tools.is_empty((5,))
+		assert not Tools.is_empty(0.0)
+		assert not Tools.is_empty(np.inf)
+		assert Tools.is_empty(np.nan)
+
+	def test_is_null(self):
+		assert not Tools.is_null('a')
+		assert not Tools.is_null([])
+		assert not Tools.is_null('None')
+		assert not Tools.is_null([])
+		assert Tools.is_null(None)
+		assert not Tools.is_null('')
+		assert not Tools.is_null(0.0)
+		assert not Tools.is_null(np.inf)
+		assert Tools.is_null(np.nan)
+
+	def fix_greek(self):
+		assert Tools.fix_greek('beta') == u'\u03B2'
+		assert Tools.fix_greek('theta') == u'\u03B8'
+		assert Tools.fix_greek('Beta') == u'\u0392'
+		assert Tools.fix_greek('BETA') == 'BETA'
+		assert Tools.fix_greek('BETA', lowercase=True) == 'BETA'
+		assert Tools.fix_greek('Beta', lowercase=True) == u'\u03B2'
+
+	def test_only(self):
+		assert 'a' == Tools.only(['a'])
+		assert 'a' == Tools.only('a')
+		assert 1 == Tools.only([1])
+		assert 'ab' == Tools.only({'ab'})
+		with pytest.raises(MultipleMatchesException):
+			Tools.only(['a', 'b'])
+		with pytest.raises(MultipleMatchesException):
+			Tools.only('ab')
+		with pytest.raises(ValueError):
+			Tools.only([])
+		with pytest.raises(ValueError):
+			Tools.only('')
+
+	def test_strip_off(self):
+		assert 'abc' == Tools.strip_off('abs=abc', 'abs=')
+		assert 'abc' == Tools.strip_off('abs=abcabs=', 'abs=')
+		assert Tools.strip_ends('123456', '1', '6')
+
+	def test_tabs_to_list(self):
+		assert ['a', 'b', 'c\td', 'e'] == Tools.tabs_to_list('a\t"b"\t"c\td"\te')
+
+	def test_read_properties_file(self):
+		path = os.path.join(os.environ['KALE'], 'tests', 'resources', 'core', 'properties.properties')
+		data = Tools.read_properties_file(path)
+		assert data == {'abc': 'xyz', '123': '1533'}
 
 
 if __name__ == '__main__':
