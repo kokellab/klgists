@@ -1,12 +1,11 @@
 
-from klgists.common.silenced import silenced
-
 import re
 # from https://github.com/boscoh/uniprot
 import uniprot
 import pandas as pd
 import os
 import wget
+from klgists.common.tools.sys_tools import IoTools
 from goatools import obo_parser # uses https://github.com/tanghaibao/goatools
 from goatools.obo_parser import GOTerm # NOT the same as FlatGoTerm, which has no knowledge of hierarchy
 
@@ -62,7 +61,7 @@ class UniProtGoTerms:
 		# That's because uniprot.fetch_uniprot_metadata will only return one per unique ID
 		if len(set(uniprot_ids)) != len(uniprot_ids):
 			raise ValueError('Set of UniProt IDs cannot contain duplicates')
-		with silenced(no_stderr=False):
+		with IoTools.silenced(no_stderr=False):
 			uniprot_data = uniprot.fetch_uniprot_metadata(uniprot_ids)
 		if uniprot_data is None or uniprot_data == {} or len(uniprot_data) != len(uniprot_ids):
 			raise ValueError('At least one UniProt ID not found in {}'.format(str(uniprot_ids)))
