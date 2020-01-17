@@ -5,7 +5,7 @@ import hashlib
 from klgists.files.file_hasher import FileHasher
 from klgists.files import OverwriteChoice
 from klgists.common import pexists, pdir, pjoin, pfile
-from klgists.common.exceptions import  InvalidDirectoryException, InvalidFileException, PathAlreadyExistsException
+from klgists.common.exceptions import InvalidDirectoryException, InvalidFileException
 from klgists.files.wrap_cmd_call import wrap_cmd_call
 
 
@@ -27,7 +27,7 @@ def sevenz(dir_to_sevenz: str, sevenz_path: str, overwrite: OverwriteChoice = Ov
 
 	if pexists(sevenz_path):
 		if overwrite is OverwriteChoice.FAIL:
-			raise PathAlreadyExistsException("Cannot proceed: The 7-zip file {} already exists.".format(sevenz_path))
+			raise InvalidFileException("Cannot proceed: The 7-zip file {} already exists.".format(sevenz_path))
 		elif overwrite is OverwriteChoice.WARN:
 			warnings.warn("The 7-zip file {} already exists. Won't overwrite.".format(sevenz_path))
 		elif overwrite is OverwriteChoice.OVERWRITE:

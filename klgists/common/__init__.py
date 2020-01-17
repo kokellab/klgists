@@ -5,7 +5,6 @@ from itertools import chain
 import signal
 import operator
 import logging
-import re
 from contextlib import contextmanager, redirect_stdout
 from datetime import date, datetime
 from typing import Iterator, TypeVar, Iterable, Optional, List, Any, Sequence, Mapping, overload, Union, Callable
