@@ -9,7 +9,7 @@ class FlexibleLogger:
 	Usage:
 	FlexibleLogger().add_stdout().add_file('abc.log')
 	"""
-	def __init__(self, name: Optional[str] = None, formatter = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')):
+	def __init__(self, name: Optional[str] = None, formatter=logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')):
 		"""Initializes a logger that can write to a log file and/or stdout."""
 		self._underlying = logging.getLogger(name)
 		self._underlying.setLevel(logging.NOTSET)
