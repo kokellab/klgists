@@ -4,12 +4,12 @@
 from distutils.core import setup
 
 setup(
-	name='klgists',
-	version='0.5.1',
+	name='dscience_gists',
+	version='0.9.0',
 	description='A collection of Python snippets for the Kokel Lab',
 	author='Douglas Myers-Turnbull',
 	url='https://github.com/kokellab/klgists',
-	packages=['klgists', 'klgists.analysis', 'klgists.bioinf', 'klgists.common', 'klgists.common.tools', 'klgists.db', 'klgists.files', 'klgists.misc', 'klgists.pandas', 'klgists.plotting', 'tests'],
+	packages=['dscience_gists', 'dscience_gists.analysis',  'dscience_gists.core', 'dscience_gists.tools', 'dscience_gists.support', 'tests'],
 	package_dir='',
 	test_suite='tests',
 	classifiers=[

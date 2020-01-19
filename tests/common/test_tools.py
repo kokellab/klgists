@@ -1,6 +1,5 @@
-from klgists.common.tools.gist_tools import GistTools as Tools
-from klgists.common.iterators import *
-from klgists.common.exceptions import InvalidFileException, MultipleMatchesException
+from dscience_gists import GistTools as Tools
+from dscience_gists import InvalidFileException, MultipleMatchesException
 
 import pytest
 import os

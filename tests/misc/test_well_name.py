@@ -1,11 +1,7 @@
-import pytest
-from typing import Iterator, Sequence, Set
 from hypothesis import given
 from hypothesis.strategies import integers
-import re
 
-from klgists.misc.well_name import *
-from klgists.misc.well_name import WbFactory
+from dscience_gists import WbFactory
 
 
 class TestWellBase:
