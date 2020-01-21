@@ -12,6 +12,7 @@ from copy import copy
 import os
 import numpy as np
 import pandas as pd
+import re
 
 PLike = Union[str, PurePath, os.PathLike]
 V = TypeVar('V')
