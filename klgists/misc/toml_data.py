@@ -23,7 +23,13 @@ class TomlData:
 
 	def __getitem__(self, key: str) -> Dict[str, object]:
 		return self.sub(key).top
-
+	
+        def __contains__(self, key: str) -> bool:
+                try:
+                        self.sub(key)
+                        return True
+                except AttributeError: return False
+	
 	def get_str(self, key: str) -> str:
 		return str(self.__as(key, str))
 
