@@ -12,8 +12,8 @@ from scipy.signal._peak_finding_utils import (_peak_prominences)
 
 class PeakFinder:
 
-    @staticmethod
-    def _boolrelextrema(data, comparator, axis=0, order=1, mode='clip'):
+    @classmethod
+    def _boolrelextrema(cls, data, comparator, axis=0, order=1, mode='clip'):
         """
         Calculate the relative extrema of `data`.
 
@@ -71,8 +71,8 @@ class PeakFinder:
                 return results
         return results
 
-    @staticmethod
-    def peak_prominences(x, peaks, wlen=None):
+    @classmethod
+    def peak_prominences(cls, x, peaks, wlen=None):
         """
         Calculate the prominence of each peak in a signal.
 
@@ -232,8 +232,8 @@ class PeakFinder:
 
         return _peak_prominences(x, peaks, wlen)
 
-    @staticmethod
-    def _identify_ridge_lines(matr, max_distances, gap_thresh):
+    @classmethod
+    def _identify_ridge_lines(cls, matr, max_distances, gap_thresh):
         """
         Identify ridges in the 2-D matrix.
 
@@ -352,9 +352,8 @@ class PeakFinder:
 
         return out_lines
 
-    @staticmethod
-    def _filter_ridge_lines(cwt, ridge_lines, window_size=None, min_length=None,
-                            min_snr=1, noise_perc=10):
+    @classmethod
+    def _filter_ridge_lines(cls, cwt, ridge_lines, window_size=None, min_length=None, min_snr=1, noise_perc=10):
         """
         Filter ridge lines according to prescribed criteria. Intended
         to be used for finding relative maxima.
@@ -403,8 +402,7 @@ class PeakFinder:
         for ind, val in enumerate(row_one):
             window_start = max(ind - hf_window, 0)
             window_end = min(ind + hf_window + odd, num_points)
-            noises[ind] = scoreatpercentile(row_one[window_start:window_end],
-                                            per=noise_perc)
+            noises[ind] = scoreatpercentile(row_one[window_start:window_end], per=noise_perc)
 
         def filt_func(line):
             if len(line[0]) < min_length:
@@ -416,9 +414,12 @@ class PeakFinder:
 
         return list(filter(filt_func, ridge_lines))
 
-    @staticmethod
-    def find_peaks_cwt(vector, widths, wavelet=None, max_distances=None,
-                       gap_thresh=None, min_length=None, min_snr=1, noise_perc=10, noise_window_size=None):
+    @classmethod
+    def find_peaks_cwt(
+            cls,
+            vector, widths,
+            wavelet=None, max_distances=None, gap_thresh=None, min_length=None, min_snr=1, noise_perc=10, noise_window_size=None
+    ):
         """
         Find peaks in a 1-D array with wavelet transformation.
 

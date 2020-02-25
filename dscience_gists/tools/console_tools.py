@@ -16,7 +16,7 @@ class ConsoleTools(VeryCommonTools):
 		"""
 		if msg is None: msg = "Confirm? [yes/no]"
 		if isinstance(msg, str):
-			msg = lambda: print(msg + ' ', end='')
+			def msg(): print(msg + ' ', end='')
 		while True:
 			msg()
 			command = input('')

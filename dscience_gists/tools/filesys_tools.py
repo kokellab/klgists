@@ -10,7 +10,7 @@ from dscience_gists.core.json_encoder import JsonEncoder
 from dscience_gists.core import Writeable, PathLike
 from dscience_gists.core.exceptions import ParsingError, BadCommandError, InvalidDirectoryError, InvalidFileError
 from dscience_gists.core.open_mode import *
-from dscience_gists.tools.path_tools import PathTools
+from dscience_gists.tools.common_tools import VeryCommonTools
 logger = logging.getLogger('dscience_gists')
 COMPRESS_LEVEL = 9
 ENCODING = 'utf8'
@@ -27,7 +27,7 @@ except ImportError:
 	logger.error("Could not import jsonpickle")
 
 
-class FilesysTools(PathTools):
+class FilesysTools(VeryCommonTools):
 
 	@classmethod
 	def updir(cls, n: int, *parts) -> Path:

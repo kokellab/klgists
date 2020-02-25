@@ -1,16 +1,19 @@
 from typing import Iterable, Union, Mapping, List, Optional
+import logging
 import re
 import uniprot
 import pandas as pd
 import os
 import wget
-from dscience_gists import IoTools
+from dscience_gists.tools import IoTools
 from goatools import obo_parser  # uses https://github.com/tanghaibao/goatools
 from goatools.obo_parser import GOTerm  # NOT the same as FlatGoTerm, which has no knowledge of hierarchy
 go_pattern = re.compile('GO:(\d+); ([CFP]):([\dA-Za-z- ,\(\)]+); ([A-Z]+):([A-Za-z-_]+)\.')
 
+logger = logging.getLogger('dscience_gists')
 
-class FlatGoTerm(object):
+
+class FlatGoTerm:
 	"""A Gene Ontology term.
 		Note:
 			Not to be confused with GOTerm in goatools: obo_parser.GOTerm
@@ -59,15 +62,13 @@ class UniprotGoTerms:
 		with IoTools.silenced(no_stderr=False):
 			uniprot_data = uniprot.fetch_uniprot_metadata(uniprot_ids)
 		if uniprot_data is None or uniprot_data == {} or len(uniprot_data) != len(uniprot_ids):
-			raise ValueError('At least one UniProt ID not found in {}'.format(str(uniprot_ids)))
+			raise LookupError('At least one UniProt ID not found in {}'.format(str(uniprot_ids)))
 		return list(uniprot_data.values())
-
 
 	def go_terms_for_uniprot_id(self, uniprot_id: str) -> List[FlatGoTerm]:
 		"""Returns a list of FlatGoTerm objects from a UniProt ID."""
 		term_strings = (self.fetch_uniprot_data(uniprot_id)[0])['go']
 		return [FlatGoTerm(s) for s in term_strings]
-
 
 	def go_terms_for_uniprot_id_as_df(self, uniprot_id: str) -> pd.DataFrame:
 		"""Returns a Pandas DataFrame of GO terms from a UniProt ID."""
@@ -85,12 +86,11 @@ class GoTermsAtLevel:
 		if os.path.exists('gene_ontology.1_2.obo'):
 			self.obo = obo_parser.GODag('gene_ontology.1_2.obo')
 		else:
-			print("Downloading Gene Ontology OBO...")
+			logger.info("Downloading Gene Ontology OBO...")
 			wget.download('http://www.geneontology.org/ontology/obo_format_1_2/gene_ontology.1_2.obo')
 			self.obo = obo_parser.GODag('gene_ontology.1_2.obo')  # This will be used in query_obo_term
-			print("Done downloading OBO.")
+			logger.info("Done downloading OBO.")
 		self.substruct = UniprotGoTerms()
-
 
 	def query_obo_term(self, term_id: str) -> GOTerm:
 		"""Queries a term through the global obo.
@@ -101,7 +101,6 @@ class GoTermsAtLevel:
 		if x is None:
 			raise ValueError('Term ID {} not found'.format(x))
 		return x
-
 
 	def get_ancestors_of_go_term(self, term_id: str, level: int) -> Iterable[GOTerm]:
 		"""
@@ -121,7 +120,6 @@ class GoTermsAtLevel:
 		traverse_up(self.query_obo_term(term_id), terms, level)
 		return terms
 
-
 	def go_term_ancestors_for_uniprot_id(self, uniprot_id: str, level: int, kinds_allowed: Optional[List[str]] = None) -> Iterable[GOTerm]:
 		"""Gets the GO terms associated with a UniProt ID and returns a set of their ancestors at the specified level.
 		The traversal is restricted to is-a relationships.
@@ -137,7 +135,6 @@ class GoTermsAtLevel:
 		for term_id in [t.ID for t in terms]:
 			ancestor_terms.update(self.get_ancestors_of_go_term(term_id, level))
 		return ancestor_terms
-
 
 	def go_term_ancestors_for_uniprot_id_as_df(self, uniprot_id: str, level: int, kinds_allowed: Optional[List[str]] = None) -> pd.DataFrame:
 		if kinds_allowed is None: kinds_allowed =  ['P', 'F', 'C']

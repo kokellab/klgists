@@ -5,10 +5,8 @@ import multiprocessing
 import pandas as pd
 from natsort import ns, natsorted
 from pandas.core.frame import DataFrame as _InternalDataFrame
-from dscience_gists.pandas import cfirst as _cfirst
-from dscience_gists.common import only as _only
+from dscience_gists.tools.common_tools import CommonTools
 import dscience_gists.core.abcd as abcd
-
 
 class InvalidExtendedDataFrameError(Exception): pass
 
@@ -78,7 +76,7 @@ class BaseExtendedDataFrame(PrettyInternalDataFrame, abcd.ABC):
 		:param column: The name of the column
 		:return: The value
 		"""
-		return _only(self[column].unique())
+		return CommonTools.only(self[column].unique())
 
 
 class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, abcd.ABC):
@@ -100,14 +98,17 @@ class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, abcd.ABC):
 		df.__class__ = cls
 		return df
 
-	def cfirst(self, cols: Sequence[str]):
+	def cfirst(self, cols: Union[str, int, Sequence[str]]):
 		"""
 		Returns a new DataFrame with the specified columns appearing first.
 		:param cols: A list of columns
 		:return: A non-copy
 		"""
-		# noinspection PyTypeChecker
-		return self.convert(_cfirst(self, cols))
+		if isinstance(cols, str) or isinstance(cols, int): cols = [cols]
+		if len(self) == 0:  # will break otherwise
+			return self
+		else:
+			return self.convert(self[cols + [c for c in self.columns if c not in cols]])
 
 	def sort_natural(self, column: str, alg: int = ns.INT):
 		df = self.copy().reset_index()
@@ -270,9 +271,9 @@ class ExtendedDataFrame(ConvertibleExtendedDataFrame):
 		for c in list(cls.reserved_columns()) + list(cls.required_columns()):
 			if c not in res and c in df.columns:
 				res.append(c)
-		df = _cfirst(df, res)
 		# now change the class
 		df.__class__ = cls
+		df = df.cfirst(res)
 		return df
 
 	def sort_values(self, by, axis=0, ascending=True, inplace=False, kind='quicksort', na_position='last'):

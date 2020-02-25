@@ -20,7 +20,7 @@ from dscience_gists.core.open_mode import *
 from dscience_gists.core.iterators import *
 
 class Tools(
-	CallTools, CommonTools, ConsoleTools, EnvTools, FilesysTools, HashTools, LoopTools, NumericTools, PandasTools,
+	CallTools, CommonTools, ConsoleTools, EnvTools, HashTools, LoopTools, NumericTools, PandasTools,
 	PathTools, PlotTools, ProgramTools, PromptTools, StringTools, FilesysTools, UnitTools
 ):
 	"""

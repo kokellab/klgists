@@ -182,7 +182,7 @@ class StringTools(VeryCommonTools):
 	def unsubscript(cls, s: Union[str, float]) -> str:
 		return ''.join(dict(zip("₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎", "0123456789+-=()")).get(c, c) for c in StringTools.dashes_to_hm(s))
 
-	@staticmethod
+	@classmethod
 	def dashes_to_hm(cls, s: str) -> str:
 		"""Replaces most dash-like characters with a hyphen-minus."""
 		return str(s).replace(Chars.em, '-').replace(Chars.en, '-').replace(Chars.fig, '-').replace(Chars.minus, '-').replace(Chars.hyphen, '-').replace(Chars.nbhyphen, '-')

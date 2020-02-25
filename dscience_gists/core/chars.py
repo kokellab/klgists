@@ -55,48 +55,48 @@ class Chars:
 	nu, mu, xi, tau, pi, sigma, phi, psi, omega = 'ν', 'μ', 'ξ', 'τ', 'π', 'σ', 'φ', 'ψ', 'ω'
 	varphi = 'φ'
 
-	@staticmethod
-	def squoted(s: str) -> str:
+	@classmethod
+	def squoted(cls, s: str) -> str:
 		"""Wrap a string in singsle quotes."""
 		return Chars.lsq + str(s) + Chars.rsq
 
-	@staticmethod
-	def dquoted(s: str) -> str:
+	@classmethod
+	def dquoted(cls, s: str) -> str:
 		"""Wrap a string in double quotes."""
 		return Chars.ldq + str(s) + Chars.rdq
 
-	@staticmethod
-	def angled(s: str) -> str:
+	@classmethod
+	def angled(cls, s: str) -> str:
 		"""Wrap a string in angled brackets."""
 		return Chars.langle + str(s) + Chars.rangle
 
-	@staticmethod
-	def dangled(s: str) -> str:
+	@classmethod
+	def dangled(cls, s: str) -> str:
 		"""Wrap a string in double brackets."""
 		return Chars.ldangle + str(s) + Chars.rdangle
 
-	@staticmethod
-	def parened(s: str) -> str:
+	@classmethod
+	def parened(cls, s: str) -> str:
 		"""Wrap a string in parentheses."""
 		return '(' + str(s) + ')'
 
-	@staticmethod
-	def bracketed(s: str) -> str:
+	@classmethod
+	def bracketed(cls, s: str) -> str:
 		"""Wrap a string in square brackets."""
 		return '[' + str(s) + ']'
 
-	@staticmethod
-	def braced(s: str) -> str:
+	@classmethod
+	def braced(cls, s: str) -> str:
 		"""Wrap a string in curly braces."""
 		return '{' + str(s) + '}'
 
-	@staticmethod
-	def shelled(s: str) -> str:
+	@classmethod
+	def shelled(cls, s: str) -> str:
 		"""Wrap a string in tortiose shell brackets (〔 〕)."""
 		return '〔' + str(s) + '〕'
 
-	@staticmethod
-	def dbracketed(s: str) -> str:
+	@classmethod
+	def dbracketed(cls, s: str) -> str:
 		"""Wrap a string in double square brackets (⟦ ⟧)."""
 		return Chars.ldbracket + str(s) + Chars.rdbracket
 

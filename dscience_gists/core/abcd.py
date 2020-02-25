@@ -11,9 +11,6 @@ from overrides import overrides
 from deprecated import deprecated
 
 
-# noinspection PyPep8Naming
-class decorator: pass
-
 class SpecialStr(str):
 	"""
 	A string that can be displayed with Jupyter with line breaks and tabs.
@@ -66,7 +63,6 @@ def _auto_eq(self, other, only: Optional[Set[str]], exclude: Optional[Callable[[
 	return _var_values(self, only=only, exclude=exclude) == _var_values(other, only, exclude)
 
 
-@decorator
 def auto_eq(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = None):
 	"""
 	Decorator.
@@ -83,7 +79,6 @@ def auto_eq(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], b
 	return dec
 
 
-@decorator
 def auto_hash(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = None):
 	"""
 	Decorator.
@@ -118,7 +113,6 @@ def _gen_str(
 		closing
 	)
 
-@decorator
 def auto_repr(
 		only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = lambda a: False
 ):
@@ -131,7 +125,6 @@ def auto_repr(
 	return dec
 
 
-@decorator
 def auto_str(
 		only: Optional[Set[str]] = None,
 		exclude: Optional[Callable[[str], bool]] = lambda a: a.startswith('_'),
@@ -146,7 +139,6 @@ def auto_str(
 	return dec
 
 
-@decorator
 def auto_html(
 		only: Optional[Set[str]] = None,
 		exclude: Optional[Callable[[str], bool]] = lambda a: lambda b: b.startswith('_'),
@@ -161,7 +153,6 @@ def auto_html(
 	return dec
 
 
-@decorator
 def auto_repr_str(
 		exclude_simple: Optional[Callable[[str], bool]] = lambda a: a.startswith('_'),
 		exclude_html: Optional[Callable[[str], bool]] = lambda a: a.startswith('_'),
@@ -197,7 +188,6 @@ def auto_repr_str(
 	return dec
 
 
-@decorator
 def auto_info(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = lambda a: a.startswith('_')):
 	"""
 	Decorator.
@@ -214,7 +204,6 @@ def auto_info(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str],
 	return dec
 
 
-@decorator
 def auto_obj():
 	"""
 	Auto-adds __eq__, __hash__, __repr__, __str__, and _repr_html_.
@@ -241,7 +230,6 @@ def auto_obj():
 	return dec
 
 
-@decorator
 def takes_seconds_named(x, *args, **kwargs):
 	"""
 	Prints a statement like "Call to calc_distances took 15.2s." after the function returns.
@@ -252,7 +240,6 @@ def takes_seconds_named(x, *args, **kwargs):
 	return results
 
 
-@decorator
 def takes_seconds(x, *args, **kwargs):
 	"""
 	Prints a statement like "Done. Took 15.2s." after the function returns.
@@ -263,11 +250,9 @@ def takes_seconds(x, *args, **kwargs):
 	return results
 
 
-@decorator
 def mutable(cls):
 	return cls
 
-@decorator
 def immutable(mutableclass):
 	"""
 	Decorator for making a slot-based class immutable.
@@ -297,7 +282,6 @@ def immutable(mutableclass):
 	return immutableclass
 
 
-@decorator
 def copy_docstring(from_obj: Type):
 	"""
 	Decorator.
@@ -310,7 +294,6 @@ def copy_docstring(from_obj: Type):
 	return dec
 
 
-@decorator
 def append_docstring(from_obj: Type):
 	"""
 	Decorator.
@@ -323,7 +306,6 @@ def append_docstring(from_obj: Type):
 	return dec
 
 
-@decorator
 def float_type(attribute: str):
 	"""
 	Decorator.
@@ -337,7 +319,6 @@ def float_type(attribute: str):
 		return cls
 	return dec
 
-@decorator
 def int_type(attribute: str):
 	"""
 	Decorator.
@@ -352,7 +333,6 @@ def int_type(attribute: str):
 	return dec
 
 
-@decorator
 def iterable_over(attribute: str):
 	"""
 	Decorator.
@@ -367,7 +347,6 @@ def iterable_over(attribute: str):
 	return dec
 
 
-@decorator
 def collection_over(attribute: str):
 	"""
 	Decorator.
@@ -383,7 +362,6 @@ def collection_over(attribute: str):
 	return dec
 
 
-@decorator
 def sequence_over(attribute: str):
 	"""
 	Decorator.
@@ -398,7 +376,6 @@ def sequence_over(attribute: str):
 		return cls
 	return dec
 
-@decorator
 def auto_singleton(cls):
 	"""
 	Makes it so the constructor returns a singleton instance.
@@ -416,7 +393,6 @@ def auto_singleton(cls):
 	return get_instance
 
 
-@decorator
 def auto_timeout(seconds: int):
 	@wraps(auto_timeout)
 	def dec(func):
@@ -434,7 +410,6 @@ def auto_timeout(seconds: int):
 	return dec
 
 
-@decorator
 def override_recommended(cls):
 	"""
 	Decorator.
@@ -442,11 +417,9 @@ def override_recommended(cls):
 	"""
 	return cls
 
-@decorator
 def might_change(cls):
 	return cls
 
-@decorator
 def internal(cls):
 	"""
 	Decorator.
@@ -454,7 +427,6 @@ def internal(cls):
 	"""
 	return cls
 
-@decorator
 def external(cls):
 	"""
 	Decorator.
@@ -462,11 +434,9 @@ def external(cls):
 	"""
 	return cls
 
-@decorator
 def singleton(cls):
 	return cls
 
-@decorator
 def reserved(cls):
 	"""
 	Decorator.
@@ -474,15 +444,12 @@ def reserved(cls):
 	"""
 	return cls
 
-@decorator
 def thread_safe(cls):
 	return cls
 
-@decorator
 def not_thread_safe(cls):
 	return cls
 
-@decorator
 def builder(cls):
 	"""
 	Decorator.
@@ -490,7 +457,6 @@ def builder(cls):
 	"""
 	return cls
 
-@decorator
 def tools(cls):
 	"""
 	Decorator.
@@ -498,7 +464,6 @@ def tools(cls):
 	"""
 	return cls
 
-@decorator
 def cache(cls):
 	"""
 	Decorator.
@@ -506,7 +471,6 @@ def cache(cls):
 	"""
 	return cls
 
-@decorator
 def caching(cls):
 	"""
 	Decorator.
@@ -514,7 +478,6 @@ def caching(cls):
 	"""
 	return cls
 
-@decorator
 def final(cls):
 	"""
 	Decorator.
@@ -524,7 +487,6 @@ def final(cls):
 
 
 __all__ = [
-	'decorator',
 	'dataclass',
 	'auto_repr_str', 'auto_str', 'auto_repr', 'auto_html', 'auto_info',
 	'auto_eq', 'auto_hash', 'total_ordering',

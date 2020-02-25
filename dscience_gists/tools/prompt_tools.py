@@ -84,6 +84,7 @@ def deletion_fn(path) -> Optional[Exception]:
 	logger.debug("Permanently deleted {}".format(path))
 	return chmod_err
 
+
 class Deletion(Enum):
 	NO = 1
 	TRASH = 2

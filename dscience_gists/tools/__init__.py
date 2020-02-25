@@ -165,14 +165,14 @@ class VeryCommonTools:
 		"""
 		if log is None:
 			return logger.info
-		elif log in ['print', 'stdout']:
+		elif isinstance(log, str) and log.lower() in ['print', 'stdout']:
 			return lambda msg: sys.stdout.write(msg)
 		elif log == 'stderr':
 			return lambda msg: sys.stderr.write(msg)
 		elif isinstance(log, int):
-			return getattr(logger, logging.getLevelName(log))
+			return getattr(logger, logging.getLevelName(log).lower())
 		elif isinstance(log, str):
-			return getattr(logger, logging.getLevelName(log.upper()))
+			return getattr(logger, log.lower())
 		elif callable(log):
 			return log
 		elif hasattr(log, 'write') and getattr(log, 'write'):
