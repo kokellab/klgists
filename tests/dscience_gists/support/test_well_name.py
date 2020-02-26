@@ -1,7 +1,6 @@
 from hypothesis import given
 from hypothesis.strategies import integers
-
-from dscience_gists import WbFactory
+from dscience_gists.support.well_name import *
 
 
 class TestWellBase:

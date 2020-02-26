@@ -14,7 +14,7 @@ class OpenMode(str):
 
 	# noinspection PyMissingConstructor
 	def __init__(self, mode: str):
-		self._raw = mode
+		self._raw = mode.replace('w', 'o')
 		self.internal = self.__strip()
 	def __repr__(self): return self.internal
 	def __str__(self):  return self.internal
@@ -38,6 +38,9 @@ class OpenMode(str):
 	def binary(self) -> bool: return 'b' in self._raw
 	@property
 	def gzipped(self) -> bool: return 'z' in self._raw
+
+	def __eq__(self, other):
+		return str(self).replace('w', 'o') == str(other).replace('w', 'o')
 
 
 __all__ = ['OpenMode']

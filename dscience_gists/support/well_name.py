@@ -201,4 +201,4 @@ class ParsingWB0(WB0, ParsingWB): pass
 class ParsingWB1(WB1, ParsingWB): pass
 
 
-__all__ = ['WB1', 'WB0', 'ParsingWB0', 'ParsingWB1']
+__all__ = ['WB1', 'WB0', 'ParsingWB0', 'ParsingWB1', 'WbFactory']

@@ -41,8 +41,7 @@ class RefusingRequestError(UserError): pass
 class LockedError(RefusingRequestError): pass
 class MissingResourceError(UserError): pass
 class MissingEnvironmentVariableError(UserError, KeyError): pass
-class ParsingFailedError(UserError): pass
-class UnrecognizedConfigKeyError(ParsingFailedError): """A configuration entry was set, but the code doesn't recognize that name."""
+class UnrecognizedConfigKeyError(BadConfigError): """A configuration entry was set, but the code doesn't recognize that name."""
 
 
 class MissingDeviceError(UserError): pass
