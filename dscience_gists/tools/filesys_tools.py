@@ -1,16 +1,19 @@
 from typing import SupportsBytes, Sequence, Mapping, Iterable, Any, Union, Optional, Generator
-from pathlib import PurePath
+from pathlib import PurePath, Path
+import stat
 import os, tempfile
-from pathlib import Path
 import re
+import shutil
 import gzip, json, hashlib
 from contextlib import contextmanager
 import logging
+import pandas as pd
 from dscience_gists.core.json_encoder import JsonEncoder
 from dscience_gists.core import Writeable, PathLike
-from dscience_gists.core.exceptions import ParsingError, BadCommandError, InvalidDirectoryError, InvalidFileError
+from dscience_gists.core.exceptions import ParsingError, BadCommandError, InvalidFileError
 from dscience_gists.core.open_mode import *
-from dscience_gists.tools.common_tools import VeryCommonTools
+from dscience_gists.tools.base_tools import BaseTools
+from dscience_gists.tools.path_tools import PathTools
 logger = logging.getLogger('dscience_gists')
 COMPRESS_LEVEL = 9
 ENCODING = 'utf8'
@@ -27,7 +30,41 @@ except ImportError:
 	logger.error("Could not import jsonpickle")
 
 
-class FilesysTools(VeryCommonTools):
+class FilesysTools(BaseTools):
+
+	@classmethod
+	def delete_surefire(cls, path: PathLike) -> Optional[Exception]:
+		"""
+		Deletes files or directories cross-platform, but working around multiple issues in Windows.
+		:return Returns None, or an Exception for minor warnings
+		:raises IOError If it can't delete
+		"""
+		# we need this because of Windows
+		path = str(path)
+		logger.debug("Permanently deleting {} ...".format(path))
+		chmod_err = None
+		try:
+			os.chmod(path, stat.S_IRWXU)
+		except Exception as e:
+			chmod_err = e
+		# another reason for returning exception:
+		# We don't want to interrupt the current line being printed like in slow_delete
+		if os.path.isdir(path):
+			shutil.rmtree(path, ignore_errors=True)  # ignore_errors because of Windows
+			try:
+				os.remove(path)  # again, because of Windows
+			except IOError:
+				pass  # almost definitely because it doesn't exist
+		else:
+			os.remove(path)
+		logger.debug("Permanently deleted {}".format(path))
+		return chmod_err
+
+	@classmethod
+	def trash(cls, path: PathLike, trash_dir: PathLike = Path):
+		logger.debug("Trashing {} to {} ...".format(path, trash_dir))
+		shutil.move(str(path), str(trash_dir))
+		logger.debug("Trashed {} to {}".format(path, trash_dir))
 
 	@classmethod
 	def updir(cls, n: int, *parts) -> Path:
@@ -113,12 +150,16 @@ class FilesysTools(VeryCommonTools):
 
 	@classmethod
 	def make_dirs(cls, s: PathLike) -> None:
+		"""
+		Make a directory (ok if exists, will make parents).
+		Avoids a bug on Windows where the path '' breaks. Just doesn't make the path '' (assumes it means '.').
+		"""
 		# '' can break on Windows
 		if str(s) != '':
 			Path(s).mkdir(exist_ok=True, parents=True)
 
 	@classmethod
-	def save_json(data, path: PathLike, mode: str = 'w') -> None:
+	def save_json(cls, data, path: PathLike, mode: str = 'w') -> None:
 		with FilesysTools.open_file(path, mode) as f:
 			json.dump(data, f, ensure_ascii=False, cls=JsonEncoder)
 
@@ -138,6 +179,43 @@ class FilesysTools(VeryCommonTools):
 		if jsonpickle is None:
 			raise ImportError("No jsonpickle")
 		return jsonpickle.decode(FilesysTools.read_text(path))
+
+	@staticmethod
+	def read_any(path: PathLike) -> Union[str, bytes, Sequence[str], pd.DataFrame, Sequence[int], Sequence[float], Sequence[str], Mapping[str, str]]:
+		"""
+		Reads a variety of simple formats based on filename extension, including '.txt', 'csv', .xml', '.properties', '.json'.
+		Also reads '.data' (binary), '.lines' (text lines).
+		And formatted lists: '.strings', '.floats', and '.ints' (ex: "[1, 2, 3]").
+		:param path:
+		:return:
+		"""
+		path = Path(path)
+		ext = path.suffix.lstrip('.')
+		def load_list(dtype):
+			return [dtype(s) for s in FilesysTools.read_lines_file(path)[0].replace(' ', '').replace('[', '').replace(']', '').split(',')]
+		if ext == 'lines':
+			return FilesysTools.read_lines_file(path)
+		elif ext == 'txt':
+			return path.read_text('utf-8')
+		elif ext == 'data':
+			return path.read_bytes()
+		elif ext == 'json':
+			return FilesysTools.load_json(path)
+		elif ext == 'properties':
+			return FilesysTools.read_properties_file(path)
+		elif ext == 'csv':
+			return pd.read_csv(path)
+		elif ext == 'ints':
+			return load_list(int)
+		elif ext == 'floats':
+			return load_list(float)
+		elif ext == 'strings':
+			return load_list(str)
+		elif ext == 'xml':
+			from xml.etree import ElementTree
+			ElementTree.parse(path).getroot()
+		else:
+			raise TypeError("Did not recognize resource file type for file {}".format(path))
 
 	@classmethod
 	def read_bytes(cls, path: PathLike) -> bytes:
@@ -164,42 +242,6 @@ class FilesysTools(VeryCommonTools):
 			f.write(str(data))
 
 	@classmethod
-	def prep_dir(cls, path: PathLike, exist_ok: bool) -> bool:
-		"""
-		Prepares a directory by making it if it doesn't exist.
-		If exist_ok is False, calls logger.warning it already exists
-		"""
-		path = cls.sanitize_directory_path(path)
-		exists = path.exists()
-		# On some platforms we get generic exceptions like permissions errors, so these are better
-		if exists and not path.is_dir():
-			raise InvalidDirectoryError("Path {} exists but is not a file".format(path))
-		if exists and not exist_ok:
-			logger.warning("Directory {} already exists".format(path))
-		if not exists:
-			# NOTE! exist_ok in mkdir throws an error on Windows
-			path.mkdir(parents=True)
-		return exists
-
-	@classmethod
-	def prep_file(cls, path: PathLike, overwrite: bool = True, append: bool = False) -> bool:
-		"""Prepares a file path by making its parent directory (if it doesn't exist) and checking it."""
-		# On some platforms we get generic exceptions like permissions errors, so these are better
-		# TODO handle ignore
-		path = cls.sanitize_file_path(path)
-		exists = path.exists()
-		if overwrite and append:
-			raise BadCommandError("Can't append and overwrite file {}".format(path))
-		if exists and not overwrite and not append:
-			raise FileExistsError("Path {} already exists".format(path))
-		elif exists and not path.is_file() and not path.is_symlink():  # TODO check link?
-			raise InvalidFileError("Path {} exists but is not a file".format(path))
-		# NOTE! exist_ok in mkdir throws an error on Windows
-		if not path.parent.exists():
-			Path(path.parent).mkdir(parents=True, exist_ok=True)
-		return exists
-
-	@classmethod
 	@contextmanager
 	def open_file(cls, path: PathLike, mode: str):
 		"""
@@ -216,7 +258,7 @@ class FilesysTools(VeryCommonTools):
 		if mode.write and mode.safe and path.exists():
 			raise InvalidFileError("Path {} already exists".format(path))
 		if not mode.read:
-			FilesysTools.prep_file(path, overwrite=mode.overwrite, append=mode.append)
+			PathTools.prep_file(path, overwrite=mode.overwrite, append=mode.append)
 		if mode.gzipped:
 			yield gzip.open(path, mode.internal, compresslevel=COMPRESS_LEVEL)
 		elif mode.binary:
@@ -240,7 +282,7 @@ class FilesysTools(VeryCommonTools):
 			raise ValueError("Wrong mode for writing a text file: {}".format(mode))
 		if not FilesysTools.is_true_iterable(iterable):
 			raise ValueError("Not a true iterable")  # TODO include iterable if small
-		FilesysTools.prep_file(path, mode.overwrite, mode.append)
+		PathTools.prep_file(path, mode.overwrite, mode.append)
 		n = 0
 		with FilesysTools.open_file(path, mode) as f:
 			for x in iterable:
@@ -258,14 +300,18 @@ class FilesysTools(VeryCommonTools):
 
 	@classmethod
 	def hash_hex(cls, x: SupportsBytes, algorithm: str) -> str:
-		"""Return the hex-encoded hash of the object (converted to bytes)."""
+		"""
+		Return the hex-encoded hash of the object (converted to bytes).
+		"""
 		m = hashlib.new(algorithm)
 		m.update(bytes(x))
 		return m.hexdigest()
 
 	@classmethod
 	def replace_in_file(cls, path: str, changes: Mapping[str, str]) -> None:
-		"""Uses re.sub repeatedly to modify (AND REPLACE) a file's content."""
+		"""
+		Uses re.sub repeatedly to modify (AND REPLACE) a file's content.
+		"""
 		with open(path) as f: data = f.read()
 		for key, value in changes.items():
 			data = re.sub(key, value, data, re.MULTILINE, re.DOTALL)
@@ -273,6 +319,10 @@ class FilesysTools(VeryCommonTools):
 
 	@classmethod
 	def tmppath(cls, path: Optional[PathLike] = None, **kwargs) -> Generator[Path, None, None]:
+		"""
+		Makes a temporary Path. Won't create `path` but will delete it at the end.
+		If `path` is None, will use `tempfile.mktemp`.
+		"""
 		if path is None:
 			path = tempfile.mktemp()
 		try:
@@ -282,6 +332,13 @@ class FilesysTools(VeryCommonTools):
 
 	@classmethod
 	def tmpfile(cls, path: Optional[PathLike] = None, spooled: bool = False, **kwargs) -> Generator[Writeable, None, None]:
+		"""
+		Simple wrapper around tempfile.TemporaryFile, tempfile.NamedTemporaryFile, and tempfile.SpooledTemporaryFile.
+		:param path:
+		:param spooled:
+		:param kwargs:
+		:return:
+		"""
 		if spooled:
 			with tempfile.SpooledTemporaryFile(**kwargs) as x:
 				yield x

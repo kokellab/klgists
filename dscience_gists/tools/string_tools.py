@@ -2,13 +2,13 @@ from typing import Optional, Sequence, Union, Iterable, Tuple, Mapping, TypeVar
 import re
 from copy import copy
 import numpy as np
-from dscience_gists.tools import VeryCommonTools
+from dscience_gists.tools.base_tools import BaseTools
 from dscience_gists.core.chars import *
 T = TypeVar('T')
 V = TypeVar('V')
 
 
-class StringTools(VeryCommonTools):
+class StringTools(BaseTools):
 
 	@classmethod
 	def truncate(cls, s: Optional[str], n: int, always_dots: bool = False) -> Optional[str]:
@@ -36,7 +36,6 @@ class StringTools(VeryCommonTools):
 		Splits by tabs, but preserving quoted tabs, stripping quotes.
 		"""
 		pat = re.compile(r'''((?:[^\t"']|"[^"]*"|'[^']*')+)''')
-
 		# Don't strip double 2x quotes: ex ""55"" should be "55", not 55
 		def strip(i: str) -> str:
 			if i.endswith('"') or i.endswith("'"):
@@ -61,6 +60,9 @@ class StringTools(VeryCommonTools):
 
 	@classmethod
 	def longest_str(cls, parts: Iterable[str]) -> str:
+		"""
+		Returns the argmax by length.
+		"""
 		mx = ''
 		for i, x in enumerate(parts):
 			if len(x) > len(mx):
@@ -69,19 +71,39 @@ class StringTools(VeryCommonTools):
 
 	@classmethod
 	def strip_off_start(cls, s: str, pre: str):
-		return strip_off_start(s, pre)
+		"""
+		Strips the full string `pre` from the start of `str`.
+		See `Tools.strip_off` for more info.
+		"""
+		assert isinstance(pre, str), "{} is not a string".format(pre)
+		if s.startswith(pre):
+			s = s[len(pre):]
+		return s
 
 	@classmethod
-	def strip_off_end(cls, s: str, pre: str):
-		return strip_off_end(s, pre)
+	def strip_off_end(cls, s: str, suf: str):
+		"""
+		Strips the full string `suf` from the end of `str`.
+		See `Tools.strip_off` for more info.
+		"""
+		assert isinstance(suf, str), "{} is not a string".format(suf)
+		if s.endswith(suf):
+			s = s[:-len(suf)]
+		return s
 
 	@classmethod
 	def strip_off(cls, s: str, prefix_or_suffix: str) -> str:
-		return strip_off_start(strip_off_end(s, prefix_or_suffix), prefix_or_suffix)
+		"""
+		Strip a substring from the beginning or end of a string (at most 1 occurrence).
+		"""
+		return StringTools.strip_off_start(StringTools.strip_off_end(s, prefix_or_suffix), prefix_or_suffix)
 
 	@classmethod
 	def strip_ends(cls, s: str, prefix: str, suffix: str) -> str:
-		return strip_off_start(strip_off_end(s, suffix), prefix)
+		"""
+		Strip a substring from the start, and another substring from the end, of a string (at most 1 occurrence each).
+		"""
+		return StringTools.strip_off_start(StringTools.strip_off_end(s, suffix), prefix)
 
 	@classmethod
 	def strip_any_ends(cls, s: str, prefixes: Union[str, Sequence[str]], suffixes: Union[str, Sequence[str]]) -> str:
@@ -107,7 +129,7 @@ class StringTools(VeryCommonTools):
 		Strip any and all pairs of brackets from start and end of a string, but only if they're paired.
 		See `strip_paired`
 		"""
-		pieces =  [
+		pieces = [
 				('(', ')'), ('[', ']'), ('[', ']'), ('{', '}'), ('<', '>'),
 				(Chars.lshell, Chars.rshell), (Chars.langle, Chars.rangle),
 				(Chars.ldparen, Chars.rdparen), (Chars.ldbracket, Chars.rdbracket), (Chars.ldangle, Chars.rdangle), (Chars.ldshell, Chars.rdshell)
@@ -120,7 +142,7 @@ class StringTools(VeryCommonTools):
 		Strip any and all pairs of quotes from start and end of a string, but only if they're paired.
 		See `strip_paired`
 		"""
-		pieces =  [
+		pieces = [
 				('`', '`'),
 				(Chars.lsq, Chars.rsq), (Chars.ldq, Chars.rdq), ("'", "'"), ('"', '"')
 			]
@@ -162,30 +184,52 @@ class StringTools(VeryCommonTools):
 
 	@classmethod
 	def replace_all(cls, s: str, rep: Mapping[str, str]) -> str:
+		"""
+		Simply replace multiple things in a string.
+		"""
 		for k, v in rep.items():
 			s = s.replace(k, v)
 		return s
 
 	@classmethod
 	def superscript(cls, s: Union[str, float]) -> str:
+		"""
+		Replaces digits, +, =, (, and ) with equivalent Unicode superscript chars (ex ¹).
+		"""
 		return ''.join(dict(zip("0123456789-+=()", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺⁼⁽⁾")).get(c, c) for c in StringTools.dashes_to_hm(s))
 
 	@classmethod
 	def subscript(cls, s: Union[str, float]) -> str:
+		"""
+		Replaces digits, +, =, (, and ) with equivalent Unicode subscript chars (ex ₁).
+		"""
 		return ''.join(dict(zip("0123456789+-=()", "₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎")).get(c, c) for c in StringTools.dashes_to_hm(s))
 
 	@classmethod
 	def unsuperscript(cls, s: Union[str, float]) -> str:
+		"""
+		Replaces Unicode superscript digits, +, =, (, and ) with normal chars.
+		"""
 		return ''.join(dict(zip("⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺⁼⁽⁾", "0123456789-+=()")).get(c, c) for c in StringTools.dashes_to_hm(s))
 
 	@classmethod
 	def unsubscript(cls, s: Union[str, float]) -> str:
+		"""
+		Replaces Unicode superscript digits, +, =, (, and ) with normal chars.
+		"""
 		return ''.join(dict(zip("₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎", "0123456789+-=()")).get(c, c) for c in StringTools.dashes_to_hm(s))
 
 	@classmethod
 	def dashes_to_hm(cls, s: str) -> str:
-		"""Replaces most dash-like characters with a hyphen-minus."""
-		return str(s).replace(Chars.em, '-').replace(Chars.en, '-').replace(Chars.fig, '-').replace(Chars.minus, '-').replace(Chars.hyphen, '-').replace(Chars.nbhyphen, '-')
+		"""
+		Replaces most Latin-alphabet dash-like and hyphen-like characters with a hyphen-minus.
+		"""
+		smallem = '﹘'
+		smallhm = '﹣'
+		fullhm = '－'
+		for c in [Chars.em, Chars.en, Chars.fig, Chars.minus, Chars.hyphen, Chars.nbhyphen, smallem, smallhm, fullhm]:
+			s = str(s).replace(c, '-')
+		return s
 
 	@classmethod
 	def pretty_float(cls, v: Union[float, int], n_sigfigs: Optional[int] = 5) -> str:
@@ -194,6 +238,11 @@ class StringTools(VeryCommonTools):
 		The returned string always has a minus or + prepended. Strip off the plus with .lstrip('+').
 		If v is an integer (by isinstance), makes sure to display without a decimal point.
 		If n_sigfigs < 2, will never have a
+		For ex:
+			- StringTools.pretty_float(.2222222)       # '+0.22222'
+			- StringTools.pretty_float(-.2222222)      # '−0.22222' (Unicode minus)
+			- StringTools.pretty_float(-float('inf'))  # '−∞'
+			- StringTools.pretty_float(np.NaN)         # '⌀'
 		"""
 		v0 = v.__class__(v)
 		# first, handle NaN and infinities
@@ -228,12 +277,18 @@ class StringTools(VeryCommonTools):
 	@classmethod
 	def pretty_function(cls, function, with_address: bool = False, prefix: str = '⟨', suffix: str = '⟩') -> str:
 		"""
-		Get a shorter name for a function than str(function).
+		Get a better and shorter name for a function than str(function).
 		Ex: pprint_function(lambda s: s)  == '<λ>'
-		NOTE: If function is None, returns ''
-		AND: If function does not have __name__, returns prefix + type(function) + <address> + suffix
+		- Instead of '<bound method ...', you'll get '<name(nargs)>'
+		- Instead of 'lambda ...', you'll get '<λ(nargs)>'
+		- etc.
+		NOTE 1: If function is None, returns ''
+		NOTE 2: If function does not have __name__, returns prefix + type(function) + <address> + suffix
+		:param function: Can be anything, but especially useful for functions
+		:param with_address: Include `@ hex-mem-addr` in the name
+		:param prefix: Prefix to the whole string
+		:param suffix: Suffix to the whole string
 		"""
-
 		if function is None:
 			return ''
 		n_args = str(function.__code__.co_argcount) if hasattr(function, '__code__') else '?'
@@ -247,7 +302,7 @@ class StringTools(VeryCommonTools):
 			# it's a method (bound function)
 			# don't show the address of the instance AND its method
 			s = re.compile(r'@ ?0x[0-9a-hA-H]+\)?$').sub('', boundmatch.group(2)).strip()
-			return prefix + '`' + s + '`.' +  boundmatch.group(1) + '(' + n_args + ')' + addr + suffix
+			return prefix + '`' + s + '`.' + boundmatch.group(1) + '(' + n_args + ')' + addr + suffix
 		elif isinstance(function, type):
 			# it's a class
 			return prefix + 'type:' + function.__name__ + suffix
@@ -271,11 +326,19 @@ class StringTools(VeryCommonTools):
 			return prefix + s + suffix
 
 	@classmethod
-	def greek_to_name(cls):
+	def greek_to_name(cls) -> Mapping[str, str]:
+		"""
+		Returns a dict from Greek lowercase+uppercase Unicode chars to their full names
+		@return A defensive copy
+		"""
 		return copy(StringTools._greek_alphabet)
 
 	@classmethod
-	def name_to_greek(cls):
+	def name_to_greek(cls) -> Mapping[str, str]:
+		"""
+		Returns a dict from Greek lowercase+uppercase letter names to their Unicode chars
+		@return A defensive copy
+		"""
 		return {v: k for k, v in StringTools._greek_alphabet.items()}
 
 	@classmethod
@@ -301,14 +364,38 @@ class StringTools(VeryCommonTools):
 
 	@classmethod
 	def join(cls, seq: Iterable[T], sep: str = '\t', attr: Optional[str] = None, prefix: str = '', suffix: str = '') -> str:
+		"""
+		Join elements into a str more easily than ''.join. Just simplifies potentially long expressions.
+		Won't break with ValueError if the elements aren't strs.
+		Ex:
+			- StringTools.join([1,2,3])  # "1	2	3"
+			- StringTools.join(cars, sep=',', attr='make', prefix="(", suffix=")")`  # "(Ford),(Ford),(BMW)"
+
+		:param seq: Sequence of elements
+		:param sep: Delimiter
+		:param attr: Get this attribute from each element (in `seq`), or use the element itself if None
+		:param prefix: Prefix before each item
+		:param suffix: Suffix after each item
+		:return: A string
+		"""
 		if attr is None:
 			return sep.join([prefix + str(s) + suffix for s in seq])
 		else:
 			return sep.join([prefix + str(getattr(s, attr)) + suffix for s in seq])
 
 	@classmethod
-	def join_kv(cls, seq: Mapping[T, V], sep: str = '\t') -> str:
-		return sep.join([str(k) + '=' + str(v) for k, v in seq.items()])
+	def join_kv(cls, seq: Mapping[T, V], sep: str = '\t', eq: str = '=', prefix: str = '', suffix: str = '') -> str:
+		"""
+		Joins dict elements into a str like 'a=1, b=2, c=3`.
+		Won't break with ValueError if the keys or values aren't strs.
+		:param seq: Dict-like, with `items()`
+		:param sep: Delimiter
+		:param eq: Separates a key with its value
+		:param prefix: Prepend before every key
+		:param suffix: Append after every value
+		:return: A string
+		"""
+		return sep.join([prefix + str(k) + eq + str(v) + suffix for k, v in seq.items()])
 
 	_greek_alphabet = {
 		u'\u0391': 'Alpha',

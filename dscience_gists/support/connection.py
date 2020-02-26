@@ -5,7 +5,8 @@ import peewee
 
 
 class Connection:
-	"""Convenient way to open a database connection through an SSH tunnel for Pewee or raw SQL.
+	"""
+	Convenient way to open a database connection through an SSH tunnel for Pewee or raw SQL.
 	You can use an existing tunnel by giving it a local port (local_bind_port) or have it create a new one by giving it an SSH hostname.
 	Example usage:
 	with Connection(db_name, db_user, db_password) as db:

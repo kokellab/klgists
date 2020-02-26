@@ -40,27 +40,33 @@ class _InfoSpecialStr(SpecialStr):
 		return str(built)
 
 
-def _var_items(obj, only, exclude):
-	return [
-		(key, value)
-		for key, value in vars(obj).items()
-		if (only is None) or (key in only)
-		if not exclude(key)
-	]
+class Utils:
 
-def _var_values(obj, only, exclude):
-	items = vars(obj).items()
-	return [value for key, value in items if ((only is None) or key in only) and not exclude(key) and value is not None]
+	@classmethod
+	def var_items(cls, obj, only, exclude):
+		return [
+			(key, value)
+			for key, value in vars(obj).items()
+			if (only is None) or (key in only)
+			if not exclude(key)
+		]
 
-def _auto_hash(self, only: Optional[Set[str]], exclude: Optional[Callable[[str], bool]]):
-	if exclude is None: exclude = lambda _: False
-	return hash(tuple(_var_values(self, only, exclude)))
+	@classmethod
+	def var_values(cls, obj, only, exclude):
+		items = vars(obj).items()
+		return [value for key, value in items if ((only is None) or key in only) and not exclude(key) and value is not None]
 
-def _auto_eq(self, other, only: Optional[Set[str]], exclude: Optional[Callable[[str], bool]]):
-	if type(self) != type(other):
-		raise TypeError("Type {} is not the same as type {}".format(type(self), type(other)))
-	if exclude is None: exclude = lambda _: False
-	return _var_values(self, only=only, exclude=exclude) == _var_values(other, only, exclude)
+	@classmethod
+	def auto_hash(cls, self, only: Optional[Set[str]], exclude: Optional[Callable[[str], bool]]):
+		if exclude is None: exclude = lambda _: False
+		return hash(tuple(Utils.var_values(self, only, exclude)))
+
+	@classmethod
+	def auto_eq(cls, self, other, only: Optional[Set[str]], exclude: Optional[Callable[[str], bool]]):
+		if type(self) != type(other):
+			raise TypeError("Type {} is not the same as type {}".format(type(self), type(other)))
+		if exclude is None: exclude = lambda _: False
+		return Utils.var_values(self, only=only, exclude=exclude) == Utils.var_values(other, only, exclude)
 
 
 def auto_eq(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = None):
@@ -73,7 +79,7 @@ def auto_eq(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], b
 	@wraps(auto_eq)
 	def dec(cls):
 		def __eq(self, other):
-			return _auto_eq(self, other, only, exclude)
+			return Utils.auto_eq(self, other, only, exclude)
 		cls.__eq__ = __eq
 		return cls
 	return dec
@@ -89,7 +95,7 @@ def auto_hash(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str],
 	@wraps(auto_hash)
 	def dec(cls):
 		def __hash(self):
-			return _auto_hash(self, only, exclude)
+			return Utils.auto_hash(self, only, exclude)
 		cls.__hash__ = __hash
 		return cls
 	return dec
@@ -104,7 +110,7 @@ def _gen_str(
 		with_address: bool = True
 ):
 	if exclude is None: exclude = lambda _: False
-	_vars = _var_items(self, only, exclude)
+	_vars = Utils.var_items(self, only, exclude)
 	return (
 		bold_surround(self.__class__.__name__) +
 		opening +
@@ -169,8 +175,8 @@ def auto_repr_str(
 		repr(point) == Point(angle=0.3, radius=4, _style='point' @ 0x5528ca3)
 		str(point) == Point(angle=0.3, radius=4)
 		_repr_html_(point) == Point(angle=0.3, radius=4 @ 0x5528ca3)
-	:param exclude_html: Exclude for _repr_html
 	:param exclude_simple: Exclude attributes matching these names in human-readable strings (str and _repr_html)
+	:param exclude_html: Exclude for _repr_html
 	:param exclude_all: Exclude these attributes in all the functions
 	"""
 	@wraps(auto_repr_str)
@@ -216,9 +222,9 @@ def auto_obj():
 	def __repr(self):
 		return _gen_str(self, exclude=lambda _: False, with_address=True)
 	def __hash(self):
-		return _auto_hash(self, only=None, exclude=None)
+		return Utils.auto_hash(self, only=None, exclude=None)
 	def __eq(self):
-		return _auto_eq(self, None, only=None, exclude=None)
+		return Utils.auto_eq(self, None, only=None, exclude=None)
 	@wraps(auto_obj)
 	def dec(cls):
 		cls.__eq__ = __eq
@@ -376,6 +382,7 @@ def sequence_over(attribute: str):
 		return cls
 	return dec
 
+
 def auto_singleton(cls):
 	"""
 	Makes it so the constructor returns a singleton instance.
@@ -415,9 +422,6 @@ def override_recommended(cls):
 	Decorator.
 	Overriding this class is generally recommended (but not required).
 	"""
-	return cls
-
-def might_change(cls):
 	return cls
 
 def internal(cls):
@@ -500,7 +504,7 @@ __all__ = [
 	'auto_timeout',
 	'abstractmethod', 'ABC', 'ABCMeta',
 	'override_recommended', 'overrides',
-	'deprecated', 'final', 'might_change',
+	'deprecated', 'final',
 	'internal', 'external', 'reserved',
 	'thread_safe', 'not_thread_safe',
 	'singleton', 'builder', 'tools', 'cache', 'caching'

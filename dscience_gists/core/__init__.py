@@ -3,6 +3,7 @@ import os
 import logging
 from typing import Sequence, Iterable, TypeVar, Union, Callable, Optional
 import operator
+import contextlib
 from pathlib import PurePath
 import abc
 logger = logging.getLogger('dscience_gists')
@@ -160,4 +161,11 @@ def look(obj: Y, attrs: Union[str, Iterable[str], Callable[[Y], Z]]) -> Optional
 	except AttributeError:
 		return None
 
-__all__ = ['frozenlist', 'PathLike', 'Writeable', 'DevNull', 'LogWriter', 'DelegatingWriter', 'Capture', 'look']
+@contextlib.contextmanager
+def silenced(no_stdout: bool = True, no_stderr: bool = True):
+	with contextlib.redirect_stdout(DevNull()) if no_stdout else cls.null_context():
+		with contextlib.redirect_stderr(DevNull()) if no_stderr else cls.null_context():
+			yield
+
+
+__all__ = ['frozenlist', 'PathLike', 'Writeable', 'DevNull', 'LogWriter', 'DelegatingWriter', 'Capture', 'look', 'silenced']

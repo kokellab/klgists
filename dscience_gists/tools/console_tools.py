@@ -1,8 +1,8 @@
 from typing import Union, Callable
 import sys
-from dscience_gists.tools import VeryCommonTools
+from dscience_gists.tools.base_tools import BaseTools
 
-class ConsoleTools(VeryCommonTools):
+class ConsoleTools(BaseTools):
 
 	CURSOR_UP_ONE = '\x1b[1A'
 	ERASE_LINE = '\x1b[2K'

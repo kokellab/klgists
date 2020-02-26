@@ -17,7 +17,12 @@ from dscience_gists.tools.unit_tools import *
 from dscience_gists.core.chars import *
 from dscience_gists.core import abcd
 from dscience_gists.core.open_mode import *
+from dscience_gists.support.flexible_logger import *
+from dscience_gists.support.toml_data import *
 from dscience_gists.core.iterators import *
+from dscience_gists.core.smart_enum import *
+from dscience_gists.core.opt_row import *
+from dscience_gists.support.record_factory import *
 
 class Tools(
 	CallTools, CommonTools, ConsoleTools, EnvTools, HashTools, LoopTools, NumericTools, PandasTools,
@@ -28,4 +33,9 @@ class Tools(
 	Mostly provided for use outside of Kale, but can also be used by Kale code.
 	"""
 
-__all__ = ['Tools', 'Chars', 'abcd', 'OpenMode', 'SeqIterator', 'SizedIterator', 'TieredIterator', 'GitDescription']
+__all__ = [
+	'frozenlist', 'DevNull', 'Capture', 'DelegatingWriter', 'LogWriter', 'Writeable',
+	'Chars', 'abcd', 'OpenMode', 'SeqIterator', 'SizedIterator', 'TieredIterator', 'GitDescription',
+	'LogFormatBuilder', 'BasicFlexLogger', 'TomlData', 'SmartEnum', 'OptRow', 'PrettyRecordFactory',
+	'Tools'
+]

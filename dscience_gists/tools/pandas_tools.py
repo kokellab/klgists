@@ -4,15 +4,16 @@ import pandas as pd
 from dscience_gists.support.extended_df import *
 from dscience_gists.core import PathLike
 from dscience_gists.core.exceptions import UserError
-from dscience_gists.tools import VeryCommonTools
+from dscience_gists.tools.base_tools import BaseTools
 V = TypeVar('V')
 
 
-class PandasTools(VeryCommonTools):
+class PandasTools(BaseTools):
 
 	@classmethod
 	def cfirst(cls, df: pd.DataFrame, cols: Union[str, int, Sequence[str]]) -> pd.DataFrame:
-		"""Moves some columns of a Pandas dataframe to the front, returning a copy.
+		"""
+		Moves some columns of a Pandas dataframe to the front, returning a copy.
 		Returns: a copy of the dataframe with col_seq as the first columns
 		"""
 		if isinstance(cols, str) or isinstance(cols, int): cols = [cols]

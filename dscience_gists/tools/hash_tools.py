@@ -4,9 +4,13 @@ import os
 import codecs
 import gzip
 from dscience_gists.core.exceptions import HashValidationFailedError
+from dscience_gists.tools.base_tools import BaseTools
 
 
 class FileHasher:
+	"""
+	Makes and reads .sha1 / .sha256 files next to existing paths.
+	"""
 
 	def __init__(self, algorithm: Callable[[], Any] = hashlib.sha1, extension: str = '.sha1', buffer_size: int = 16*1024):
 		self.algorithm = algorithm
@@ -46,7 +50,7 @@ class FileHasher:
 		return opener(file_name, *args)
 
 
-class HashTools:
+class HashTools(BaseTools):
 
 	@classmethod
 	def new_hasher(cls, algorithm: Callable[[], Any] = hashlib.sha1, extension: str = '.sha1', buffer_size: int = 16*1024):

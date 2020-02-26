@@ -5,11 +5,11 @@ from distutils.core import setup
 
 setup(
 	name='dscience_gists',
-	version='0.9.0',
+	version='0.1.0',
 	description='A collection of Python snippets for the Kokel Lab',
 	author='Douglas Myers-Turnbull',
 	url='https://github.com/kokellab/klgists',
-	packages=['dscience_gists', 'dscience_gists.analysis',  'dscience_gists.core', 'dscience_gists.tools', 'dscience_gists.support', 'tests'],
+	packages=['dscience_gists', 'dscience_gists.analysis',  'dscience_gists.core', 'dscience_gists.tools', 'dscience_gists.support', 'dscience_gists.ml', 'tests'],
 	package_dir='',
 	test_suite='tests',
 	classifiers=[

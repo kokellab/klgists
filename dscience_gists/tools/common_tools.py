@@ -4,16 +4,16 @@ import sys
 from hurry.filesize import size as hsize
 from collections import defaultdict
 import numpy as np
-from dscience_gists.tools import VeryCommonTools
+from dscience_gists.tools.base_tools import BaseTools
 from dscience_gists.core import DevNull
 from dscience_gists.core.json_encoder import *
-from dscience_gists.core.exceptions import LengthMismatchError, MultipleMatchesException, RefusingRequestError
+from dscience_gists.core.exceptions import RefusingRequestError
 Y = TypeVar('Y')
 T = TypeVar('T')
 Z = TypeVar('Z')
 
 
-class CommonTools(VeryCommonTools):
+class CommonTools(BaseTools):
 
 	@classmethod
 	def try_none(cls, function: Callable[[], T], fail_val: Optional[T] = None, exception=Exception) -> Optional[T]:
@@ -36,6 +36,9 @@ class CommonTools(VeryCommonTools):
 
 	@classmethod
 	def or_null(cls, x: Any, dtype=lambda s: s, or_else: Any = None) -> Optional[Any]:
+		"""
+		Return `None` if the operation `dtype` on `x` failed; returns the result otherwise.
+		"""
 		return or_else if cls.is_null(x) else dtype(x)
 
 	@classmethod

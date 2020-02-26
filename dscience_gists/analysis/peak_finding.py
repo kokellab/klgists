@@ -7,69 +7,10 @@ import numpy as np
 from scipy._lib.six import xrange
 from scipy.signal.wavelets import cwt, ricker
 from scipy.stats import scoreatpercentile
-from scipy.signal._peak_finding_utils import (_peak_prominences)
+from scipy.signal._peak_finding_utils import _peak_prominences
 
 
 class PeakFinder:
-
-    @classmethod
-    def _boolrelextrema(cls, data, comparator, axis=0, order=1, mode='clip'):
-        """
-        Calculate the relative extrema of `data`.
-
-        Relative extrema are calculated by finding locations where
-        ``comparator(data[n], data[n+1:n+order+1])`` is True.
-
-        Parameters
-        ----------
-        data : ndarray
-            Array in which to find the relative extrema.
-        comparator : callable
-            Function to use to compare two data points.
-            Should take two arrays as arguments.
-        axis : int, optional
-            Axis over which to select from `data`.  Default is 0.
-        order : int, optional
-            How many points on each side to use for the comparison
-            to consider ``comparator(n,n+x)`` to be True.
-        mode : str, optional
-            How the edges of the vector are treated.  'wrap' (wrap around) or
-            'clip' (treat overflow as the same as the last (or first) element).
-            Default 'clip'.  See numpy.take
-
-        Returns
-        -------
-        extrema : ndarray
-            Boolean array of the same shape as `data` that is True at an extrema,
-            False otherwise.
-
-        See also
-        --------
-        argrelmax, argrelmin
-
-        Examples
-        --------
-        >>> testdata = np.array([1,2,3,2,1])
-        >>> PeakFinder._boolrelextrema(testdata, np.greater, axis=0)
-        array([False, False,  True, False, False], dtype=bool)
-
-        """
-        if(int(order) != order) or (order < 1):
-            raise ValueError('Order must be an int >= 1')
-
-        datalen = data.shape[axis]
-        locs = np.arange(0, datalen)
-
-        results = np.ones(data.shape, dtype=bool)
-        main = data.take(locs, axis=axis, mode=mode)
-        for shift in xrange(1, order + 1):
-            plus = data.take(locs + shift, axis=axis, mode=mode)
-            minus = data.take(locs - shift, axis=axis, mode=mode)
-            results &= comparator(main, plus)
-            results &= comparator(main, minus)
-            if~results.any():
-                return results
-        return results
 
     @classmethod
     def peak_prominences(cls, x, peaks, wlen=None):
@@ -233,6 +174,65 @@ class PeakFinder:
         return _peak_prominences(x, peaks, wlen)
 
     @classmethod
+    def _boolrelextrema(cls, data, comparator, axis=0, order=1, mode='clip'):
+        """
+        Calculate the relative extrema of `data`.
+
+        Relative extrema are calculated by finding locations where
+        ``comparator(data[n], data[n+1:n+order+1])`` is True.
+
+        Parameters
+        ----------
+        data : ndarray
+            Array in which to find the relative extrema.
+        comparator : callable
+            Function to use to compare two data points.
+            Should take two arrays as arguments.
+        axis : int, optional
+            Axis over which to select from `data`.  Default is 0.
+        order : int, optional
+            How many points on each side to use for the comparison
+            to consider ``comparator(n,n+x)`` to be True.
+        mode : str, optional
+            How the edges of the vector are treated.  'wrap' (wrap around) or
+            'clip' (treat overflow as the same as the last (or first) element).
+            Default 'clip'.  See numpy.take
+
+        Returns
+        -------
+        extrema : ndarray
+            Boolean array of the same shape as `data` that is True at an extrema,
+            False otherwise.
+
+        See also
+        --------
+        argrelmax, argrelmin
+
+        Examples
+        --------
+        >>> testdata = np.array([1,2,3,2,1])
+        >>> PeakFinder._boolrelextrema(testdata, np.greater, axis=0)
+        array([False, False,  True, False, False], dtype=bool)
+
+        """
+        if(int(order) != order) or (order < 1):
+            raise ValueError('Order must be an int >= 1')
+
+        datalen = data.shape[axis]
+        locs = np.arange(0, datalen)
+
+        results = np.ones(data.shape, dtype=bool)
+        main = data.take(locs, axis=axis, mode=mode)
+        for shift in xrange(1, order + 1):
+            plus = data.take(locs + shift, axis=axis, mode=mode)
+            minus = data.take(locs - shift, axis=axis, mode=mode)
+            results &= comparator(main, plus)
+            results &= comparator(main, minus)
+            if~results.any():
+                return results
+        return results
+
+    @classmethod
     def _identify_ridge_lines(cls, matr, max_distances, gap_thresh):
         """
         Identify ridges in the 2-D matrix.
@@ -280,8 +280,7 @@ class PeakFinder:
 
         """
         if len(max_distances) < matr.shape[0]:
-            raise ValueError('Max_distances must have at least as many rows '
-                             'as matr')
+            raise ValueError('Max_distances must have at least as many rows as matr')
 
         all_max_cols = PeakFinder._boolrelextrema(matr, np.greater, axis=1, order=1)
         # Highest row for which there are any relative maxima
@@ -290,10 +289,11 @@ class PeakFinder:
             return []
         start_row = has_relmax[-1]
         # Each ridge line is a 3-tuple:
-        # rows, cols,Gap number
-        ridge_lines = [[[start_row],
-                       [col],
-                       0] for col in np.where(all_max_cols[start_row])[0]]
+        # rows, cols, Gap number
+        ridge_lines = [
+            [[start_row], [col], 0]
+            for col in np.where(all_max_cols[start_row])[0]
+        ]
         final_lines = []
         rows = np.arange(start_row - 1, -1, -1)
         cols = np.arange(0, matr.shape[1])
@@ -327,9 +327,7 @@ class PeakFinder:
                     line[0].append(row)
                     line[2] = 0
                 else:
-                    new_line = [[row],
-                                [col],
-                                0]
+                    new_line = [[row], [col], 0]
                     ridge_lines.append(new_line)
 
             # Remove the ridge lines with gap_number too high
@@ -521,8 +519,11 @@ class PeakFinder:
 
         cwt_dat = cwt(vector, wavelet, widths)
         ridge_lines = PeakFinder._identify_ridge_lines(cwt_dat, max_distances, gap_thresh)
-        filtered = PeakFinder._filter_ridge_lines(cwt_dat, ridge_lines, min_length=min_length,
-                                       min_snr=min_snr, noise_perc=noise_perc, window_size=noise_window_size)
+        filtered = PeakFinder._filter_ridge_lines(
+            cwt_dat, ridge_lines,
+            min_length=min_length, min_snr=min_snr,
+            noise_perc=noise_perc, window_size=noise_window_size
+        )
         max_locs = np.asarray([x[1][0] for x in filtered])
         max_locs.sort()
 

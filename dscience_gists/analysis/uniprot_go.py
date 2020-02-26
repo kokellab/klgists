@@ -5,11 +5,10 @@ import uniprot
 import pandas as pd
 import os
 import wget
-from dscience_gists.tools import IoTools
+from dscience_gists.core import silenced
 from goatools import obo_parser  # uses https://github.com/tanghaibao/goatools
 from goatools.obo_parser import GOTerm  # NOT the same as FlatGoTerm, which has no knowledge of hierarchy
-go_pattern = re.compile('GO:(\d+); ([CFP]):([\dA-Za-z- ,\(\)]+); ([A-Z]+):([A-Za-z-_]+)\.')
-
+go_pattern = re.compile(r'GO:(\d+); ([CFP]):([\dA-Za-z- ,()]+); ([A-Z]+):([A-Za-z-_]+)\.')
 logger = logging.getLogger('dscience_gists')
 
 
@@ -31,13 +30,13 @@ class FlatGoTerm:
 		self.sourceId = source_id
 		self.sourceName = source_name
 
-	def __init__(self, string: str):
+	def __init__(self, stwing: str):
 		"""Builds a GO term from a string from uniprot_obj['go'].
 		Raises a ValueError if the syntax is wrong.
 		"""
-		match = go_pattern.search(string)
+		match = go_pattern.search(stwing)
 		if match is None:
-			raise ValueError('String didn\'t match GO term pattern: {}'.format(string))
+			raise ValueError('String didn\'t match GO term pattern: {}'.format(stwing))
 		self.ID = 'GO:' + match.group(1)
 		self.kind = match.group(2)
 		self.description = match.group(3)
@@ -50,7 +49,8 @@ class FlatGoTerm:
 class UniprotGoTerms:
 
 	def fetch_uniprot_data(self, uniprot_ids: Union[str, List[str]]) -> List[Mapping[str, str]]:
-		"""Fetches a list of dicts of UniProt metadata, one per UniProt ID.
+		"""
+		Fetches a list of dicts of UniProt metadata, one per UniProt ID.
 		Raises a ValueError if a UniProt ID wasn't found.
 		"""
 		if isinstance(uniprot_ids, str): # not a list type
@@ -59,7 +59,7 @@ class UniprotGoTerms:
 		# That's because uniprot.fetch_uniprot_metadata will only return one per unique ID
 		if len(set(uniprot_ids)) != len(uniprot_ids):
 			raise ValueError('Set of UniProt IDs cannot contain duplicates')
-		with IoTools.silenced(no_stderr=False):
+		with silenced(no_stderr=False):
 			uniprot_data = uniprot.fetch_uniprot_metadata(uniprot_ids)
 		if uniprot_data is None or uniprot_data == {} or len(uniprot_data) != len(uniprot_ids):
 			raise LookupError('At least one UniProt ID not found in {}'.format(str(uniprot_ids)))
@@ -121,7 +121,8 @@ class GoTermsAtLevel:
 		return terms
 
 	def go_term_ancestors_for_uniprot_id(self, uniprot_id: str, level: int, kinds_allowed: Optional[List[str]] = None) -> Iterable[GOTerm]:
-		"""Gets the GO terms associated with a UniProt ID and returns a set of their ancestors at the specified level.
+		"""
+		Gets the GO terms associated with a UniProt ID and returns a set of their ancestors at the specified level.
 		The traversal is restricted to is-a relationships.
 		Note that the level is the minimum number of steps to the root.
 			Arguments:

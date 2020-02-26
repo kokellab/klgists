@@ -3,11 +3,11 @@ import re
 import logging
 import humanfriendly as friendly
 import math
-from dscience_gists.tools import VeryCommonTools
+from dscience_gists.tools.base_tools import BaseTools
 logger = logging.getLogger('dscience_gists')
 
 
-class UnitTools(VeryCommonTools):
+class UnitTools(BaseTools):
 
 	@classmethod
 	def delta_time_to_str(cls, delta_sec: float) -> str:
@@ -50,7 +50,6 @@ class UnitTools(VeryCommonTools):
 		else:
 			s = "{}:{}".format(str(minutes).zfill(2), str(seconds).zfill(2))
 		return '−' + s if is_neg else s
-
 
 	@classmethod
 	def friendly_size(cls, n_bytes: int) -> str:

@@ -4,7 +4,8 @@ import requests
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Iterator, Set, Union
+from typing import Iterator, Set, Sequence, Any
+from dscience_gists.core import PathLike
 
 logger = logging.getLogger('dscience_gists')
 
@@ -53,7 +54,7 @@ class Atc:
 			return False
 		raise ValueError("Inconsistent leaf definition for {}".format(self))
 	
-	def ancestry(self) -> list:
+	def ancestry(self) -> Sequence[Any]:
 		parents = []
 		if self.parent is not None:
 			for a in self.parent.ancestry():
@@ -123,7 +124,7 @@ class AtcParser:
 	
 	URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/annotations/heading/JSON/?source=WHO%20ATC&heading=ATC+Code&response_type=save&response_basename=PubChemAnnotations_source=WHO%20ATC&heading=ATC+Code&page={page}'
 
-	def __init__(self, cache_dir: Union[Path, str] = '.atc'):
+	def __init__(self, cache_dir: PathLike = '.atc'):
 		self.cache_dir = Path(cache_dir)
 		self.cache_dir.mkdir(parents=True, exist_ok=True)
 

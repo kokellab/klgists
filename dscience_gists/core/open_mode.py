@@ -41,4 +41,3 @@ class OpenMode(str):
 
 
 __all__ = ['OpenMode']
-

@@ -1,12 +1,66 @@
-import os
+import os, sys
 import logging
 from pathlib import Path
 from typing import Mapping
-from dscience_gists.core.exceptions import InvalidFileError
+from dscience_gists.tools.base_tools import BaseTools
+from dscience_gists.core import PathLike
+from dscience_gists.core.exceptions import BadCommandError, InvalidDirectoryError, InvalidFileError, ContradictoryArgumentsError
 logger = logging.getLogger('dscience_gists')
 
 
-class PathTools:
+class PathTools(BaseTools):
+
+	@classmethod
+	def guess_trash(cls) -> Path:
+		"""
+		Chooses a reasonable path for trash based on the OS.
+		This is not reliable. For a more sophisticated solution, see https://github.com/hsoft/send2trash
+		However, even that can fail.
+		"""
+		plat = sys.platform.lower()
+		if 'darwin' in plat:
+			return Path.home() / '.Trash'
+		elif 'win' in plat:
+			return Path(Path.home().root) / '$Recycle.Bin'
+		else:
+			return Path.home() / '.trash'
+
+	@classmethod
+	def prep_dir(cls, path: PathLike, exist_ok: bool) -> bool:
+		"""
+		Prepares a directory by making it if it doesn't exist.
+		If exist_ok is False, calls logger.warning it already exists
+		"""
+		path = Path(path)
+		exists = path.exists()
+		# On some platforms we get generic exceptions like permissions errors, so these are better
+		if exists and not path.is_dir():
+			raise InvalidDirectoryError("Path {} exists but is not a file".format(path))
+		if exists and not exist_ok:
+			logger.warning("Directory {} already exists".format(path))
+		if not exists:
+			# NOTE! exist_ok in mkdir throws an error on Windows
+			path.mkdir(parents=True)
+		return exists
+
+	@classmethod
+	def prep_file(cls, path: PathLike, overwrite: bool = True, append: bool = False) -> bool:
+		"""
+		Prepares a file path by making its parent directory (if it doesn't exist) and checking it.
+		"""
+		# On some platforms we get generic exceptions like permissions errors, so these are better
+		path = Path(path)
+		exists = path.exists()
+		if overwrite and append:
+			raise ContradictoryArgumentsError("Can't append and overwrite file {}".format(path))
+		if exists and not overwrite and not append:
+			raise FileExistsError("Path {} already exists".format(path))
+		elif exists and not path.is_file() and not path.is_symlink():  # TODO check link?
+			raise InvalidFileError("Path {} exists but is not a file".format(path))
+		# NOTE! exist_ok in mkdir throws an error on Windows
+		if not path.parent.exists():
+			Path(path.parent).mkdir(parents=True, exist_ok=True)
+		return exists
 
 	@classmethod
 	def sanitize_file_path(cls, path: str, show_warnings: bool = True) -> Path:
@@ -62,9 +116,6 @@ class PathTools:
 		for k, v in rep.items():
 			s = s.replace(k, v)
 		return s
-
-	def __repr__(self): return self.__class__.__name__
-	def __str__(self): return self.__class__.__name__
 
 
 __all__ = ['PathTools']

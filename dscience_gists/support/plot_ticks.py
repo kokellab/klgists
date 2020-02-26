@@ -33,7 +33,8 @@ class AxisTicks:
 
 
 class TickBounder:
-	"""Forces the limits of a Matplotlib Axes to end at major or minor ticks.
+	"""
+	Forces the limits of a Matplotlib Axes to end at major or minor ticks.
 	Pass AxisTicks as the x_ticks and y_ticks constructor arguments to perform this.
 
 	This example will bound maximum width and height of the Axes to the smallest tick that fits the data,

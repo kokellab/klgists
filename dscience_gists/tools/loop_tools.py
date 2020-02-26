@@ -2,12 +2,12 @@ from typing import Collection, TypeVar, Iterator, Union, Callable, Optional, Ite
 from datetime import datetime
 import time
 import logging
-from dscience_gists.tools.unit_tools import *
+from dscience_gists.tools.base_tools import BaseTools
+from dscience_gists.tools.unit_tools import UnitTools
 logger = logging.getLogger('dscience_gists')
 T = TypeVar('T')
 
-
-class LoopTools(UnitTools):
+class LoopTools(BaseTools):
 
 	@classmethod
 	def loop(
@@ -34,14 +34,15 @@ class LoopTools(UnitTools):
 		initial_start_time = time.monotonic()
 		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		log("Started processing at {}.\n".format(now))
+		i = 0
 		for i, thing in enumerate(things):
 			t0 = time.monotonic()
 			yield thing
 			t1 = time.monotonic()
 			if i % every_i == 0:
-				log("Processed {} in {}.\n".format(every_i, cls.delta_time_to_str(t1 - t0)))
+				log("Processed {} in {}.\n".format(every_i, UnitTools.delta_time_to_str(t1 - t0)))
 		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-		log("Processed {}/{} in {}. Done at {}.\n".format(i, i, cls.delta_time_to_str(time.monotonic() - initial_start_time), now))
+		log("Processed {}/{} in {}. Done at {}.\n".format(i, i, UnitTools.delta_time_to_str(time.monotonic() - initial_start_time), now))
 
 	@classmethod
 	def _loop_timing(
@@ -63,11 +64,11 @@ class LoopTools(UnitTools):
 				estimate = (t1 - initial_start_time) / (i + 1) * (n_total - i - 1)
 				log(
 					"Processed {}/{} in {}. Estimated {} left.\n"
-					.format(i + 1, n_total, cls.delta_time_to_str(t1 - t0), cls.delta_time_to_str(estimate))
+					.format(i + 1, n_total, UnitTools.delta_time_to_str(t1 - t0), UnitTools.delta_time_to_str(estimate))
 				)
 		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-		delta = cls.delta_time_to_str(time.monotonic() - initial_start_time)
-		log("Processed {}/{} in {}. Done at {}.\n".format(n_total, n_total,delta, now))
+		delta = UnitTools.delta_time_to_str(time.monotonic() - initial_start_time)
+		log("Processed {}/{} in {}. Done at {}.\n".format(n_total, n_total, delta, now))
 
 	@classmethod
 	def parallel(cls, items, function, n_cores: int = 2) -> None:

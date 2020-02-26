@@ -1,6 +1,7 @@
 import re
-from dscience_gists.core.exceptions import ExternalCommandFailed, ParsingFailedError
+from dscience_gists.core.exceptions import ExternalCommandError, ParsingFailedError
 from dscience_gists.core import abcd
+from dscience_gists.tools.base_tools import BaseTools
 
 
 @abcd.dataclass(frozen=True)
@@ -26,7 +27,7 @@ class GitDescription:
 	def __str__(self): return repr(self)
 
 
-class ProgramTools:
+class ProgramTools(BaseTools):
 
 	@classmethod
 	def commit_hash(cls, git_repo_dir: str = '.') -> str:
@@ -39,7 +40,7 @@ class ProgramTools:
 		p = Popen('git describe --long --dirty --broken --abbrev=40 --tags'.split(' '), stdout=PIPE, cwd=git_repo_dir)
 		(out, err) = p.communicate()
 		exit_code = p.wait()
-		if exit_code != 0: raise ExternalCommandFailed("Got nonzero exit code {} from git describe".format(exit_code))
+		if exit_code != 0: raise ExternalCommandError("Got nonzero exit code {} from git describe".format(exit_code))
 		return GitDescription.parse(out.decode('utf-8').strip())
 
 

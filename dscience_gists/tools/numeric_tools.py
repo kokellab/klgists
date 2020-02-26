@@ -1,10 +1,10 @@
 from typing import SupportsFloat, SupportsInt, TypeVar, Optional
 import numpy as np
-from dscience_gists.tools import VeryCommonTools
+from dscience_gists.tools.base_tools import BaseTools
 V = TypeVar('V')
 
 
-class NumericTools(VeryCommonTools):
+class NumericTools(BaseTools):
 
 	@classmethod
 	def fnone(cls, f: Optional[SupportsFloat]) -> float:
@@ -59,7 +59,13 @@ class NumericTools(VeryCommonTools):
 		return int(np.max(f))
 
 	@classmethod
-	def slice_bounded(cls, arr: np.array, i: int, j: int) -> np.array:
+	def slice_bounded(cls, arr: np.array, i: Optional[int], j: Optional[int]) -> np.array:
+		"""
+		Slices `arr[max(i,0), min(j, len(arr))`.
+		Converts `i` and `j` to int.
+		"""
+		if i is None: i = 0
+		if j is None: j = len(arr)
 		if i < 0: i = len(arr) - i
 		if j < 0: j = len(arr) - j
 		start, stop = NumericTools.imax(0, i), NumericTools.imin(len(arr), j)

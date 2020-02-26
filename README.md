@@ -11,27 +11,26 @@ The `Tools` class has various lightweight utility functions (classmethods):
 
 ```python
 from dscience_gists.full import *
-print(Tools.git_description('.').tag)             # the tag, or None
-print(Tools.ms_to_minsec(7512000))                # '02:05:12'
-print(Tools.fix_greek('beta,eta and Gamma'))      # 'β,η and Γ'
-print(Tools.pretty_function(lambda s: 55))        # '<λ(1)>'
-print(Tools.pretty_function(list))                # '<list>'
-print(Tools.strip_brackets_and_quotes('(4c]]"'))  # '4c'
-print(Tools.strip_paired('([4c]]"'))              # '(4c]'
-print(Tools.iceilopt(None), Tools.iceilopt(5.3))  # None, 6
-print(Tools.succeeds(fn_to_try))                  # True or False
-print(Tools.or_null(fn_might_fail))               # None if it failed
-print(Tools.only([1]), Tools.only([1, 2]))        # 1, MultipleMatchesError
-print(Tools.is_probable_null(np.nan))             # True
-Tools.read_properties_file('abc.properties')      # returns a dict
-important_info = Tools.get_env_info()             # a dict of info like memory usage, cpu, host name, etc.
+Tools.git_description('.').tag                # the tag, or None
+Tools.ms_to_minsec(7512000)                   # '02:05:12'
+Tools.fix_greek('beta,eta and Gamma')         # 'β,η and Γ'
+Tools.pretty_function(lambda s: 55)           # '<λ(1)>'
+Tools.pretty_function(list)                   # '<list>'
+Tools.strip_brackets_and_quotes('(ab[cd)"')   # 'ab[cd' (only strips if paired)
+Tools.iceilopt(None), Tools.iceilopt(5.3)     # None, 6
+Tools.succeeds(fn_to_try)                     # True or False
+Tools.or_null(fn_might_fail)                  # None if it failed
+Tools.only([1]), Tools.only([1, 2])           # 1, MultipleMatchesError
+Tools.is_probable_null(np.nan)                # True
+Tools.read_properties_file('abc.properties')  # returns a dict
+important_info = Tools.get_env_info()         # a dict of info like memory usage, cpu, host name, etc.
 ```
 
 `Chars` contains useful Unicode characters that are hard to type and related functions:
 ```python
 from dscience_gists.full import *
 print(x0 + Chars.en + x1)          # en dash
-print(Chars.angled('not found'))   # enclose in angled brackets
+print(Chars.angled('not found'))   # '⟨not found⟩'
 ```
 
 The class `J` has tools for display in Jupyter:
@@ -84,6 +83,7 @@ There are also more specific classes that were not imported.
 These can be imported individually from `dscience.support` and `dscience.analysis`.
 - `dscience.support` contains data structures and supporting tools, such as `FlexibleLogger`, `TomlData`, and `Wb1` (for multiwell plates).
 - `dscience.analysis` contains code that is more involved, such as `UniprotGoTerms`, `AtcTree`, and `PeakFinder`. Some of these will download web resources.
+- `dscience.ml` contains models for machine learning, including `DecisionFrame` and `ConfusionMatrix`
 
 Here are various snippets from these:
 
@@ -92,6 +92,13 @@ wb1 = Wb1(8, 12)               # 96-well plate
 print(wb1.index_to_label(13))  # prints 'B01'
 for well in wb1.block_range('A01', 'H11'):
     print(well)                # prints 'A01', 'A02', etc.
+```
+
+```python
+from dscience_gists.ml.confusion_matrix import ConfusionMatrix
+mx = ConfusionMatrix.read_csv('mx.csv')                         # just a subclass of pd.DataFrame
+print(mx.sum_diagonal() - mx.sum_off_diagonal())
+mx = mx.sort(cooling_factor=0.98).symmetrize().triagonalize()   # 
 ```
 
 ```python

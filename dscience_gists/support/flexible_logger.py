@@ -1,13 +1,16 @@
-import os, logging, datetime
+from __future__ import annotations
+import datetime
 from typing import Optional
+import os, logging
+from datetime import datetime
 
 from dscience_gists.core.exceptions import InvalidDirectoryError
 
 
-class FlexibleLogger:
+class BasicFlexLogger:
 	"""
 	Usage:
-	FlexibleLogger().add_stdout().add_file('abc.log')
+	BasicFlexLogger().add_stdout().add_file('abc.log')
 	"""
 	def __init__(self, name: Optional[str] = None, formatter=logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')):
 		"""Initializes a logger that can write to a log file and/or stdout."""
@@ -41,7 +44,7 @@ class FlexibleLogger:
 			raise InvalidDirectoryError("{} already exists and is not a directory".format(output_dir))
 
 
-class LoggingFormatterBuilder:
+class LogFormatBuilder:
 	"""
 	Builder for those of us who hate the Python logging Formatter syntax and can't remember the options.
 	Example usage:
@@ -74,4 +77,4 @@ class LoggingFormatterBuilder:
 		return logging.Formatter(self._s[min(1, len(self._s)) :])
 
 
-__all__ = ['FlexibleLogger', 'LoggingFormatterBuilder']
+__all__ = ['BasicFlexLogger', 'LogFormatBuilder']
