@@ -1,12 +1,10 @@
-from typing import Iterable, Any, Tuple, Generator, Iterator, Mapping, Union, Callable, Optional, Sequence, List, TypeVar, Type
-import json
+from typing import Iterable, Any, Tuple, Generator, Iterator, Mapping, Union, Callable, Optional, Sequence, TypeVar, Type
 import sys
 from hurry.filesize import size as hsize
 from collections import defaultdict
 import numpy as np
 from dscience_gists.tools.base_tools import BaseTools
 from dscience_gists.core import DevNull
-from dscience_gists.core.json_encoder import *
 from dscience_gists.core.exceptions import RefusingRequestError
 Y = TypeVar('Y')
 T = TypeVar('T')
@@ -135,18 +133,6 @@ class CommonTools(BaseTools):
 			return x if attr is None else cls.look(x, attr)
 		except StopIteration:
 			return None
-
-	@classmethod
-	def pretty_dict(cls, dct: Mapping[Any, Any]) -> str:
-		"""
-		Returns a pretty-printed dict, complete with indentation. Will fail on non-JSON-serializable datatypes.
-		"""
-		return json.dumps(dct, default=JsonEncoder().default, sort_keys=True, indent=4)
-
-	@classmethod
-	def pp_dict(cls, dct: Mapping[Any, Any]) -> None:
-		"""Pretty-prints a dict to stdout."""
-		print(CommonTools.pretty_dict(dct))
 
 	@classmethod
 	def iter_rc(cls, n_rows: int, n_cols: int) -> Generator[Tuple[int, int], None, None]:

@@ -7,6 +7,8 @@ class Chars:
 	thinspace = u'\u2009'
 	hairspace = u'\u200A'
 	emspace = u'\u2003'
+	figspace = u'\u2007'
+	narrownbsp = u'\u202F'  # great for units
 	hyphen = '‐'  # proper unicode hyphen
 	nbhyphen = '‑'  # non-breaking hyphen
 	fig = '‒'  # figure dash, ex in phone numbers

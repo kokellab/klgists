@@ -1,14 +1,73 @@
-from typing import Optional, Sequence, Union, Iterable, Tuple, Mapping, TypeVar
+from typing import Optional, Sequence, Union, Iterable, Tuple, Mapping, TypeVar, Any
 import re
+import json
 from copy import copy
 import numpy as np
-from dscience_gists.tools.base_tools import BaseTools
+from dscience_gists.core.json_encoder import *
 from dscience_gists.core.chars import *
+from dscience_gists.tools.base_tools import BaseTools
 T = TypeVar('T')
 V = TypeVar('V')
 
 
+class Pretty:
+	@classmethod
+	def condensed(cls, item, depth = 1):
+		if isinstance(item, dict):
+			return '{\n' + '\n'.join([
+				'\t'*(depth+1) + k + ' = ' + cls.condensed(v, depth+1) for k, v in item.items()
+			]) + '\n' + '\t'*depth + '}'
+		else:
+			return str(item)
+
+	@classmethod
+	def expanded(cls, item, depth = 1):
+		if isinstance(item, dict):
+			return '{\n' + '\n'.join([
+				'\t'*(depth+1) + k + ' = ' + cls.expanded(v, depth+1) for k, v in item.items()
+			]) + '\n' + '\t'*depth + '}'
+		elif isinstance(item, (list, set)):
+			return '[\n' + '\n'.join([
+				'\t'*(depth+1) + cls.expanded(v, depth+1) for v in item
+			]) + '\n' + '\t'*depth + ']'
+		else:
+			return str(item)
+
+
 class StringTools(BaseTools):
+
+	@classmethod
+	def pretty_dict(cls, dct: Mapping[Any, Any]) -> str:
+		"""
+		Returns a pretty-printed dict, complete with indentation. Will fail on non-JSON-serializable datatypes.
+		"""
+		#return Pretty.condensed(dct)
+		return cls.retab(json.dumps(dct, default=JsonEncoder().default, sort_keys=True, indent=1, ensure_ascii=False), 1)
+
+	@classmethod
+	def retab(cls, s: str, nspaces: int) -> str:
+		def fix(m):
+			n = len(m.group(1)) // nspaces
+			return '\t'*n + ' '*(len(m.group(1))%nspaces)
+		return re.sub('^( +)', fix, s, flags=re.MULTILINE)
+
+	@classmethod
+	def strip_empty_decimal(cls, num: Union[float, str]) -> str:
+		"""
+		Replaces prefix . with 0. and strips trailing .0 and trailing .
+		"""
+		try:
+			float(num)
+		except TypeError:
+			if not isinstance(num, str):
+				raise TypeError('Must be either str or float-like') from None
+		t = str(num)
+		if t.startswith('.'):
+			t = '0' + t
+		if '.' in t:
+			return t.rstrip('0').rstrip('.')
+		else:
+			return t
 
 	@classmethod
 	def truncate(cls, s: Optional[str], n: int, always_dots: bool = False) -> Optional[str]:
@@ -175,11 +234,13 @@ class StringTools(BaseTools):
 		if any([a for a in pieces if len(a) != 2]):
 			raise ValueError("strip_paired requires each item in `pieces` be a string of length 2: (stard, end); got {}".format(pieces))
 		text = str(text)
-		while len(text) > 1:
-			for _ in [0 for a, b in pieces if text.startswith(a) and text.endswith(b)]:
-				text = text[1:-1]
-			else:
-				break
+		while len(text) > 0:
+			yes = False
+			for a, b in pieces:
+				while text.startswith(a) and text.endswith(b):
+					text = text[1:-1]
+					yes = True
+			if not yes: break
 		return text
 
 	@classmethod
@@ -196,28 +257,28 @@ class StringTools(BaseTools):
 		"""
 		Replaces digits, +, =, (, and ) with equivalent Unicode superscript chars (ex ¹).
 		"""
-		return ''.join(dict(zip("0123456789-+=()", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺⁼⁽⁾")).get(c, c) for c in StringTools.dashes_to_hm(s))
+		return ''.join(dict(zip("0123456789-+=()", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺⁼⁽⁾")).get(c, c) for c in s)
 
 	@classmethod
 	def subscript(cls, s: Union[str, float]) -> str:
 		"""
 		Replaces digits, +, =, (, and ) with equivalent Unicode subscript chars (ex ₁).
 		"""
-		return ''.join(dict(zip("0123456789+-=()", "₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎")).get(c, c) for c in StringTools.dashes_to_hm(s))
+		return ''.join(dict(zip("0123456789+-=()", "₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎")).get(c, c) for c in s)
 
 	@classmethod
 	def unsuperscript(cls, s: Union[str, float]) -> str:
 		"""
 		Replaces Unicode superscript digits, +, =, (, and ) with normal chars.
 		"""
-		return ''.join(dict(zip("⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺⁼⁽⁾", "0123456789-+=()")).get(c, c) for c in StringTools.dashes_to_hm(s))
+		return ''.join(dict(zip("⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺⁼⁽⁾", "0123456789-+=()")).get(c, c) for c in s)
 
 	@classmethod
 	def unsubscript(cls, s: Union[str, float]) -> str:
 		"""
 		Replaces Unicode superscript digits, +, =, (, and ) with normal chars.
 		"""
-		return ''.join(dict(zip("₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎", "0123456789+-=()")).get(c, c) for c in StringTools.dashes_to_hm(s))
+		return ''.join(dict(zip("₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎", "0123456789+-=()")).get(c, c) for c in s)
 
 	@classmethod
 	def dashes_to_hm(cls, s: str) -> str:
@@ -244,7 +305,9 @@ class StringTools(BaseTools):
 			- StringTools.pretty_float(-float('inf'))  # '−∞'
 			- StringTools.pretty_float(np.NaN)         # '⌀'
 		"""
-		v0 = v.__class__(v)
+		# TODO this seems absurdly long for what it does
+		if n_sigfigs is None or n_sigfigs < 1:
+			raise ValueError('Sigfigs of {} is nonpositive'.format(n_sigfigs))
 		# first, handle NaN and infinities
 		if np.isneginf(v):
 			return Chars.minus + Chars.inf
@@ -253,26 +316,25 @@ class StringTools(BaseTools):
 		elif np.isnan(v):
 			return Chars.null
 		# sweet. it's a regular float or int.
-		isint = isinstance(v, int)
-		if isint:
-			v = int(round(v))
 		if n_sigfigs is None:
 			s = StringTools.strip_empty_decimal(str(v))
 		else:
-			s = str(float(str(('%.{}g'.format(n_sigfigs)) % v)))
+			s = str(float(str(('{:.{}g}'.format(n_sigfigs)) % v)))
 		# remove the .0 if the precision doesn't support it
 		# if v >= 1 and n_sigfigs<2, it couldn't have a decimal
 		# and if n_sigfigs<1, it definitely can't
-		if isint or n_sigfigs is not None and v0>=1 and n_sigfigs<2 or n_sigfigs is not None and n_sigfigs < 1:
-			s = StringTools.strip_empty_decimal(s)
 		# and ... %g does this.
-		if s.startswith('.'):
-			s = '0' + s
-		# prepend + or -
-		if s.startswith('-'):
-			return Chars.minus + s[1:]
-		else:
-			return '+' + s
+		if isinstance(v, int) or n_sigfigs is not None and n_sigfigs<2:
+			s = StringTools.strip_empty_decimal(s)
+		# prepend + or - (unless 0)
+		if float(s)==0.0:
+			return s
+		s = s.replace('-', Chars.minus)
+		if not s.startswith(Chars.minus):
+			s = '+' + s[1:]
+		if len(s)>1 and s[1] == '.':
+			s = s[0] + '0.' + s[2:]
+		return s
 
 	@classmethod
 	def pretty_function(cls, function, with_address: bool = False, prefix: str = '⟨', suffix: str = '⟩') -> str:
@@ -282,18 +344,19 @@ class StringTools(BaseTools):
 		- Instead of '<bound method ...', you'll get '<name(nargs)>'
 		- Instead of 'lambda ...', you'll get '<λ(nargs)>'
 		- etc.
-		NOTE 1: If function is None, returns ''
+		NOTE 1: If function is None, returns '⌀'
 		NOTE 2: If function does not have __name__, returns prefix + type(function) + <address> + suffix
+		NOTE 3: If it's a primitive, returns str(function)
 		:param function: Can be anything, but especially useful for functions
 		:param with_address: Include `@ hex-mem-addr` in the name
 		:param prefix: Prefix to the whole string
 		:param suffix: Suffix to the whole string
 		"""
 		if function is None:
-			return ''
+			return Chars.null
 		n_args = str(function.__code__.co_argcount) if hasattr(function, '__code__') else '?'
 		boundmatch = re.compile(r'^<bound method [^ .]+\.([^ ]+) of (.+)>$').fullmatch(str(function))
-		objmatch = re.compile(r'<([A-Za-z0-9_.]+) object').search(str(function))
+		objmatch = re.compile(r"<([A-Za-z0-9_.<>]+)[ ']*object").search(str(function))        # instance of global or local class
 		addr = ' @ ' + hex(id(function)) if with_address else ''
 		if cls.is_lambda(function):
 			# simplify lambda functions!
@@ -323,7 +386,7 @@ class StringTools(BaseTools):
 		else:
 			# it's a primitive, etc
 			s = StringTools.strip_off_end(StringTools.strip_off_start(str(function), prefix), suffix)
-			return prefix + s + suffix
+			return s
 
 	@classmethod
 	def greek_to_name(cls) -> Mapping[str, str]:

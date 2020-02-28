@@ -1,3 +1,4 @@
+import pytest
 from hypothesis import given
 from hypothesis.strategies import integers
 from dscience_gists.support.well_name import *
@@ -47,3 +48,6 @@ class TestWellBase:
 		assert wb.parse("A01...B02") == ['A01', 'A02', 'A03', 'A04', 'B01', 'B02']
 		assert wb.parse("A01*B02") == ['A01', 'A02', 'B01', 'B02']
 
+
+if __name__ == '__main__':
+	pytest.main()

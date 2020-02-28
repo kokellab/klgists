@@ -1,30 +1,33 @@
-from typing import SupportsFloat, Optional, Tuple
+from typing import SupportsFloat, Optional, Tuple, Union
 import re
 import logging
 import humanfriendly as friendly
 import math
 from dscience_gists.tools.base_tools import BaseTools
+from dscience_gists.tools.string_tools import StringTools
 logger = logging.getLogger('dscience_gists')
 
 
 class UnitTools(BaseTools):
 
 	@classmethod
-	def delta_time_to_str(cls, delta_sec: float) -> str:
+	def delta_time_to_str(cls, delta_sec: float, space: str = '') -> str:
 		"""
-		Returns a pretty string from a difference in time in seconds.
+		Returns a pretty string from a difference in time in seconds. Rounds hours and minutes to 2 decimal places, and seconds to 1.
+		Ex: delta_time_to_str(313) == 5.22min
 		:param delta_sec: The time in seconds
+		:param space: Space char between digits and units; good choices are empty, ASCII space, Chars.narrownbsp, Chars.thinspace, and Chars.nbsp.
 		:return: A string with units 'hr', 'min', or 's'
 		"""
 		if abs(delta_sec) > 60*60*3:
-			return str(round(delta_sec/60/60, 2)) + 'hr'
+			return StringTools.strip_empty_decimal(str(round(delta_sec/60/60, 2))) + space + 'hr'
 		elif abs(delta_sec) > 180:
-			return str(round(delta_sec/60, 2)) + 'min'
+			return StringTools.strip_empty_decimal(str(round(delta_sec/60, 2))) + space + 'min'
 		else:
-			return str(round(delta_sec, 1)) + 's'
+			return StringTools.strip_empty_decimal(str(round(delta_sec, 1))) + space + 's'
 
 	@classmethod
-	def ms_to_minsec(cls, ms: int) -> str:
+	def ms_to_minsec(cls, ms: int, space: str = '') -> str:
 		"""
 		Converts a number of milliseconds to one of the following formats:
 			- 10ms         if < 1 sec
@@ -33,6 +36,7 @@ class UnitTools(BaseTools):
 			- 5d:10:15:33  if > 1 day
 		Prepends a minus sign (−) if negative.
 		:param ms: The milliseconds
+		:param space: Space char between digits and 'ms' or 'd' for day (if used); good choices are empty, ASCII space, Chars.narrownbsp, Chars.thinspace, and Chars.nbsp.
 		:return: A string of one of the formats above
 		"""
 		is_neg = ms < 0
@@ -42,9 +46,9 @@ class UnitTools(BaseTools):
 		hours = int((ms/(1000*60*60)) % 24)
 		days = int(ms/(1000*60*60*24))
 		if ms < 1000:
-			s = "{}ms".format(ms)
+			s = "{}{}ms".format(space, ms)
 		elif days > 1:
-			s = "{}d:{}:{}:{}".format(days, str(hours).zfill(2), str(minutes).zfill(2), str(seconds).zfill(2))
+			s = "{}{}d:{}:{}:{}".format(days, space, str(hours).zfill(2), str(minutes).zfill(2), str(seconds).zfill(2))
 		elif hours > 1:
 			s = "{}:{}:{}".format(str(hours).zfill(2), str(minutes).zfill(2), str(seconds).zfill(2))
 		else:
@@ -77,7 +81,7 @@ class UnitTools(BaseTools):
 			return 0  # can't take the log of 0
 
 	@classmethod
-	def nice_dose(cls, micromolar_dose: float, n_sigfigs: Optional[int] = 5, adjust_units: bool = True, use_sigfigs: bool = True) -> str:
+	def nice_dose(cls, micromolar_dose: float, n_sigfigs: Optional[int] = 5, adjust_units: bool = True, use_sigfigs: bool = True, space: str = '') -> str:
 		"""
 		Returns a dose with units, with the units scaled as needed.
 		Can handle millimolar, micromolar, nanomolar, and picomolar.
@@ -85,6 +89,7 @@ class UnitTools(BaseTools):
 		:param micromolar_dose: The dose in micromolar
 		:param n_sigfigs: For rounding; no rounding if None
 		:param adjust_units: If False, will always use micromolar
+		:param space: Space char between digits and units; good choices are empty, ASCII space, Chars.narrownbsp, Chars.thinspace, and Chars.nbsp.
 		:return: The dose with a suffix of µM, mM, nM, or mM
 		"""
 		d = micromolar_dose
@@ -94,7 +99,7 @@ class UnitTools(BaseTools):
 			if m < 1E-6:
 				d *= 1E9
 				unit = 'fM'
-			if m < 1E-3:
+			elif m < 1E-3:
 				d *= 1E6
 				unit = 'pM'
 			elif m < 1:
@@ -112,9 +117,9 @@ class UnitTools(BaseTools):
 			d = UnitTools.round_to_sigfigs(d, n_sigfigs)
 		else:
 			d = round(d, n_sigfigs)
-		if round(d) == d:
-			return str(d).replace('.0', '') + unit
-		else: return str(d) + unit
+		if round(d) == d and str(d).endswith('.0'):
+			return str(d)[:-2] + space + unit
+		else: return str(d) + space + unit
 
 	@classmethod
 	def split_drug_dose(cls, text: str) -> Tuple[str, Optional[float]]:
@@ -131,7 +136,7 @@ class UnitTools(BaseTools):
 			- Units must follow the digits, separated by at most whitespace, and are case-sensitive.
 		"""
 		# note the lazy ops in the first group and in the non-(alphanumeric/dot/dash) separator between the drug and dose
-		pat = re.compile(r'^\s*(.*?)(?:[^A-Za-z0-9.\-]+?[\s(\[{]*(\d+(?:.\d*)?)\s*([mµunp]M)\s*[)\]}]*)?\s*$')
+		pat = re.compile(r'^\s*(.*?)(?:[^A-Za-z0-9.\-]+?[\s(\[{]*(\d+(?:.\d*)?)\s*([mµunpf]M)\s*[)\]}]*)?\s*$')
 		match = pat.fullmatch(text)
 		if match is None:
 			raise ValueError("The text {} couldn't be parsed".format(text))
@@ -151,8 +156,7 @@ class UnitTools(BaseTools):
 		If multiple matches are found, warns and returns None.
 		"""
 		# we need to make sure mM ex isn't part of a larger name
-		pat1 = re.compile(r'[^A-Za-z0-9.\-](\d+(?:.\d*))[\s(\[{]*([mµunp]M)[^A-Za-z0-9]')
-		pat2 = re.compile(r'^(\d+(?:\.\d*)?)[\s(\[{]*([mµunp]M)$')
+		pat1 = re.compile(r'(\d+(?:.\d*)?)\s*([mµunpf]M)\s*[)\]}]*')
 		def find(pat):
 			return {
 				UnitTools.dose_to_micromolar(float(match.group(1)), match.group(2))
@@ -160,24 +164,25 @@ class UnitTools(BaseTools):
 				if match is not None
 			}
 		matches = find(pat1)
-		matches.update(find(pat2))
 		if len(matches) == 1:
 			return next(iter(matches))
 		elif len(matches) > 1:
-			logger.warning("Found {} potential doses: {}".format(len(matches), matches))
+			logger.warning("Found {} potential doses: {} . Returning None.".format(len(matches), matches))
 		return None
 
 	@classmethod
-	def dose_to_micromolar(cls, digits: float, units: str) -> float:
+	def dose_to_micromolar(cls, digits: Union[str, float], units: str) -> float:
 		"""
 		Ex: dose_to_micromolar(53, 'nM')  # returns 0.053
 		"""
 		return float(digits) *{
-			'mM': 1000,
-			'µM': 1.0,
-			'uM': 1.0,
-			'nM': 1/1000,
-			'pM': 1/1000
+			'M':  1e6,
+			'mM': 1e3,
+			'µM': 1,
+			'uM': 1,
+			'nM': 1e-3,
+			'pM': 1e-6,
+			'fM': 1e-9
 		}[units]
 
 

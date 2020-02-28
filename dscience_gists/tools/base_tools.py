@@ -61,6 +61,7 @@ class BaseTools:
 		# and 0 elements would loop forever
 		if len(args) < 2:
 			yield from zip(*args)
+			return
 		iters = [iter(axis) for axis in args]
 		n_elements = 0
 		failures = []
@@ -90,8 +91,7 @@ class BaseTools:
 		try:
 			return list(cls.zip_strict(*args))
 		except LengthMismatchError:
-			raise LengthMismatchError(
-				"Length mismatch in zip_strict: Sizes are {}".format([len(x) for x in args])) from None
+			raise LengthMismatchError("Length mismatch in zip_strict: Sizes are {}".format([len(x) for x in args])) from None
 
 	@classmethod
 	def forever(cls) -> Iterator[int]:
@@ -143,19 +143,6 @@ class BaseTools:
 		yield
 
 	@classmethod
-	def strip_empty_decimal(cls, num: Union[int, str]) -> str:
-		"""
-		Replaces prefix . with 0. and strips trailing .0 and trailing .
-		"""
-		t = str(num)
-		if t.startswith('.'):
-			t = '0' + t
-		if '.' in t:
-			return t.rstrip('0').rstrip('.')
-		else:
-			return t
-
-	@classmethod
 	def look(cls, obj: Y, attrs: Union[str, Iterable[str], Callable[[Y], Z]]) -> Optional[Z]:
 		"""
 		Returns the value of a chain of attributes on object `obj`, or None any object in that chain is None or lacks the next attribute.
@@ -172,7 +159,7 @@ class BaseTools:
 		return _look(obj, attrs)
 
 	@classmethod
-	def get_log_function(cls, log: Union[None, str, Callable[[str], None]]) -> Callable[[str], None]:
+	def get_log_function(cls, log: Union[None, str, Callable[[str], None], Any]) -> Callable[[str], None]:
 		"""
 		Gets a logging function from user input.
 		The rules are:
@@ -206,3 +193,6 @@ class BaseTools:
 
 
 __all__ = ['BaseTools']
+
+if __name__ == '__main__':
+	print(list(BaseTools.zip_strict([1], [3, 4])))

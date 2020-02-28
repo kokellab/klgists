@@ -168,4 +168,4 @@ def silenced(no_stdout: bool = True, no_stderr: bool = True):
 			yield
 
 
-__all__ = ['frozenlist', 'PathLike', 'Writeable', 'DevNull', 'LogWriter', 'DelegatingWriter', 'Capture', 'look', 'silenced']
+__all__ = ['frozenlist', 'PathLike', 'Writeable', 'DevNull', 'LogWriter', 'DelegatingWriter', 'Capture', 'look', 'silenced', 'logger']

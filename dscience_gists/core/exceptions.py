@@ -27,7 +27,7 @@ class IncompatibleDataError(Error): """An operation cannot be applied to data th
 class MissingColumnError(Error): pass
 class UserError(Error): pass
 class BadCommandError(UserError): pass
-class LookupFailedError(UserError): pass
+class LookupFailedError(Error, LookupError): pass
 class BadConfigError(UserError): pass
 class ParsingError(UserError): pass
 
