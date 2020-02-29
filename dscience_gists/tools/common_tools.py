@@ -9,9 +9,14 @@ from dscience_gists.core.exceptions import RefusingRequestError
 Y = TypeVar('Y')
 T = TypeVar('T')
 Z = TypeVar('Z')
-
+Q = TypeVar('Q')
 
 class CommonTools(BaseTools):
+
+	@classmethod
+	def limit(cls, items: Iterable[Q], n: int) -> Generator[Q, None, None]:
+		for i, x in zip(range(n), items):
+			yield x
 
 	@classmethod
 	def try_none(cls, function: Callable[[], T], fail_val: Optional[T] = None, exception=Exception) -> Optional[T]:

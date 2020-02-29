@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
-from dscience_gists.core.exceptions import MultipleMatchesError, LookupFailedError, LengthMismatchError
+from dscience_gists.core.exceptions import MultipleMatchesError, LengthMismatchError
 from dscience_gists.tools.base_tools import *
-from .mocks import *
+from dscience_gists.support.mocks import *
 raises = pytest.raises
 
 

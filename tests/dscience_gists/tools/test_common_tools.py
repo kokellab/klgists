@@ -2,7 +2,7 @@ import pytest
 import re
 import numpy as np
 from dscience_gists.tools.common_tools import CommonTools
-from .mocks import *
+from dscience_gists.support.mocks import *
 raises = pytest.raises
 
 class TestCommon:

@@ -72,7 +72,7 @@ class Utils:
 def auto_eq(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = None):
 	"""
 	Decorator.
-	Auto-adds a __hash__ function by hashing its attributes.
+	Auto-adds a __eq__ function by comparing its attributes.
 	:param only: Only include these attributes
 	:param exclude: Exclude these attributes
 	"""
@@ -223,8 +223,8 @@ def auto_obj():
 		return _gen_str(self, exclude=lambda _: False, with_address=True)
 	def __hash(self):
 		return Utils.auto_hash(self, only=None, exclude=None)
-	def __eq(self):
-		return Utils.auto_eq(self, None, only=None, exclude=None)
+	def __eq(self, o):
+		return Utils.auto_eq(self, o, only=None, exclude=None)
 	@wraps(auto_obj)
 	def dec(cls):
 		cls.__eq__ = __eq
@@ -319,9 +319,11 @@ def float_type(attribute: str):
 	Used to annotate a class as being "essentially an float".
 	:param attribute: The name of the attribute of this class
 	"""
+	def __f(self):
+		return float(getattr(self, attribute))
 	@wraps(float_type)
 	def dec(cls):
-		cls.__float__ = lambda: float(getattr(cls, attribute))
+		cls.__float__ = __f
 		return cls
 	return dec
 
@@ -332,9 +334,14 @@ def int_type(attribute: str):
 	Used to annotate a class as being "essentially an integer".
 	:param attribute: The name of the attribute of this class
 	"""
+	def __f(self):
+		return float(getattr(self, attribute))
+	def __i(self):
+		return float(getattr(self, attribute))
 	@wraps(int_type)
 	def dec(cls):
-		cls.__float__ = lambda: float(getattr(cls, attribute))
+		cls.__float__ = __f
+		cls.__int__ = __i
 		return cls
 	return dec
 
@@ -346,9 +353,11 @@ def iterable_over(attribute: str):
 	Used to annotate a class as being "essentially an iterable" over some elements.
 	:param attribute: The name of the attribute of this class
 	"""
+	def __x(self):
+		return iter(getattr(self, attribute))
 	@wraps(iterable_over)
 	def dec(cls):
-		cls.__iter__ = lambda: iter(getattr(cls, attribute))
+		cls.__iter__ = __x
 		return cls
 	return dec
 
@@ -360,10 +369,14 @@ def collection_over(attribute: str):
 	Used to annotate a class as being "essentially a collection" over some elements.
 	:param attribute: The name of the attribute of this class
 	"""
+	def __len(self):
+		return len(list(iter(getattr(self, attribute))))
+	def __iter(self):
+		return iter(getattr(self, attribute))
 	@wraps(collection_over)
 	def dec(cls):
-		cls.__iter__ = lambda: iter(getattr(cls, attribute))
-		cls.__len__ = lambda: len(getattr(cls, attribute))
+		cls.__iter__ = __iter
+		cls.__len__ = __len
 		return cls
 	return dec
 
@@ -375,10 +388,19 @@ def sequence_over(attribute: str):
 	Used to annotate a class as being "essentially a list" over some elements.
 	:param attribute: The name of the attribute of this class
 	"""
+	def __len(self):
+		return len(list(iter(getattr(self, attribute))))
+	def __iter(self):
+		return iter(getattr(self, attribute))
+	def __item(self, e):
+		if hasattr(getattr(self, attribute), '__getitem__'):
+			return getattr(self, attribute)[e]
+		return iter(getattr(self, attribute))
 	@wraps(sequence_over)
 	def dec(cls):
-		cls.__getitem__ = lambda e: getattr(cls, attribute)[e]
-		cls.__len__ = lambda: len(getattr(cls, attribute))
+		cls.__getitem__ = __item
+		cls.__iter__ = __iter
+		cls.__len__ = __len
 		return cls
 	return dec
 

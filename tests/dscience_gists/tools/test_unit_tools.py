@@ -1,9 +1,7 @@
 import pytest
-from hypothesis import given
-from hypothesis import strategies
 from dscience_gists.tools.unit_tools import *
 from dscience_gists.core.chars import *
-from .mocks import *
+
 raises = pytest.raises
 
 class TestUnitTools:

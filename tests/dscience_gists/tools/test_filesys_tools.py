@@ -21,18 +21,13 @@ class TestFilesysTools:
 		)
 
 	def test_read_properties(self):
-		assert (
-			dict(FilesysTools.read_properties_file(load('lines.lines'))) ==
-			{
-				'line1': '5',
-				'line2': '5',
-				'line4': 'a'
-			}
-		)
+		f = FilesysTools.read_properties_file
+		expected = {'line1': '5', 'line2': '5', 'line4': 'a'}
+		assert dict(f(load('lines.lines'))) == expected
 		with pytest.raises(ParsingError):
-			FilesysTools.read_properties_file(load('bad1.properties'))
+			f(load('bad1.properties'))
 		with pytest.raises(ParsingError):
-			FilesysTools.read_properties_file(load('bad2.properties'))
+			f(load('bad2.properties'))
 
 
 if __name__ == '__main__':

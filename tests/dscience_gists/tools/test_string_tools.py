@@ -3,7 +3,7 @@ from hypothesis import given
 from hypothesis import strategies
 from dscience_gists.tools.string_tools import *
 from dscience_gists.core.chars import *
-from .mocks import *
+from dscience_gists.support.mocks import *
 raises = pytest.raises
 
 class TestStringTools:
