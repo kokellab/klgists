@@ -1,4 +1,4 @@
-from dscience_gists.core.iterators import *
+from dscience.core.iterators import *
 
 import pytest
 

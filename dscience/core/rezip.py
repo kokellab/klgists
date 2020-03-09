@@ -4,8 +4,8 @@ import logging
 import gzip
 import shutil
 from pathlib import Path
-from dscience_gists.core import PathLike
-logger = logging.getLogger('dscience_gists')
+from dscience.core import PathLike
+logger = logging.getLogger('dscience')
 
 
 class Rezipper:

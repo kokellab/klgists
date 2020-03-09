@@ -1,4 +1,4 @@
-from dscience_gists.core.open_mode import *
+from dscience.core.open_mode import *
 
 import pytest
 

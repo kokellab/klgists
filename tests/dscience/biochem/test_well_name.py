@@ -1,7 +1,7 @@
 import pytest
 from hypothesis import given
 from hypothesis.strategies import integers
-from dscience_gists.support.well_name import *
+from dscience.biochem.well_name import *
 
 
 class TestWellBase:

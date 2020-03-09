@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
-from dscience_gists.core.exceptions import MultipleMatchesError, LengthMismatchError
-from dscience_gists.tools.base_tools import *
-from dscience_gists.support.mocks import *
+from dscience.core.exceptions import MultipleMatchesError, LengthMismatchError
+from dscience.tools.base_tools import *
+from dscience.core.mocks import *
 raises = pytest.raises
 
 
@@ -80,9 +80,9 @@ class TestBaseTools:
 
 	def test_get_log_function(self):
 		f = BaseTools.get_log_function
-		assert str(f(None)) == '<bound method Logger.info of <Logger dscience_gists (WARNING)>>'
-		assert str(f('WARNING')) == '<bound method Logger.warning of <Logger dscience_gists (WARNING)>>'
-		assert str(f(10)) == '<bound method Logger.debug of <Logger dscience_gists (WARNING)>>'
+		assert str(f(None)) == '<bound method Logger.info of <Logger dscience (WARNING)>>'
+		assert str(f('WARNING')) == '<bound method Logger.warning of <Logger dscience (WARNING)>>'
+		assert str(f(10)) == '<bound method Logger.debug of <Logger dscience (WARNING)>>'
 		w = MockWritable()
 		f(w)('testing')
 		assert w.data == 'write:testing'

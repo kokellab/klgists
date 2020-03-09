@@ -1,9 +1,9 @@
 import pytest
 from hypothesis import given
 from hypothesis import strategies
-from dscience_gists.tools.string_tools import *
-from dscience_gists.core.chars import *
-from dscience_gists.support.mocks import *
+from dscience.tools.string_tools import *
+from dscience.core.chars import *
+from dscience.core.mocks import *
 raises = pytest.raises
 
 class TestStringTools:

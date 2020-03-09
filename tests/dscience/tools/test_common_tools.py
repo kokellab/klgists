@@ -1,8 +1,8 @@
 import pytest
 import re
 import numpy as np
-from dscience_gists.tools.common_tools import CommonTools
-from dscience_gists.support.mocks import *
+from dscience.tools.common_tools import CommonTools
+from dscience.core.mocks import *
 raises = pytest.raises
 
 class TestCommon:

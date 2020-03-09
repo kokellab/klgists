@@ -3,8 +3,8 @@ from typing import Sequence, Set, Any, Union, Iterable
 import pandas as pd
 from natsort import ns, natsorted
 from pandas.core.frame import DataFrame as _InternalDataFrame
-from dscience_gists.tools.common_tools import CommonTools
-import dscience_gists.core.abcd as abcd
+from dscience.tools.common_tools import CommonTools
+import dscience.core.abcd as abcd
 
 class InvalidExtendedDataFrameError(Exception): pass
 

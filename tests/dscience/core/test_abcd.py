@@ -1,9 +1,7 @@
 import pytest
-import numpy as np
 import re
-from dscience_gists.core.exceptions import MultipleMatchesError, LookupFailedError, LengthMismatchError
-from dscience_gists.core import abcd
-from dscience_gists.support.mocks import *
+from dscience.core import abcd
+
 raises = pytest.raises
 
 class TestAbcd:

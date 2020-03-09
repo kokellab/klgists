@@ -1,6 +1,6 @@
 import pytest
-from dscience_gists.core.exceptions import InvalidFileError
-from dscience_gists.tools.path_tools import *
+from dscience.core.exceptions import InvalidFileError
+from dscience.tools.path_tools import *
 
 
 class TestPathTools:

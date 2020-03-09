@@ -1,6 +1,6 @@
 import pytest
-from dscience_gists.tools.unit_tools import *
-from dscience_gists.core.chars import *
+from dscience.tools.unit_tools import *
+from dscience.core.chars import *
 
 raises = pytest.raises
 

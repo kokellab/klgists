@@ -1,7 +1,7 @@
 import pytest
 import os
-from dscience_gists.core.exceptions import ParsingError
-from dscience_gists.tools.filesys_tools import FilesysTools
+from dscience.core.exceptions import ParsingError
+from dscience.tools.filesys_tools import FilesysTools
 
 def load(parts):
 	if isinstance(parts, str): parts = [parts]
