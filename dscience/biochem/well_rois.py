@@ -1,7 +1,7 @@
 import typing
 from typing import Dict
 from enum import Enum
-from dscience_gists.core.exceptions import BadConfigError
+from dscience.core.exceptions import Error, OutOfRangeError
 
 class Edge(Enum):
 	LEFT = 1
@@ -14,7 +14,7 @@ class Axis(Enum):
 	VERTICAL = 2
 
 
-class RoiError(BadConfigError):
+class RoiError(OutOfRangeError):
 	def __init__(self, message, errors=None):
 		super().__init__(message, errors)
 		self.edge = None
@@ -45,8 +45,8 @@ class Roi:
 
 class WellRoi(Roi):
 	def __init__(self, row: int, column: int, x0: int, y0: int, x1: int, y1: int) -> None:
-		if row < 0: raise ValueError("Row is negative ({})".format(row))
-		if column < 0: raise ValueError("Column is negative ({})".format(row))
+		if row < 0: raise OutOfRangeError("Row is negative ({})".format(row), value=row)
+		if column < 0: raise OutOfRangeError("Column is negative ({})".format(row))
 		super().__init__(x0, y0, x1, y1)
 		self.row_index = row
 		self.column_index = column

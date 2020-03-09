@@ -8,10 +8,9 @@ from enum import Enum
 from copy import copy
 from queue import Queue
 from threading import Thread
-from dscience_gists.core import DevNull
-from dscience_gists.core.exceptions import ExternalCommandError
-from dscience_gists.tools.base_tools import BaseTools
-logger = logging.getLogger('dscience_gists')
+from dscience.core.tiny import DevNull
+from dscience.tools.base_tools import BaseTools
+logger = logging.getLogger('dscience')
 
 
 class PipeType(Enum):
@@ -30,7 +29,6 @@ class CallTools(BaseTools):
 	def silenced(cls, no_stdout: bool = True, no_stderr: bool = True) -> Generator[None, None, None]:
 		"""
 		Context manager that suppresses stdout and stderr.
-		:return:
 		"""
 		with contextlib.redirect_stdout(DevNull()) if no_stdout else cls.null_context():
 			with contextlib.redirect_stderr(DevNull()) if no_stderr else cls.null_context():
@@ -111,6 +109,7 @@ class CallTools(BaseTools):
 		Processes stdout and stderr on separate threads, streamed -- can avoid filling a stdout or stderr buffer.
 		Calls an external command, waits, and throws a ExternalCommandFailed for nonzero exit codes.
 		Returns (stdout, stderr).
+		:raises ExternalCommandError
 		"""
 		if log_callback is None:
 			log_callback = cls._smart_log_callback
@@ -128,7 +127,7 @@ class CallTools(BaseTools):
 		finally:
 			p.kill()
 		if exit_code != 0:
-			raise ExternalCommandError(
+			raise subprocess.CalledProcessError(
 				"Got nonzero exit code {} from '{}'".format(exit_code, ' '.join(cmd)),
 				' '.join(cmd), exit_code, '<<unknown>>', '<<unknown>>'
 			)

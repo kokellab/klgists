@@ -1,12 +1,12 @@
-from typing import Mapping, Callable, Union, Any, Optional
+from typing import Mapping, Callable, Union, Any
 from datetime import datetime
 import logging
 from pathlib import PurePath, Path
 from copy import deepcopy
 from IPython.core.magic import line_magic, magics_class, Magics
 from IPython import get_ipython
-from dscience_gists.core.exceptions import MissingResourceError
-logger = logging.getLogger('dscience_gists')
+from dscience.core.exceptions import InvalidFileError
+logger = logging.getLogger('dscience')
 
 class TemplateParser:
 	def __init__(self, entries: Mapping[str,  Union[Any, Callable[[None], str]]]):
@@ -54,7 +54,7 @@ class TemplateMagic(Magics):
 	def fill(self, line):
 		path = self.template_path
 		if not path.exists():
-			raise MissingResourceError("Jupyter template text file at {} does not exist".format(path))
+			raise InvalidFileError("Jupyter template text file at {} does not exist".format(path), path=path)
 		text = self.processor.fill(path.read_text(encoding='utf-8'))
 		self.shell.set_next_input(text, replace=True)
 

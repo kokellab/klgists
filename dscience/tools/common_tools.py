@@ -1,11 +1,10 @@
 from typing import Iterable, Any, Tuple, Generator, Iterator, Mapping, Union, Callable, Optional, Sequence, TypeVar, Type
 import sys
-from hurry.filesize import size as hsize
 from collections import defaultdict
 import numpy as np
-from dscience_gists.tools.base_tools import BaseTools
-from dscience_gists.core import DevNull
-from dscience_gists.core.exceptions import RefusingRequestError
+from dscience.tools.base_tools import BaseTools
+from dscience.core.tiny import nicesize, DevNull
+from dscience.core.exceptions import RefusingRequestError
 Y = TypeVar('Y')
 T = TypeVar('T')
 Z = TypeVar('Z')
@@ -179,7 +178,7 @@ class CommonTools(BaseTools):
 		:param obj: Any Python object
 		:return: A human-readable size with units
 		"""
-		return hsize(sys.getsizeof(obj))
+		return nicesize(sys.getsizeof(obj))
 
 	@classmethod
 	def devnull(cls):

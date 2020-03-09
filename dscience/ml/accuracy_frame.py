@@ -3,10 +3,10 @@ import logging
 from typing import Sequence, Union, Iterable
 from pathlib import Path
 import pandas as pd
-from dscience_gists.core import PathLike
-from dscience_gists.support.extended_df import *
+from dscience.core.tiny import PathLike
+from dscience.core.extended_df import *
 
-logger = logging.getLogger('dscience_gists')
+logger = logging.getLogger('dscience')
 
 
 class AccuracyCountFrame(BaseExtendedDataFrame):

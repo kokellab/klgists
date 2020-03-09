@@ -1,7 +1,7 @@
 import typing, re
 from typing import Iterator, Sequence, Type
-from dscience_gists.core import abcd
-from dscience_gists.core.exceptions import OutOfRangeError
+from dscience.core import abcd
+from dscience.core.exceptions import OutOfRangeError, StringPatternError
 
 
 @abcd.auto_eq(only=['base', 'n_rows', 'n_columns'])
@@ -74,7 +74,7 @@ class _WB(abcd.ABC):
 			for r in range(ar, br + 1):
 				yield self.rc_to_label(r, ac)
 		else:
-			raise ValueError("{}-{} is not a simple range".format(a, b))
+			raise OutOfRangeError("{}-{} is not a simple range".format(a, b))
 
 	def block_range(self, a: str, b: str) -> Iterator[str]:
 		ar, ac = self.label_to_rc(a)
@@ -161,7 +161,7 @@ class ParsingWB(_WB, abcd.ABC):
 	def _parse(self, expression: str):
 		match = ParsingWB._pattern.fullmatch(expression)
 		if match is None:
-			raise ValueError("{} is wrong".format(expression))
+			raise StringPatternError("{} is wrong".format(expression), value=expression, pattern=ParsingWB._pattern)
 		a, x, b = match.group(1), match.group(2), match.group(3)
 		if x is None:
 			return self.simple_range(a, a)

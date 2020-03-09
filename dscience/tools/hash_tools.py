@@ -3,8 +3,9 @@ import hashlib
 import os
 import codecs
 import gzip
-from dscience_gists.core.exceptions import HashValidationFailedError
-from dscience_gists.tools.base_tools import BaseTools
+from dscience.core.exceptions import InvalidFileError
+from dscience.core.exceptions import HashValidationFailedError
+from dscience.tools.base_tools import BaseTools
 
 
 class FileHasher:
@@ -43,10 +44,11 @@ class FileHasher:
 
 	def _o(self, file_name: str, opener, *args):
 		if not os.path.isfile(file_name + self.extension):
-			raise FileNotFoundError("Hash for file {} does not exist".format(file_name))
+			raise InvalidFileError("Hash for file {} does not exist".format(file_name))
 		with open(file_name + self.extension, 'r', encoding="utf8") as f:
-			if f.read() != self.hashsum(file_name):
-				raise HashValidationFailedError("Hash for file {} does not match".format(file_name))
+			exp, act = f.read(), self.hashsum(file_name)
+			if exp != act:
+				raise HashValidationFailedError("Hash for file {} does not match".format(file_name), key=file_name, expected=exp, actual=act)
 		return opener(file_name, *args)
 
 

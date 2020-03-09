@@ -17,7 +17,7 @@ class OpenMode(str):
 		self._raw = mode.replace('w', 'o')
 		self.internal = self.__strip()
 	def __repr__(self): return self.internal
-	def __str__(self):  return self.internal
+	def __str__(self): return self.internal
 	def __strip(self):
 		return self._raw.replace('o', 'w').replace('s', 'w').replace('z', '').replace('i', '').replace('d', '')
 	@property

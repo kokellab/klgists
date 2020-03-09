@@ -2,9 +2,9 @@ from typing import Any, Iterable, Union, Callable, Optional, TypeVar, Generator,
 import sys
 from contextlib import contextmanager
 import logging
-from dscience_gists.core import look as _look
-from dscience_gists.core.exceptions import LengthMismatchError, MultipleMatchesError
-logger = logging.getLogger('dscience_gists')
+from dscience.core.tiny import look as _look
+from dscience.core.exceptions import LengthMismatchError, LengthError, MultipleMatchesError
+logger = logging.getLogger('dscience')
 Y = TypeVar('Y')
 T = TypeVar('T')
 Z = TypeVar('Z')
@@ -76,9 +76,9 @@ class BaseTools:
 			if len(failures) == 0:
 				yield tuple(values)
 			elif len(failures) == 1:
-				raise LengthMismatchError("Too few elements ({}) along axis {}".format(n_elements, failures[0]))
+				raise LengthError("Too few elements ({}) along axis {}".format(n_elements, failures[0]))
 			elif len(failures) < len(iters):
-				raise LengthMismatchError("Too few elements ({}) along axes {}".format(n_elements, failures))
+				raise LengthError("Too few elements ({}) along axes {}".format(n_elements, failures))
 			n_elements += 1
 
 	@classmethod

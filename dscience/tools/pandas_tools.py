@@ -1,10 +1,10 @@
 from typing import Union, Mapping, TypeVar, Any, Sequence, Dict, Optional
 from pathlib import Path
 import pandas as pd
-from dscience_gists.support.extended_df import *
-from dscience_gists.core import PathLike
-from dscience_gists.core.exceptions import UserError
-from dscience_gists.tools.base_tools import BaseTools
+from dscience.core.extended_df import *
+from dscience.core.tiny import PathLike
+from dscience.core.exceptions import LengthError, LengthMismatchError
+from dscience.tools.base_tools import BaseTools
 V = TypeVar('V')
 
 
@@ -25,7 +25,7 @@ class PandasTools(BaseTools):
 	@classmethod
 	def df_to_dict(cls, d: pd.DataFrame) -> Dict[Any, Any]:
 		if len(d.columns) != 2:
-			raise ValueError("Need exactly 2 columns (key, value); got {}".format(len(d.columns)))
+			raise LengthError("Need exactly 2 columns (key, value); got {}".format(len(d.columns)), minimum=2, maximum=2)
 		keys, values = d.columns[0], d.columns[1]
 		return {
 			getattr(r, keys): getattr(r, values)
@@ -69,7 +69,7 @@ class PandasTools(BaseTools):
 				X.__name__ = class_name
 				return X(df)
 		else:
-			raise UserError("Invalid DataFrame type {}".format(df))
+			raise TypeError("Invalid DataFrame type {}".format(df))
 
 	@classmethod
 	def series_to_df(cls, series, column: str) -> pd.DataFrame:

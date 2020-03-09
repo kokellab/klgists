@@ -5,7 +5,6 @@ from typing import Union
 
 @total_ordering
 class TimeUnit:
-	# '⟨', '⟩'
 	def __init__(self, unit: str, abbrev: str, singlular: str, n_ms: int):
 		self.unit, self.abbrev, self.singular, self.plural, self.n_ms = unit, abbrev, singlular, singlular + 's', n_ms
 	def to_ms(self, n: int): return n * self.n_ms

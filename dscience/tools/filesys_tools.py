@@ -2,19 +2,23 @@ from typing import SupportsBytes, Sequence, Mapping, Iterable, Any, Union, Optio
 from pathlib import PurePath, Path
 import stat
 import os, tempfile
+from datetime import datetime
 import re
 import shutil
+import os, platform, socket, sys
+from getpass import getuser
 import gzip, json, hashlib
 from contextlib import contextmanager
 import logging
 import pandas as pd
-from dscience_gists.core.json_encoder import JsonEncoder
-from dscience_gists.core import Writeable, PathLike
-from dscience_gists.core.exceptions import ParsingError, BadCommandError, InvalidFileError
-from dscience_gists.core.open_mode import *
-from dscience_gists.tools.base_tools import BaseTools
-from dscience_gists.tools.path_tools import PathTools
-logger = logging.getLogger('dscience_gists')
+from dscience.core.rezip import *
+from dscience.core.json_encoder import JsonEncoder
+from dscience.core.tiny import Writeable, PathLike
+from dscience.core.exceptions import ParsingError, BadCommandError, InvalidFileError, ContradictoryArgumentsError, AlreadyUsedError
+from dscience.core.open_mode import *
+from dscience.tools.base_tools import BaseTools
+from dscience.tools.path_tools import PathTools
+logger = logging.getLogger('dscience')
 COMPRESS_LEVEL = 9
 ENCODING = 'utf8'
 
@@ -31,6 +35,39 @@ except ImportError:
 
 
 class FilesysTools(BaseTools):
+
+	dl_and_rezip = Rezipper.dl_and_rezip
+	rezip = Rezipper.rezip
+	gz = Rezipper.gz
+
+	@classmethod
+	def get_env_info(cls, extras: Optional[Mapping[str, Any]] = None) -> Mapping[str, str]:
+		"""
+		Get a dictionary of some system and environment information.
+		Includes os_release, hostname, username, mem + disk, shell, etc.
+		"""
+		try:
+			import psutil
+			pdata = {
+				'disk_used': psutil.disk_usage('.').used,
+				'disk_free': psutil.disk_usage('.').free,
+				'memory_used': psutil.virtual_memory().used,
+				'memory_available': psutil.virtual_memory().available
+			}
+		except ImportError:
+			psutil, pdata = None, {}
+			logger.warning("Couldn't load psutil")
+		if extras is None: extras = {}
+		mains = {
+			'os_release': platform.platform(),
+			'hostname': socket.gethostname(),
+			'username': getuser(),
+			'python_version': sys.version,
+			'shell': os.environ['SHELL'],
+			'environment_info_capture_datetime': datetime.now().isoformat(),
+			**psutil
+		}
+		return {k: str(v) for k, v in {**mains, **extras}.items()}
 
 	@classmethod
 	def delete_surefire(cls, path: PathLike) -> Optional[Exception]:
@@ -123,15 +160,16 @@ class FilesysTools(BaseTools):
 				if line.count('=') != 1:
 					raise ParsingError("Bad line {} in {}".format(i, path))
 				k, v = line.split('=')
-				if k.strip() in dct:
-					raise ParsingError("Duplicate property {} (line {})".format(k.strip(), i))
-				dct[k.strip()] = v.strip()
+				k, v = k.strip(), v.strip()
+				if k in dct:
+					raise AlreadyUsedError("Duplicate property {} (line {})".format(k, i), key=k)
+				dct[k] = v
 		return dct
 
 	@classmethod
 	def write_properties_file(cls, properties: Mapping[Any, Any], path: Union[str, PurePath], mode: str = 'o'):
 		if not OpenMode(mode).write:
-			raise BadCommandError("Cannot write text to {} in mode {}".format(path, mode))
+			raise ContradictoryArgumentsError("Cannot write text to {} in mode {}".format(path, mode))
 		with FilesysTools.open_file(path, mode) as f:
 			bads = []
 			for k, v in properties.items():
@@ -279,9 +317,9 @@ class FilesysTools(BaseTools):
 		path = Path(path)
 		mode = OpenMode(mode)
 		if not mode.overwrite or mode.binary:
-			raise ValueError("Wrong mode for writing a text file: {}".format(mode))
+			raise ContradictoryArgumentsError("Wrong mode for writing a text file: {}".format(mode))
 		if not FilesysTools.is_true_iterable(iterable):
-			raise ValueError("Not a true iterable")  # TODO include iterable if small
+			raise TypeError("Not a true iterable")  # TODO include iterable if small
 		PathTools.prep_file(path, mode.overwrite, mode.append)
 		n = 0
 		with FilesysTools.open_file(path, mode) as f:

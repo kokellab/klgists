@@ -2,9 +2,11 @@ from typing import Collection, TypeVar, Iterator, Union, Callable, Optional, Ite
 from datetime import datetime
 import time
 import logging
-from dscience_gists.tools.base_tools import BaseTools
-from dscience_gists.tools.unit_tools import UnitTools
-logger = logging.getLogger('dscience_gists')
+import itertools
+import multiprocessing
+from dscience.tools.base_tools import BaseTools
+from dscience.tools.unit_tools import UnitTools
+logger = logging.getLogger('dscience')
 T = TypeVar('T')
 
 class LoopTools(BaseTools):
@@ -22,6 +24,20 @@ class LoopTools(BaseTools):
 			yield from cls._loop_timing(things, log, every_i, n_total)
 		else:
 			yield from cls._loop_logging(things, log, every_i)
+
+	@classmethod
+	def parallel(cls, items, function, n_cores: int = 2) -> None:
+		t0 = time.monotonic()
+		print("\n[{}] Using {} cores...".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), n_cores))
+		with multiprocessing.Pool(n_cores) as pool:
+			queue = multiprocessing.Manager().Queue()
+			result = pool.starmap_async(function, items)
+			cycler = itertools.cycle('\\|/―')
+			while not result.ready():
+				print("Percent complete: {:.0%} {}".format(queue.qsize() / len(items), next(cycler)), end='\r')
+				time.sleep(0.4)
+			got = result.get()
+		print("\n[{}] Processed {} items in {:.1f}s".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), len(got), time.monotonic() - t0))
 
 	@classmethod
 	def _loop_logging(
@@ -69,22 +85,5 @@ class LoopTools(BaseTools):
 		now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		delta = UnitTools.delta_time_to_str(time.monotonic() - initial_start_time)
 		log("Processed {}/{} in {}. Done at {}.\n".format(n_total, n_total, delta, now))
-
-	@classmethod
-	def parallel(cls, items, function, n_cores: int = 2) -> None:
-		import itertools
-		import multiprocessing
-		t0 = time.monotonic()
-		print("\n[{}] Using {} cores...".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), n_cores))
-		with multiprocessing.Pool(n_cores) as pool:
-			queue = multiprocessing.Manager().Queue()
-			result = pool.starmap_async(function, items)
-			cycler = itertools.cycle('\\|/―')
-			while not result.ready():
-				print("Percent complete: {:.0%} {}".format(queue.qsize() / len(items), next(cycler)), end='\r')
-				time.sleep(0.4)
-			got = result.get()
-		print("\n[{}] Processed {} items in {:.1f}s".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), len(got), time.monotonic() - t0))
-
 
 __all__ = ['LoopTools']

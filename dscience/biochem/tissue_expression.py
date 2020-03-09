@@ -1,8 +1,8 @@
 from typing import Callable
 from typing import Optional
 import pandas as pd
-from dscience_gists.core import PathLike
-from dscience_gists.support.rezip import Rezipper
+from dscience.core.tiny import PathLike
+from dscience.core.rezip import Rezipper
 
 
 class TissueTable:
@@ -20,7 +20,7 @@ class TissueTable:
 	def level(self, gene_name: str, group_by: str='Cell type') -> pd.DataFrame:
 		"""Returns a DataFrame of the mean expression levels by tissue or cell type."""
 		if gene_name not in self.df.index.get_level_values('Gene name'):
-			raise ValueError("Gene with HGNC symbol {} not found.".format(gene_name))
+			raise LookupError("Gene with HGNC symbol {} not found.".format(gene_name))
 		gene = self.df[self.df.index.get_level_values('Gene name') == gene_name]
 		assert gene is not None
 		return gene.groupby(group_by).mean().sort_values('Level', ascending=False)

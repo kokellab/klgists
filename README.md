@@ -1,16 +1,16 @@
-# Data Science Gists
+# Data Science Gists (`scitil`)
 
-A package of Python 3.7+ snippets and tools for data science work. Not all functions are well-tested.
+A package of Python 3.7+ snippets and tools for data science and bioinformatics. Not all functions are well-tested.
 
 To get started, call:
 ```python
-from dscience_gists.full import *
+from dscience.full import *
 ```
 This will load `Tools`, `Chars`, `J`, and `abcd`.
 The `Tools` class has various lightweight utility functions (classmethods):
 
 ```python
-from dscience_gists.full import *
+from dscience.full import *
 Tools.git_description('.').tag                # the tag, or None
 Tools.ms_to_minsec(7512000)                   # '02:05:12'
 Tools.fix_greek('beta,eta and Gamma')         # 'β,η and Γ'
@@ -28,7 +28,7 @@ important_info = Tools.get_env_info()         # a dict of info like memory usage
 
 `Chars` contains useful Unicode characters that are hard to type and related functions:
 ```python
-from dscience_gists.full import *
+from dscience.full import *
 print(x0 + Chars.en + x1)          # en dash
 print(Chars.angled('not found'))   # '⟨not found⟩'
 ```
@@ -36,7 +36,7 @@ print(Chars.angled('not found'))   # '⟨not found⟩'
 The class `J` has tools for display in Jupyter:
 
 ```python
-from dscience_gists.full import *
+from dscience.full import *
 J.red('This is bad.')            # show red text
 if J.prompt('Really delete?'):   # ask the user
     J.bold('Deleting.')
@@ -45,7 +45,7 @@ if J.prompt('Really delete?'):   # ask the user
 And the `abcd` package has useful decorators.
 For example, output timing info:
 ```python
-from dscience_gists.full import *
+from dscience.full import *
 @abcd.takes_seconds
 def slow_fn():
     for _ in range(1000000): pass
@@ -55,7 +55,7 @@ slow_fn()  # prints 'Done. Took 23s.'
 Or for an immutable class with nice `str` and `repr`:
 
 ```python
-from dscience_gists.full import *
+from dscience.full import *
 @auto_repr_str()  # can also set 'include' or 'exclude'
 @abcd.immutable
 class CannotChange:
@@ -69,13 +69,13 @@ obj.x = 5  # breaks!!
 You can also import just what you need. Plain `Tools` subclasses from all of these. For example:
 
 ```python
-from dscience_gists.tools.path_tools import PathTools
+from dscience.tools.path_tools import PathTools
 print(PathTools.sanitize_file_path('ABC|xyz'))  # logs a warning & returns 'ABC_xyz'
 print(PathTools.sanitize_file_path('COM1'))     # complains!! illegal path on Windows.
-from dscience_gists.tools.prompt_tools import PromptTools
-if PromptTools.prompt_yes_no('Delete?'):
+from dscience.tools.console_tools import ConsoleTools
+if ConsoleTools.prompt_yes_no('Delete?'):
     #  Takes 10s, writing Deleting my_dir.......... Done.
-    PromptTools.slow_delete('my_dir', wait=10)
+    ConsoleTools.slow_delete('my_dir', wait=10)
 ```
 
 A couple of other things were imported, including `DevNull`, `DelegatingWriter`, and `TieredIterator`.
@@ -95,18 +95,35 @@ for well in wb1.block_range('A01', 'H11'):
 ```
 
 ```python
-from dscience_gists.ml.confusion_matrix import ConfusionMatrix
+from dscience.ml.confusion_matrix import ConfusionMatrix
 mx = ConfusionMatrix.read_csv('mx.csv')                         # just a subclass of pd.DataFrame
 print(mx.sum_diagonal() - mx.sum_off_diagonal())
 mx = mx.sort(cooling_factor=0.98).symmetrize().triagonalize()   # 
 ```
 
 ```python
-from dscience_gists.analysis.tissue_expression import TissueTable
+from dscience.biochem.tissue_expression import TissueTable
 tissues = TissueTable()
 # returns a Pandas DataFrame of expression levels per cell type per gene for this tissue.
 tissues.tissue('MKNK2')
 ```
+
+### requirements
+
+Only a few packages are required for `Tools`. 
+- pandas       >= 1.0
+- numpy        >= 1.18
+- natsort      >= 7.0
+
+Other packages have additional requirements.
+- python       >= 3.7
+- scikit-learn >= 0.22
+- scipy        >= 1.4
+- scikit-image >= 0.16
+- statsmodels  >= 0.11
+- tensorflow   >= 2.1
+- matplotlib   >= 3.2
+- uniprot, goatools, chemspipy, etc.
 
 [![CircleCI](https://circleci.com/gh/kokellab/klgists.svg?style=shield)](https://circleci.com/gh/kokellab/klgists)
 

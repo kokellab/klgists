@@ -1,12 +1,12 @@
-from typing import TypeVar, Optional, Iterator, Dict, Callable, Iterable, Generic, List
+from typing import TypeVar, Optional, Iterator, Dict, Callable, Generic, List
 from abc import ABC
 from datetime import datetime
 import operator, logging
 import sys
 import numpy as np
-from hurry.filesize import size as _hurry
 from psutil import virtual_memory
 import pandas as pd
+from dscience.core.tiny import nicesize
 
 
 K = TypeVar('K')
@@ -82,10 +82,10 @@ class MemoryLimitingPolicy(FacadePolicy, Generic[K], ABC):
 		return "{}(n={}, {}/{}, {}/{}={}%)".format(
 			type(self).__name__,
 			len(self._usage_bytes),
-			_hurry(self._total_memory_bytes),
-			'-' if self._max_memory_bytes is None else _hurry(self._max_memory_bytes),
-			_hurry(self._total_memory_bytes),
-			'-' if self._max_fraction_available_bytes is None else _hurry(available * self._max_fraction_available_bytes),
+			nicesize(self._total_memory_bytes),
+			'-' if self._max_memory_bytes is None else nicesize(self._max_memory_bytes),
+			nicesize(self._total_memory_bytes),
+			'-' if self._max_fraction_available_bytes is None else nicesize(available * self._max_fraction_available_bytes),
 			'-' if self._max_fraction_available_bytes is None else np.round(100 * self._total_memory_bytes / (available * self._max_fraction_available_bytes), 3)
 		)
 
@@ -99,7 +99,7 @@ class MemoryLimitingPolicy(FacadePolicy, Generic[K], ABC):
 				if current_day is None or current_day.date() != dt.date():
 					current_day = dt
 					ss.append('#' + current_day.strftime('%Y-%m-%d') + '...')
-				ss.append("{}:{}@{}".format(k, _hurry(self._usage_bytes[k]), self._last_accessed[k].strftime('%H:%M:%S')))
+				ss.append("{}:{}@{}".format(k, nicesize(self._usage_bytes[k]), self._last_accessed[k].strftime('%H:%M:%S')))
 		return "{}@{}: [{}]".format(str(self), hex(id(self)), ', '.join(ss))
 
 

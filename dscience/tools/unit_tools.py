@@ -1,11 +1,12 @@
 from typing import SupportsFloat, Optional, Tuple, Union
 import re
 import logging
-import humanfriendly as friendly
 import math
-from dscience_gists.tools.base_tools import BaseTools
-from dscience_gists.tools.string_tools import StringTools
-logger = logging.getLogger('dscience_gists')
+import humanfriendly as friendly
+from dscience.core.exceptions import OutOfRangeError, StringPatternError
+from dscience.tools.base_tools import BaseTools
+from dscience.tools.string_tools import StringTools
+logger = logging.getLogger('dscience')
 
 
 class UnitTools(BaseTools):
@@ -73,7 +74,7 @@ class UnitTools(BaseTools):
 		:return: A Python integer
 		"""
 		if sig_figs < 0:
-			raise ValueError("sig_figs {} is negative".format(sig_figs))
+			raise OutOfRangeError("sig_figs {} is negative".format(sig_figs), minimum=0)
 		num = float(num)
 		if num != 0:
 			return round(num, -int(math.floor(math.log10(abs(num))) - (sig_figs - 1)))
@@ -139,7 +140,7 @@ class UnitTools(BaseTools):
 		pat = re.compile(r'^\s*(.*?)(?:[^A-Za-z0-9.\-]+?[\s(\[{]*(\d+(?:.\d*)?)\s*([mµunpf]M)\s*[)\]}]*)?\s*$')
 		match = pat.fullmatch(text)
 		if match is None:
-			raise ValueError("The text {} couldn't be parsed".format(text))
+			raise StringPatternError("The text {} couldn't be parsed".format(text), value=text, pattern=pat)
 		if match.group(2) is None:
 			return text.strip(), None
 		else:

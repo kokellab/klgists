@@ -1,15 +1,16 @@
 from typing import Iterable, Union, Mapping, List, Optional
 import logging
 import re
+from urllib import request
 import uniprot
 import pandas as pd
 import os
-import wget
-from dscience_gists.core import silenced
+from dscience.core.exceptions import StringPatternError, MultipleMatchesError
+from dscience.core.tiny import silenced
 from goatools import obo_parser  # uses https://github.com/tanghaibao/goatools
 from goatools.obo_parser import GOTerm  # NOT the same as FlatGoTerm, which has no knowledge of hierarchy
 go_pattern = re.compile(r'GO:(\d+); ([CFP]):([\dA-Za-z- ,()]+); ([A-Z]+):([A-Za-z-_]+)\.')
-logger = logging.getLogger('dscience_gists')
+logger = logging.getLogger('dscience')
 
 
 class FlatGoTerm:
@@ -36,7 +37,7 @@ class FlatGoTerm:
 		"""
 		match = go_pattern.search(stwing)
 		if match is None:
-			raise ValueError('String didn\'t match GO term pattern: {}'.format(stwing))
+			raise StringPatternError('String didn\'t match GO term pattern: {}'.format(stwing), value=stwing, pattern=go_pattern)
 		self.ID = 'GO:' + match.group(1)
 		self.kind = match.group(2)
 		self.description = match.group(3)
@@ -58,7 +59,7 @@ class UniprotGoTerms:
 		# if we don't prevent these here, we'll get a ValueError from below, which is confusing
 		# That's because uniprot.fetch_uniprot_metadata will only return one per unique ID
 		if len(set(uniprot_ids)) != len(uniprot_ids):
-			raise ValueError('Set of UniProt IDs cannot contain duplicates')
+			raise MultipleMatchesError('Set of UniProt IDs cannot contain duplicates')
 		with silenced(no_stderr=False):
 			uniprot_data = uniprot.fetch_uniprot_metadata(uniprot_ids)
 		if uniprot_data is None or uniprot_data == {} or len(uniprot_data) != len(uniprot_ids):
@@ -87,7 +88,7 @@ class GoTermsAtLevel:
 			self.obo = obo_parser.GODag('gene_ontology.1_2.obo')
 		else:
 			logger.info("Downloading Gene Ontology OBO...")
-			wget.download('http://www.geneontology.org/ontology/obo_format_1_2/gene_ontology.1_2.obo')
+			request.urlretrieve('http://www.geneontology.org/ontology/obo_format_1_2/gene_ontology.1_2.obo')
 			self.obo = obo_parser.GODag('gene_ontology.1_2.obo')  # This will be used in query_obo_term
 			logger.info("Done downloading OBO.")
 		self.substruct = UniprotGoTerms()
@@ -99,7 +100,7 @@ class GoTermsAtLevel:
 		"""
 		x = self.obo.query_term(term_id)
 		if x is None:
-			raise ValueError('Term ID {} not found'.format(x))
+			raise LookupError('Term ID {} not found'.format(x))
 		return x
 
 	def get_ancestors_of_go_term(self, term_id: str, level: int) -> Iterable[GOTerm]:

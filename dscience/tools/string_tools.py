@@ -3,35 +3,13 @@ import re
 import json
 from copy import copy
 import numpy as np
-from dscience_gists.core.json_encoder import *
-from dscience_gists.core.chars import *
-from dscience_gists.tools.base_tools import BaseTools
+from dscience.core.json_encoder import *
+from dscience.core.exceptions import OutOfRangeError
+from dscience.core.chars import *
+from dscience.tools.base_tools import BaseTools
 T = TypeVar('T')
 V = TypeVar('V')
 
-
-class Pretty:
-	@classmethod
-	def condensed(cls, item, depth = 1):
-		if isinstance(item, dict):
-			return '{\n' + '\n'.join([
-				'\t'*(depth+1) + k + ' = ' + cls.condensed(v, depth+1) for k, v in item.items()
-			]) + '\n' + '\t'*depth + '}'
-		else:
-			return str(item)
-
-	@classmethod
-	def expanded(cls, item, depth = 1):
-		if isinstance(item, dict):
-			return '{\n' + '\n'.join([
-				'\t'*(depth+1) + k + ' = ' + cls.expanded(v, depth+1) for k, v in item.items()
-			]) + '\n' + '\t'*depth + '}'
-		elif isinstance(item, (list, set)):
-			return '[\n' + '\n'.join([
-				'\t'*(depth+1) + cls.expanded(v, depth+1) for v in item
-			]) + '\n' + '\t'*depth + ']'
-		else:
-			return str(item)
 
 
 class StringTools(BaseTools):
@@ -109,9 +87,11 @@ class StringTools(BaseTools):
 	@classmethod
 	def truncate60(cls, s): return StringTools.truncate(s, 60)
 	@classmethod
-	def truncate40(cls, s): return StringTools.truncate(s, 60)
+	def truncate40(cls, s): return StringTools.truncate(s, 64)
 	@classmethod
 	def truncate30(cls, s): return StringTools.truncate(s, 30)
+	@classmethod
+	def truncate20(cls, s): return StringTools.truncate(s, 20)
 	@classmethod
 	def truncate10(cls, s): return StringTools.truncate(s, 10)
 	@classmethod
@@ -307,7 +287,7 @@ class StringTools(BaseTools):
 		"""
 		# TODO this seems absurdly long for what it does
 		if n_sigfigs is None or n_sigfigs < 1:
-			raise ValueError('Sigfigs of {} is nonpositive'.format(n_sigfigs))
+			raise OutOfRangeError('Sigfigs of {} is nonpositive'.format(n_sigfigs), value=n_sigfigs, minimum=1)
 		# first, handle NaN and infinities
 		if np.isneginf(v):
 			return Chars.minus + Chars.inf

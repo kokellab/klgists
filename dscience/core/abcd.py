@@ -1,14 +1,23 @@
 """
 A collection of decorators.
 """
+import enum
+#from typing import final
 from typing import Optional, Callable, Set, Type
 import signal, time
+from warnings import warn
 from functools import wraps
 from abc import abstractmethod, ABC, ABCMeta
 from functools import total_ordering
 from dataclasses import dataclass
-from overrides import overrides
-from deprecated import deprecated
+try:
+	from overrides import overrides
+except ImportError:
+	overrides = None
+try:
+	from deprecated import deprecated
+except ImportError:
+	deprecated = None
 
 
 class SpecialStr(str):
@@ -24,7 +33,7 @@ class SpecialStr(str):
 		return str(self.s.replace('\n', '<br />').replace('\t', '&emsp;&emsp;&emsp;&emsp;'))
 
 
-class _InfoSpecialStr(SpecialStr):
+class InfoSpecialStr(SpecialStr):
 	def _repr_html_(self):
 		if len(self.s) == 0: return self.s
 		lines = self.s.split('\n')
@@ -41,6 +50,24 @@ class _InfoSpecialStr(SpecialStr):
 
 
 class Utils:
+
+	def gen_str(
+			self,
+			only: Optional[Set[str]] = None,
+			exclude: Optional[Callable[[str], bool]] = None,
+			bold_surround: Callable[[str], str] = str, em_surround: Callable[[str], str] = str,
+			delim: str = ', ', eq: str = '=', opening: str = '(', closing: str = ')',
+			with_address: bool = True
+	):
+		if exclude is None: exclude = lambda _: False
+		_vars = Utils.var_items(self, only, exclude)
+		return (
+				bold_surround(self.__class__.__name__) +
+				opening +
+				delim.join([k + eq + str(v) for k, v in _vars]) +
+				em_surround(' @ ' + str(hex(id(self))) if with_address else '') +
+				closing
+		)
 
 	@classmethod
 	def var_items(cls, obj, only, exclude):
@@ -101,31 +128,13 @@ def auto_hash(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str],
 	return dec
 
 
-def _gen_str(
-		self,
-		only: Optional[Set[str]] = None,
-		exclude: Optional[Callable[[str], bool]] = None,
-		bold_surround: Callable[[str], str] = str, em_surround: Callable[[str], str] = str,
-		delim: str = ', ', eq: str = '=', opening: str = '(', closing: str = ')',
-		with_address: bool = True
-):
-	if exclude is None: exclude = lambda _: False
-	_vars = Utils.var_items(self, only, exclude)
-	return (
-		bold_surround(self.__class__.__name__) +
-		opening +
-		delim.join([k + eq + str(v) for k, v in _vars]) +
-		em_surround(' @ ' + str(hex(id(self))) if with_address else '') +
-		closing
-	)
-
 def auto_repr(
 		only: Optional[Set[str]] = None, exclude: Optional[Callable[[str], bool]] = lambda a: False
 ):
 	@wraps(auto_repr)
 	def dec(cls):
 		def __repr(self):
-			return _gen_str(self, only=only, exclude=exclude, with_address=True)
+			return Utils.gen_str(self, only=only, exclude=exclude, with_address=True)
 		cls.__repr__ = __repr
 		return cls
 	return dec
@@ -139,7 +148,7 @@ def auto_str(
 	@wraps(auto_str)
 	def dec(cls):
 		def __str(self):
-			return _gen_str(self, only=only, exclude=exclude, with_address=with_address)
+			return Utils.gen_str(self, only=only, exclude=exclude, with_address=with_address)
 		cls.__str__ = __str
 		return cls
 	return dec
@@ -153,7 +162,7 @@ def auto_html(
 	@wraps(auto_html)
 	def dec(cls):
 		def __html(self):
-			return SpecialStr(_gen_str(self, only=only, exclude=exclude, with_address=with_address, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
+			return SpecialStr(Utils.gen_str(self, only=only, exclude=exclude, with_address=with_address, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
 		cls._repr_html = __html
 		return cls
 	return dec
@@ -182,11 +191,11 @@ def auto_repr_str(
 	@wraps(auto_repr_str)
 	def dec(cls):
 		def __str(self):
-			return _gen_str(self, only=None, exclude=exclude_simple, with_address=False)
+			return Utils.gen_str(self, only=None, exclude=exclude_simple, with_address=False)
 		def __html(self):
-			return SpecialStr(_gen_str(self, only=None, exclude=exclude_html, with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
+			return SpecialStr(Utils.gen_str(self, only=None, exclude=exclude_html, with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>', em_surround = lambda c: '<em>' + c + '</em>'))
 		def __repr(self):
-			return _gen_str(self, only=None, exclude=exclude_all, with_address=True)
+			return Utils.gen_str(self, only=None, exclude=exclude_all, with_address=True)
 		cls.__str__ = __str
 		cls.__repr__ = __repr
 		cls._repr_html_ = __html
@@ -204,7 +213,7 @@ def auto_info(only: Optional[Set[str]] = None, exclude: Optional[Callable[[str],
 	@wraps(auto_info)
 	def dec(cls):
 		def __info(self):
-			return _InfoSpecialStr(_gen_str(self, delim='\n\t', eq=' = ', opening='(\n\t', closing='\n)', with_address=False, only=only, exclude=exclude))
+			return InfoSpecialStr(Utils.gen_str(self, delim='\n\t', eq=' = ', opening='(\n\t', closing='\n)', with_address=False, only=only, exclude=exclude))
 		cls.info = __info
 		return cls
 	return dec
@@ -216,11 +225,11 @@ def auto_obj():
 	See the decorators for auto_eq, auto_hash, and auto_repr for more details.
 	"""
 	def __str(self):
-		return _gen_str(self, exclude=lambda a: a.startswith('_'), with_address=False)
+		return Utils.gen_str(self, exclude=lambda a: a.startswith('_'), with_address=False)
 	def __html(self):
-		return SpecialStr(_gen_str(self, only=None, exclude=lambda a: a.startswith('_'), with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>'))
+		return SpecialStr(Utils.gen_str(self, only=None, exclude=lambda a: a.startswith('_'), with_address=True, bold_surround = lambda c: '<strong>' + c + '</strong>'))
 	def __repr(self):
-		return _gen_str(self, exclude=lambda _: False, with_address=True)
+		return Utils.gen_str(self, exclude=lambda _: False, with_address=True)
 	def __hash(self):
 		return Utils.auto_hash(self, only=None, exclude=None)
 	def __eq(self, o):
@@ -238,7 +247,7 @@ def auto_obj():
 
 def takes_seconds_named(x, *args, **kwargs):
 	"""
-	Prints a statement like "Call to calc_distances took 15.2s." after the function returns.
+	Decorator. Prints a statement like "Call to calc_distances took 15.2s." after the function returns.
 	"""
 	t0 = time.monotonic()
 	results = x(*args, **kwargs)
@@ -248,7 +257,7 @@ def takes_seconds_named(x, *args, **kwargs):
 
 def takes_seconds(x, *args, **kwargs):
 	"""
-	Prints a statement like "Done. Took 15.2s." after the function returns.
+	Decorator. Prints a statement like "Done. Took 15.2s." after the function returns.
 	"""
 	t0 = time.monotonic()
 	results = x(*args, **kwargs)
@@ -438,35 +447,60 @@ def auto_timeout(seconds: int):
 		return wraps(func)(my_fn)
 	return dec
 
+@enum.unique
+class CodeStatus(enum.Enum):
+	Immature = 1
+	Preview = 2
+	Stable = 3
+	Deprecated = 4
 
-def override_recommended(cls):
+class ImmatureWarning(Warning): pass
+
+def status(level: CodeStatus):
 	"""
-	Decorator.
-	Overriding this class is generally recommended (but not required).
+	Decorator. Annotate code quality. Emits a warning if bad code is called.
+	"""
+	@wraps(status)
+	def dec(func):
+		func.__status__ = level
+		if level in [CodeStatus.Preview, CodeStatus.Stable]:
+			return func
+		elif level == CodeStatus.Immature:
+			def my_fn(*args, **kwargs):
+				warn(str(func.__name__) + " is immature", ImmatureWarning)
+				return func(*args, **kwargs)
+			return wraps(func)(my_fn)
+		elif level == CodeStatus.Deprecated:
+			def my_fn(*args, **kwargs):
+				warn(str(func.__name__) + " is deprecated", DeprecationWarning)
+				return func(*args, **kwargs)
+			return wraps(func)(my_fn)
+		assert False
+	return dec
+
+
+def override_point(cls):
+	"""
+	Decorator. Overriding this class is generally recommended (but not required).
 	"""
 	return cls
+override_recommended = override_point
 
 def internal(cls):
 	"""
-	Decorator.
-	This class or package is meant to be used only by code within this project.
+	Decorator. This class or package is meant to be used only by code within this project.
 	"""
 	return cls
 
 def external(cls):
 	"""
-	Decorator.
-	This class or package is meant to be used *only* by code outside this project.
+	Decorator. This class or package is meant to be used *only* by code outside this project.
 	"""
-	return cls
-
-def singleton(cls):
 	return cls
 
 def reserved(cls):
 	"""
-	Decorator.
-	This package, class, or function is empty but is declared for future use.
+	Decorator. This package, class, or function is empty but is declared for future use.
 	"""
 	return cls
 
@@ -476,40 +510,6 @@ def thread_safe(cls):
 def not_thread_safe(cls):
 	return cls
 
-def builder(cls):
-	"""
-	Decorator.
-	This class implements a builder pattern.
-	"""
-	return cls
-
-def tools(cls):
-	"""
-	Decorator.
-	This class only defines static utility functions.
-	"""
-	return cls
-
-def cache(cls):
-	"""
-	Decorator.
-	This class implements some kind of cache.
-	"""
-	return cls
-
-def caching(cls):
-	"""
-	Decorator.
-	Instances of this class cache objects.
-	"""
-	return cls
-
-def final(cls):
-	"""
-	Decorator.
-	This class should not be inherited from.
-	"""
-	return cls
 
 
 __all__ = [
@@ -519,15 +519,13 @@ __all__ = [
 	'copy_docstring', 'append_docstring',
 	'auto_singleton',
 	'takes_seconds', 'takes_seconds_named',
-	'mutable', 'immutable',
 	'auto_timeout',
+	'mutable', 'immutable',
 	'iterable_over', 'collection_over', 'sequence_over',
 	'float_type', 'int_type',
-	'auto_timeout',
 	'abstractmethod', 'ABC', 'ABCMeta',
-	'override_recommended', 'overrides',
+	'override_recommended', 'override_point', 'overrides',
 	'deprecated', 'final',
 	'internal', 'external', 'reserved',
-	'thread_safe', 'not_thread_safe',
-	'singleton', 'builder', 'tools', 'cache', 'caching'
+	'thread_safe', 'not_thread_safe'
 ]

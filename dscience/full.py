@@ -1,32 +1,29 @@
-from dscience_gists.core import frozenlist, DevNull, Capture, DelegatingWriter, LogWriter, Writeable
-from dscience_gists.tools.call_tools import *
-from dscience_gists.tools.common_tools import *
-from dscience_gists.tools.console_tools import *
-from dscience_gists.tools.env_tools import *
-from dscience_gists.tools.hash_tools import *
-from dscience_gists.tools.loop_tools import *
-from dscience_gists.tools.numeric_tools import *
-from dscience_gists.tools.pandas_tools import *
-from dscience_gists.tools.path_tools import *
-from dscience_gists.tools.plot_tools import *
-from dscience_gists.tools.program_tools import *
-from dscience_gists.tools.prompt_tools import *
-from dscience_gists.tools.string_tools import *
-from dscience_gists.tools.filesys_tools import *
-from dscience_gists.tools.unit_tools import *
-from dscience_gists.core.chars import *
-from dscience_gists.core import abcd
-from dscience_gists.core.open_mode import *
-from dscience_gists.support.flexible_logger import *
-from dscience_gists.support.toml_data import *
-from dscience_gists.core.iterators import *
-from dscience_gists.core.smart_enum import *
-from dscience_gists.core.opt_row import *
-from dscience_gists.support.record_factory import *
+from dscience.core.tiny import frozenlist, DevNull, Capture, DelegatingWriter, LogWriter, Writeable
+from dscience.tools.call_tools import *
+from dscience.tools.common_tools import *
+from dscience.tools.console_tools import *
+from dscience.tools.hash_tools import *
+from dscience.tools.loop_tools import *
+from dscience.tools.numeric_tools import *
+from dscience.tools.pandas_tools import *
+from dscience.tools.path_tools import *
+from dscience.tools.program_tools import *
+from dscience.tools.string_tools import *
+from dscience.tools.filesys_tools import *
+from dscience.tools.unit_tools import *
+from dscience.core.chars import *
+from dscience.core import abcd
+from dscience.core.open_mode import *
+from dscience.support.flexible_logger import *
+from dscience.support.toml_data import *
+from dscience.core.iterators import *
+from dscience.core.smart_enum import *
+from dscience.core.opt_row import *
+from dscience.support.record_factory import *
 
 class Tools(
-	CallTools, CommonTools, ConsoleTools, EnvTools, HashTools, LoopTools, NumericTools, PandasTools,
-	PathTools, PlotTools, ProgramTools, PromptTools, StringTools, FilesysTools, UnitTools
+	CallTools, CommonTools, ConsoleTools, HashTools, LoopTools, NumericTools, PandasTools,
+	PathTools, ProgramTools, StringTools, FilesysTools, UnitTools
 ):
 	"""
 	A collection of utility static functions.

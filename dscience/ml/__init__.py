@@ -1,4 +1,4 @@
-from dscience_gists.core.smart_enum import *
+from dscience.core.smart_enum import *
 
 class ErrorBehavior(SmartEnum):
 	FAIL = 1

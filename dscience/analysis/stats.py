@@ -4,7 +4,7 @@ from scipy import stats
 from statsmodels.nonparametric.kde import KDEUnivariate
 import numpy as np
 import pandas as pd
-from dscience_gists.core.exceptions import TooFewError, NullValueError
+from dscience.core.exceptions import LengthMismatchError, NullValueError
 
 class StatTools:
 
@@ -26,9 +26,9 @@ class StatTools:
 		"""Calculates a p-value from a t-test between labels a and b."""
 		s = pd.DataFrame(z)
 		neg = s[s.index.get_level_values('name') == a].values
-		if len(neg) < 2: raise TooFewError("Too few ({}) values for {}".format(len(neg), a))
+		if len(neg) < 2: raise LengthMismatchError("Too few ({}) values for {}".format(len(neg), a), minimum=2)
 		pos = s[s.index.get_level_values('name') == b].values
-		if len(pos) < 2: raise TooFewError("Too few ({}) values for {}".format(len(pos), b))
+		if len(pos) < 2: raise LengthMismatchError("Too few ({}) values for {}".format(len(pos), b), minimum=2)
 		pval = scipy.stats.ttest_ind(pos, neg, equal_var=False).pvalue
 		if isinstance(pval, float) and np.isnan(pval): raise NullValueError("NaN for {} and {}".format(a, b))
 		else: return pval[0]

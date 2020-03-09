@@ -1,17 +1,12 @@
 import re
-import inspect
-import abc
 from typing import Optional
-from urllib.request import urlopen
 from IPython.display import display, Markdown, HTML
 import pandas as pd
-from klgists.common import abcd
-
+from dscience.core.exceptions import StringPatternError
 _color_pattern = re.compile('#?[A-Z0-9a-z]{6}')
 
 
 # noinspection PyTypeChecker
-@abcd.tools
 class J:
 	"""
 	Convenience user tools to display HTML text in Jupyter notebooks.

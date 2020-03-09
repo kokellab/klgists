@@ -2,10 +2,10 @@ import os, sys
 import logging
 from pathlib import Path
 from typing import Mapping
-from dscience_gists.tools.base_tools import BaseTools
-from dscience_gists.core import PathLike
-from dscience_gists.core.exceptions import BadCommandError, InvalidDirectoryError, InvalidFileError, ContradictoryArgumentsError
-logger = logging.getLogger('dscience_gists')
+from dscience.tools.base_tools import BaseTools
+from dscience.core.tiny import PathLike
+from dscience.core.exceptions import InvalidDirectoryError, InvalidFileError, ContradictoryArgumentsError
+logger = logging.getLogger('dscience')
 
 
 class PathTools(BaseTools):

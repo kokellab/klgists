@@ -4,9 +4,8 @@ import pandas as pd
 from natsort import ns, natsorted
 from pandas.core.frame import DataFrame as _InternalDataFrame
 from dscience.tools.common_tools import CommonTools
+from dscience.core.exceptions import MissingColumnError
 import dscience.core.abcd as abcd
-
-class InvalidExtendedDataFrameError(Exception): pass
 
 
 class PrettyInternalDataFrame(_InternalDataFrame, abcd.ABC):
@@ -221,7 +220,7 @@ class TrivialExtendedDataFrame(ConvertibleExtendedDataFrame):
 		return self._change(super(ConvertibleExtendedDataFrame, self).drop(labels=labels, axis=axis, index=index, columns=columns, level=level, inplace=inplace, errors=errors))
 
 
-@abcd.final
+#@abcd.final
 class FinalExtendedDataFrame(TrivialExtendedDataFrame):
 	"""
 	A ready-to-go TrivialExtendedDataFrame that should not be overridden.
@@ -275,15 +274,9 @@ class ExtendedDataFrame(ConvertibleExtendedDataFrame):
 		return df
 
 	def sort_values(self, by, axis=0, ascending=True, inplace=False, kind='quicksort', na_position='last'):
-		got = super(ExtendedDataFrame, self).sort_values(by=by, axis=axis, ascending=ascending, inplace=inplace, kind=kind, na_position=na_position)
+		got = super().sort_values(by=by, axis=axis, ascending=ascending, inplace=inplace, kind=kind, na_position=na_position)
 		got.__class__ = self.__class__
 		return got
-
-	@classmethod
-	def _check(cls, df, required: Set[str]):
-		for c in required:
-			if c not in df.columns:
-				raise InvalidExtendedDataFrameError("Missing column or index name {}".format(c))
 
 	@classmethod
 	@abcd.override_recommended
@@ -310,6 +303,11 @@ class ExtendedDataFrame(ConvertibleExtendedDataFrame):
 	def columns_to_drop(cls) -> Sequence[str]:
 		return []
 
+	@classmethod
+	def _check(cls, df, required: Set[str]):
+		for c in required:
+			if c not in df.columns:
+				raise MissingColumnError("Missing column or index name {}".format(c), key=c)
+
 
 __all__ = ['BaseExtendedDataFrame', 'TrivialExtendedDataFrame', 'FinalExtendedDataFrame', 'ExtendedDataFrame', 'ConvertibleExtendedDataFrame', 'InvalidExtendedDataFrameError']
-

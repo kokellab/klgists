@@ -5,10 +5,10 @@ Can depend on core, model, viz, and calc.
 from __future__ import annotations
 from typing import Sequence
 from pathlib import Path
-from dscience_gists.core import PathLike
-from dscience_gists.core.exceptions import PathError
-from dscience_gists.tools.filesys_tools import FilesysTools
-from dscience_gists.tools.path_tools import PathTools
+from dscience.core.tiny import PathLike
+from dscience.core.exceptions import PathError
+from dscience.tools.filesys_tools import FilesysTools
+from dscience.tools.path_tools import PathTools
 
 
 class ClassifierPath:
@@ -35,12 +35,12 @@ class ClassifierPath:
 		FilesysTools.save_json(info, self.info_json)
 	def verify_exists(self) -> None:
 		if not self.exists():
-			raise PathError("No trained model under {}".format(self))
+			raise PathError("No trained model under {}".format(self), path=self.path)
 	def verify_exists_with_decision(self) -> None:
 		if not self.exists():
-			raise PathError("No trained model under {}".format(self))
+			raise PathError("No trained model under {}".format(self), path=self.path)
 		if not self.decision_csv.exists():
-			raise PathError("No decision CSV under {}".format(self))
+			raise PathError("No decision CSV under {}".format(self), path=self.path)
 	def exists_with_decision(self) -> bool:
 		return self.exists() and self.decision_csv.exists()
 	def exists(self) -> bool:

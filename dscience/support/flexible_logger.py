@@ -3,8 +3,7 @@ import datetime
 from typing import Optional
 import os, logging
 from datetime import datetime
-
-from dscience_gists.core.exceptions import InvalidDirectoryError
+from dscience.core.exceptions import InvalidDirectoryError
 
 
 class BasicFlexLogger:
@@ -37,11 +36,11 @@ class BasicFlexLogger:
 		return self
 
 	def _make_dirs(self, output_dir: str) -> None:
-		# note that we can't import from dscience_gists.files (common shouldn't depend on files)
+		# note that we can't import from dscience.files (common shouldn't depend on files)
 		if not os.path.exists(output_dir):
 			os.makedirs(output_dir)
 		elif not os.path.isdir(output_dir):
-			raise InvalidDirectoryError("{} already exists and is not a directory".format(output_dir))
+			raise InvalidDirectoryError("{} already exists and is not a directory".format(output_dir), path=output_dir)
 
 
 class LogFormatBuilder:

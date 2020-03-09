@@ -8,7 +8,7 @@ from scipy._lib.six import xrange
 from scipy.signal.wavelets import cwt, ricker
 from scipy.stats import scoreatpercentile
 from scipy.signal._peak_finding_utils import _peak_prominences
-
+from dscience.core.exceptions import OutOfRangeError, WrongDimensionError
 
 class PeakFinder:
 
@@ -146,7 +146,7 @@ class PeakFinder:
         # Inner function expects `x` to be C-contiguous
         x = np.asarray(x, order='C', dtype=np.float64)
         if x.ndim != 1:
-            raise ValueError('`x` must have exactly one dimension')
+            raise WrongDimensionError('`x` must have exactly one dimension')
 
         peaks = np.asarray(peaks)
         if peaks.size == 0:
@@ -159,7 +159,7 @@ class PeakFinder:
         except TypeError:
             raise TypeError("Cannot safely cast `peaks` to dtype('intp')")
         if peaks.ndim != 1:
-            raise ValueError('`peaks` must have exactly one dimension')
+            raise WrongDimensionError('`peaks` must have exactly one dimension')
 
         if wlen is None:
             wlen = -1  # Inner function expects int -> None == -1
@@ -169,7 +169,7 @@ class PeakFinder:
             wlen = int(math.ceil(wlen))
         else:
             # Give feedback if wlen has unexpected value
-            raise ValueError('`wlen` must be at larger than 1, was ' + str(wlen))
+            raise OutOfRangeError('`wlen` must be at larger than 1, was ' + str(wlen))
 
         return _peak_prominences(x, peaks, wlen)
 
@@ -216,7 +216,7 @@ class PeakFinder:
 
         """
         if(int(order) != order) or (order < 1):
-            raise ValueError('Order must be an int >= 1')
+            raise OutOfRangeError('Order must be an int >= 1')
 
         datalen = data.shape[axis]
         locs = np.arange(0, datalen)
@@ -280,7 +280,7 @@ class PeakFinder:
 
         """
         if len(max_distances) < matr.shape[0]:
-            raise ValueError('Max_distances must have at least as many rows as matr')
+            raise OutOfRangeError('Max_distances must have at least as many rows as matr', value=len(max_distances), minimum=matr.shape[0])
 
         all_max_cols = PeakFinder._boolrelextrema(matr, np.greater, axis=1, order=1)
         # Highest row for which there are any relative maxima

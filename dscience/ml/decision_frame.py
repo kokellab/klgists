@@ -3,10 +3,10 @@ from typing import Sequence
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from dscience_gists.core.exceptions import *
-from dscience_gists.support.extended_df import *
-from dscience_gists.ml.confusion_matrix import *
-from dscience_gists.ml.accuracy_frame import *
+from dscience.core.exceptions import *
+from dscience.core.extended_df import *
+from dscience.ml.confusion_matrix import *
+from dscience.ml.accuracy_frame import *
 
 
 class DecisionFrame(ExtendedDataFrame):
@@ -42,7 +42,7 @@ class DecisionFrame(ExtendedDataFrame):
 		if self.shape[0] != len(correct_labels):
 			raise LengthMismatchError("Number of rows of decision function of shape {} is not the length of the correct labels {}".format(self.shape, len(correct_labels)))
 		if self.shape[1] != len(labels):
-			raise LengthMismatchError("Number of columns of decision function of shape {} is not the length of the class labels {}".format(self.shape, len(labels)))
+			raise LengthMismatchError("Number of columns of decision function of shape {} is not the length of the class labels {}".format(self.shape, len(labels))`)
 		correct_confused_with = {c: {p: 0.0 for p in labels} for c in labels}
 		for r, row in enumerate(self.index):
 			correct_name = correct_labels[r]

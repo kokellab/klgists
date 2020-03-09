@@ -1,5 +1,4 @@
 from typing import Iterator, Dict, List, ItemsView, KeysView, ValuesView
-from dscience_gists.core.exceptions import BadConfigError
 
 class TomlData:
 	"""A better TOML data structure than a plain dict.
@@ -66,7 +65,7 @@ class TomlData:
 		items = key.split('.')
 		item = self.top
 		for i, s in enumerate(items):
-			if s not in item: raise BadConfigError(
+			if s not in item: raise LookupError(
 				"{} is not in the TOML; failed at {}"
 				.format(key, '.'.join(items[:i+1]))
 			)

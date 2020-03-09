@@ -1,10 +1,10 @@
-import wget
+from urllib import request
 import zipfile
 import logging
 import gzip
 import shutil
 from pathlib import Path
-from dscience.core import PathLike
+from dscience.core.tiny import PathLike
 logger = logging.getLogger('dscience')
 
 
@@ -21,7 +21,7 @@ class Rezipper:
 		finalpath = outfile.with_suffix(outfile.suffix + '.gz')
 		if not outfile.exists():
 			logger.info("Downloading {}...".format(url))
-			dled_filename = wget.download(url)
+			dled_filename = request.urlretrieve(url)
 			self.rezip(dled_filename, outfile)
 			logger.info("Done—file at {}".format(finalpath))
 		return finalpath

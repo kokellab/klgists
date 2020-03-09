@@ -2,6 +2,7 @@ import os, json, logging
 from typing import Tuple, Iterator, Dict, Optional, Union
 import pymysql
 import peewee
+from dscience.core.exceptions import InvalidFileError, ContradictoryArgumentsError
 
 
 class Connection:
@@ -41,7 +42,7 @@ class Connection:
 		self.plain_sql_database = None
 		self.peewee_database = None
 		if (ssh_host is None) == (local_bind_port is None):
-			raise ValueError("Must specify either an SSH host to create a tunnel, or the local bind port of an existing tunnel (but not both)")
+			raise ContradictoryArgumentsError("Must specify either an SSH host to create a tunnel, or the local bind port of an existing tunnel (but not both)")
 		self._local_bind_port = local_bind_port
 		self._db_username = db_username
 		self._db_password = db_password
@@ -69,7 +70,7 @@ class Connection:
 				params = json.load(jscfg)  # type: Dict[str, Union[str, int, None]]
 				return cls(**params)
 		else:
-			raise ValueError("{} does not exist, is not a file, or is not readable".format(config_path))
+			raise InvalidFileError("{} does not exist, is not a file, or is not readable".format(config_path))
 
 	@classmethod
 	def from_dict(cls, dct: Dict[str, str]):

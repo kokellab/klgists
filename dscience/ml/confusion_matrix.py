@@ -1,17 +1,17 @@
 from __future__ import annotations
 import logging
-from typing import Set, Sequence, Union, Callable, Mapping, Tuple as Tup
+from typing import Set, Sequence, Union, Callable, Mapping
 from copy import deepcopy
 from pathlib import Path
 import numpy as np
 import pandas as pd
 from clana.visualize_cm import simulated_annealing
-from dscience_gists.core import PathLike
-from dscience_gists.core.exceptions import *
-from dscience_gists.support.extended_df import *
-from dscience_gists.core.chars import *
+from dscience.core.tiny import PathLike
+from dscience.core.exceptions import *
+from dscience.core.extended_df import *
+from dscience.core.chars import *
 
-logger = logging.getLogger('dscience_gists')
+logger = logging.getLogger('dscience')
 
 
 class ConfusionMatrix(TrivialExtendedDataFrame):

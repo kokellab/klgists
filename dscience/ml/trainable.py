@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Type
 import numpy as np
 import pandas as pd
-from dscience_gists.tools.filesys_tools import FilesysTools
-from dscience_gists.core import PathLike
+from dscience.tools.filesys_tools import FilesysTools
+from dscience.core.tiny import PathLike
 
 
 class AbstractSaveLoad(metaclass=abc.ABCMeta):

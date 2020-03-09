@@ -1,6 +1,6 @@
 from typing import SupportsFloat, SupportsInt, TypeVar, Optional
 import numpy as np
-from dscience_gists.tools.base_tools import BaseTools
+from dscience.tools.base_tools import BaseTools
 V = TypeVar('V')
 
 
