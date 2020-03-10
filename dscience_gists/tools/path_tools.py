@@ -70,6 +70,13 @@ class PathTools(BaseTools):
 	def sanitize_directory_path(cls, path: str, show_warnings: bool = True) -> Path:
 		return cls._sanitize(path, False, show_warnings)
 
+	@staticmethod
+	def sanitize_prepped_file_path(path: PathLike, show_warnings: bool = True) -> Path:
+		"""It's ok for the file to exist."""
+		path = Path(PathTools.sanitize_file_path(path, show_warnings))
+		PathTools.prep_file(path, True, False)
+		return path
+
 	@classmethod
 	def _sanitize(cls, path: str, is_file: bool, show_warnings: bool, sep = os.sep) -> Path:
 		path = path.strip()

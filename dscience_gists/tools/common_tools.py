@@ -193,5 +193,19 @@ class CommonTools(BaseTools):
 		"""
 		yield DevNull()
 
+	@classmethod
+	def parse_bool(cls, s: str) -> bool:
+		"""
+		Parses a 'true'/'false' string to a bool, ignoring case.
+		:raises: KaleValueError If neither true nor false
+		"""
+		if isinstance(s, bool):
+			return s
+		if s.lower() == 'false':
+			return False
+		if s.lower() == 'true':
+			return True
+		raise ValueError("{} is not true/false".format(s))
+
 
 __all__ = ['CommonTools']
