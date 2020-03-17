@@ -4,7 +4,7 @@ import pandas as pd
 from natsort import ns, natsorted
 from pandas.core.frame import DataFrame as _InternalDataFrame
 from dscience.tools.common_tools import CommonTools
-from dscience.core.exceptions import MissingColumnError
+from dscience.core.exceptions import MissingColumnError, ConstructionFailedError
 import dscience.core.abcd as abcd
 
 
@@ -137,7 +137,9 @@ class ConvertibleExtendedDataFrame(BaseExtendedDataFrame, abcd.ABC):
 
 	@classmethod
 	def read_hdf(cls, *args, **kwargs):
-		return cls.convert(pd.read_hdf(*args, **kwargs))
+		# noinspection PyTypeChecker
+		df: pd.DataFrame = pd.read_hdf(*args, **kwargs)
+		return cls.convert(df)
 
 	@classmethod
 	@abcd.override_recommended
@@ -310,4 +312,4 @@ class ExtendedDataFrame(ConvertibleExtendedDataFrame):
 				raise MissingColumnError("Missing column or index name {}".format(c), key=c)
 
 
-__all__ = ['BaseExtendedDataFrame', 'TrivialExtendedDataFrame', 'FinalExtendedDataFrame', 'ExtendedDataFrame', 'ConvertibleExtendedDataFrame', 'InvalidExtendedDataFrameError']
+__all__ = ['BaseExtendedDataFrame', 'TrivialExtendedDataFrame', 'FinalExtendedDataFrame', 'ExtendedDataFrame', 'ConvertibleExtendedDataFrame']

@@ -1,6 +1,5 @@
-from dscience.core.open_mode import *
-
 import pytest
+from dscience.core.open_mode import *
 
 class TestOpenMode:
 	"""

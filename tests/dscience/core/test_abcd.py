@@ -1,7 +1,6 @@
 import pytest
 import re
 from dscience.core import abcd
-
 raises = pytest.raises
 
 class TestAbcd:

@@ -12,6 +12,10 @@ class MockWritable:
 		self.data = None
 	def write(self, data):
 		self.data = 'write:' + data
+	def flush(self):
+		self.data += 'flush'
+	def close(self):
+		self.data += 'close'
 
 
 class MockCallable:

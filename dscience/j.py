@@ -2,7 +2,6 @@ import re
 from typing import Optional
 from IPython.display import display, Markdown, HTML
 import pandas as pd
-from dscience.core.exceptions import StringPatternError
 _color_pattern = re.compile('#?[A-Z0-9a-z]{6}')
 
 

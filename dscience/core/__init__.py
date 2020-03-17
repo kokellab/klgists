@@ -3,10 +3,14 @@ import os
 import logging
 from typing import Sequence, Iterable, TypeVar, Union
 from pathlib import PurePath
-PathLike = Union[str, PurePath, os.PathLike]
+from dscience.core.exceptions import ImmutableError
 T = TypeVar('T', covariant=True)
 logger = logging.getLogger('dscience')
 
+PathLike = Union[str, PurePath, os.PathLike]
+def pathlike_isinstance(value):
+	return isinstance(value, str) or isinstance(value, os.PathLike) or isinstance(value, PurePath)
+PathLike.isinstance = pathlike_isinstance
 
 # noinspection PyPep8Naming
 class frozenlist(Sequence):
@@ -14,26 +18,26 @@ class frozenlist(Sequence):
 	An immutable sequence backed by a list.
 	The sole advantage over a tuple is the list-like __str__ with square brackets, which may be less confusing to a user.
 	"""
-	def __init__(self, *items: Iterable[T]):
+	def __init__(self, items: Iterable[T]):
 		self.__items = list(items)
 
-	def __getitem__(self, i: int) -> T:
-		return self.__items[i]
-
-	def __getitem__(self, s: slice) -> frozenlist[T]:
-		return frozenlist(self.__items[s])
-
 	def __getitem__(self, item) -> T:
-		if isinstance(item, slice):
-			return self[item]
+		if isinstance(item, int):
+			return self.__items[item]
 		else:
-			return self[item]
+			return frozenlist(self.__items[item])
+
+	def __setitem__(self, key, value):
+		raise ImmutableError()
 
 	def __len__(self) -> int:
 		return len(self.__items)
 
 	def __repr__(self):
 		return repr(self.__items)
+
+	def __eq__(self, other):
+		return type(self) == type(other) and self.__items == other.__items
 
 	def __str__(self):
 		return repr(self.__items)

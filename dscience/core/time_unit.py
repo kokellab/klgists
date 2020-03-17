@@ -16,11 +16,11 @@ class TimeUnit:
 
 class TimeUnits:
 	MS = TimeUnit('ms', 'ms', 'millisecond', 1)
-	SEC = TimeUnit('s', 'sec', 'second', 1000)
-	MIN = TimeUnit('min', 'min', 'minute', 60 * 1000)
-	HOUR = TimeUnit('hr', 'hour', 'hour', 60 * 60 * 1000)
-	DAY = TimeUnit('day', 'day', 'day', 24 * 60 * 60 * 1000)
-	WEEK = TimeUnit('wk', 'week', 'week', 24 * 60 * 60 * 1000)
+	SEC = TimeUnit('s', 'sec', 'second',   1000)
+	MIN = TimeUnit('min', 'min', 'minute', 1000 * 60)
+	HOUR = TimeUnit('hr', 'hour', 'hour',  1000 * 60 * 60)
+	DAY = TimeUnit('day', 'day', 'day',    1000 * 60 * 60 * 24)
+	WEEK = TimeUnit('wk', 'week', 'week',  1000 * 60 * 60 * 24 * 7)
 
 	@classmethod
 	def values(cls):

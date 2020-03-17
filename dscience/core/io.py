@@ -1,10 +1,10 @@
 from __future__ import annotations
-import os
 import logging
-from typing import TypeVar, Union
-from pathlib import PurePath
+from typing import TypeVar, Union, Any
 import abc
-PathLike = Union[str, PurePath, os.PathLike]
+from io import StringIO
+# noinspection PyUnresolvedReferences
+from dscience.core import PathLike
 T = TypeVar('T', covariant=True)
 Y = TypeVar('Y')
 Z = TypeVar('Z')
@@ -12,6 +12,10 @@ logger = logging.getLogger('dscience')
 
 
 class Writeable(metaclass=abc.ABCMeta):
+
+	@classmethod
+	def isinstance(cls, value: Any):
+		return hasattr(value, 'write') and hasattr(value, 'flush') and hasattr(value, 'close')
 
 	def write(self, msg):
 		raise NotImplementedError()
@@ -104,7 +108,7 @@ class Capture:
 	def __repr__(self): return self.__cio.getvalue()
 	def __str__(self): return self.__cio.getvalue()
 	def __len__(self): return len(repr(self))
-	def split(self, x): return self.__cio.getvalue().split(x)
+	def split(self, x: str): return self.__cio.getvalue().split(x)
 
 
 __all__ = ['Writeable', 'DevNull', 'LogWriter', 'DelegatingWriter', 'Capture']

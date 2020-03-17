@@ -44,5 +44,4 @@ class TissueTable:
 		return tissue.set_index('Gene name')
 
 
-
 __all__ = ['TissueTable']

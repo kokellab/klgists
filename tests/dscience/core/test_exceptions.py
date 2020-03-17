@@ -18,7 +18,7 @@ class TestExceptions:
 		assert str(E('asdf', key=5)) == 'asdf'
 
 	def test_info(self):
-		assert E('abc', key=5).info() == 'HashValidationFailedError:abc(expected=None,actual=None,key=5)'
+		assert E('abc', key=5).info() == 'HashValidationFailedError:abc(actual=None,expected=None,key=5)'
 
 	def test_equality(self):
 		assert E() == E()
