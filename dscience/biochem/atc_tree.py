@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterator, Set, Sequence, Any
 from dscience.core.exceptions import ImpossibleStateError
-from dscience.core.tiny import PathLike
+from dscience.core.internal import PathLike
 logger = logging.getLogger('dscience')
 
 

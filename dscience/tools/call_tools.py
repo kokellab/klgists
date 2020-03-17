@@ -8,7 +8,7 @@ from enum import Enum
 from copy import copy
 from queue import Queue
 from threading import Thread
-from dscience.core.tiny import DevNull
+from dscience.core.internal import DevNull
 from dscience.tools.base_tools import BaseTools
 logger = logging.getLogger('dscience')
 

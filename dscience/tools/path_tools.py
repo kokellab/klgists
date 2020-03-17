@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from typing import Mapping
 from dscience.tools.base_tools import BaseTools
-from dscience.core.tiny import PathLike
+from dscience.core.internal import PathLike
 from dscience.core.exceptions import InvalidDirectoryError, InvalidFileError, ContradictoryArgumentsError
 logger = logging.getLogger('dscience')
 

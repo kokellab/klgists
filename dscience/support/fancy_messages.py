@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from colorama import Fore, Style
 import colorama
-from dscience.core.tiny import PathLike
+from dscience.core.internal import PathLike
 from dscience.core.msg_level import *
 from dscience.core.exceptions import RefusingRequestError
 from dscience.tools.filesys_tools import FilesysTools

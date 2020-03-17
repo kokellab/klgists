@@ -6,7 +6,7 @@ import sys
 import numpy as np
 from psutil import virtual_memory
 import pandas as pd
-from dscience.core.tiny import nicesize
+from dscience.core.internal import nicesize
 
 
 K = TypeVar('K')

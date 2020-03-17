@@ -4,7 +4,7 @@ import logging
 import gzip
 import shutil
 from pathlib import Path
-from dscience.core.tiny import PathLike
+from dscience.core.internal import PathLike
 logger = logging.getLogger('dscience')
 
 

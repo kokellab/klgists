@@ -1,7 +1,7 @@
 from typing import Callable
 from typing import Optional
 import pandas as pd
-from dscience.core.tiny import PathLike
+from dscience.core.internal import PathLike
 from dscience.core.rezip import Rezipper
 
 

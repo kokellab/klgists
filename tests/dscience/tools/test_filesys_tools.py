@@ -1,11 +1,12 @@
 import pytest
 import os
+from pathlib import Path
 from dscience.core.exceptions import ParsingError
 from dscience.tools.filesys_tools import FilesysTools
 
 def load(parts):
 	if isinstance(parts, str): parts = [parts]
-	return os.path.join(os.path.dirname(__file__), '..', 'resources', 'common', *parts)
+	return Path(Path(__file__).parent.parent.parent / 'resources' / 'common', *parts)
 
 
 class TestFilesysTools:

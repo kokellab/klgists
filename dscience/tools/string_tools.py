@@ -11,7 +11,6 @@ T = TypeVar('T')
 V = TypeVar('V')
 
 
-
 class StringTools(BaseTools):
 
 	@classmethod
@@ -299,7 +298,8 @@ class StringTools(BaseTools):
 		if n_sigfigs is None:
 			s = StringTools.strip_empty_decimal(str(v))
 		else:
-			s = str(float(str(('{:.{}g}'.format(n_sigfigs)) % v)))
+			# yes, this is weird. we need to convert from str to float then back to str
+			s = str(float(str(('%.' + str(n_sigfigs) + 'g') % v)))
 		# remove the .0 if the precision doesn't support it
 		# if v >= 1 and n_sigfigs<2, it couldn't have a decimal
 		# and if n_sigfigs<1, it definitely can't

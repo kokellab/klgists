@@ -1,4 +1,4 @@
-from dscience.core.tiny import frozenlist, DevNull, Capture, DelegatingWriter, LogWriter, Writeable
+from dscience.core.internal import frozenlist, DevNull, Capture, DelegatingWriter, LogWriter, Writeable
 from dscience.tools.call_tools import *
 from dscience.tools.common_tools import *
 from dscience.tools.console_tools import *

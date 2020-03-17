@@ -1,6 +1,6 @@
 import re
 import subprocess
-from dscience.core.tiny import PathLike
+from dscience.core.internal import PathLike
 from dscience.core.exceptions import ParsingError, CalledProcessError
 from dscience.core import abcd
 from dscience.tools.base_tools import BaseTools

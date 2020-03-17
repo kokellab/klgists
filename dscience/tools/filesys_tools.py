@@ -13,7 +13,7 @@ import logging
 import pandas as pd
 from dscience.core.rezip import *
 from dscience.core.json_encoder import JsonEncoder
-from dscience.core.tiny import Writeable, PathLike
+from dscience.core.internal import Writeable, PathLike
 from dscience.core.exceptions import ParsingError, BadCommandError, InvalidFileError, ContradictoryArgumentsError, AlreadyUsedError
 from dscience.core.open_mode import *
 from dscience.tools.base_tools import BaseTools

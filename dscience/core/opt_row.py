@@ -1,5 +1,5 @@
 from typing import Any
-from dscience.core.tiny import look as _look
+from dscience.core.internal import look as _look
 
 class OptRow:
 	"""

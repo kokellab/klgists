@@ -2,7 +2,7 @@ from typing import Any, Iterable, Union, Callable, Optional, TypeVar, Generator,
 import sys
 from contextlib import contextmanager
 import logging
-from dscience.core.tiny import look as _look
+from dscience.core.internal import look as _look
 from dscience.core.exceptions import LengthMismatchError, LengthError, MultipleMatchesError
 logger = logging.getLogger('dscience')
 Y = TypeVar('Y')

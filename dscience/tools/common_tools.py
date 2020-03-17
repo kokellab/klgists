@@ -3,7 +3,7 @@ import sys
 from collections import defaultdict
 import numpy as np
 from dscience.tools.base_tools import BaseTools
-from dscience.core.tiny import nicesize, DevNull
+from dscience.core.internal import nicesize, DevNull
 from dscience.core.exceptions import RefusingRequestError
 Y = TypeVar('Y')
 T = TypeVar('T')
