@@ -2,6 +2,7 @@ import pytest
 import re
 from dscience.core import abcd
 raises = pytest.raises
+warns = pytest.warns
 
 class TestAbcd:
 
@@ -33,8 +34,25 @@ class TestAbcd:
 			def __init__(self, s):
 				self.s = s
 		x = X(5)
+		# noinspection PyTypeChecker
 		assert float(x) == 5.0
 
+	def test_status(self):
+		@abcd.status(abcd.CodeStatus.Deprecated)
+		def x():
+			pass
+		with warns(DeprecationWarning):
+			x()
+		@abcd.status(abcd.CodeStatus.Immature)
+		def y():
+			pass
+		with warns(abcd.ImmatureWarning):
+			y()
+		@abcd.status(abcd.CodeStatus.Stable)
+		def z():
+			pass
+		with warns(None):
+			z()
 
 if __name__ == '__main__':
 	pytest.main()

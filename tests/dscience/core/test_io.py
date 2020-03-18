@@ -25,6 +25,12 @@ class TestIo:
 		c = Capture(w)
 		assert c.value == 'abc'
 
+	def test_open_mode_eq(self):
+		o = OpenMode
+		assert o('r') == o('r')
+		assert o('w') == o('o')
+		assert o('w') != o('a')
+
 if __name__ == '__main__':
 	pytest.main()
 

@@ -1,14 +1,19 @@
 from __future__ import annotations
 import logging
+import os
+from pathlib import PurePath
 from typing import Iterable, TypeVar, Union, Callable, Optional
 import operator
 import contextlib
-from dscience.core import PathLike, frozenlist
-from dscience.core.io import *
 T = TypeVar('T', covariant=True)
 Y = TypeVar('Y')
 Z = TypeVar('Z')
 logger = logging.getLogger('dscience')
+
+PathLike = Union[str, PurePath, os.PathLike]
+def pathlike_isinstance(value):
+	return isinstance(value, str) or isinstance(value, os.PathLike) or isinstance(value, PurePath)
+PathLike.isinstance = pathlike_isinstance
 
 
 class Pretty:
@@ -57,7 +62,6 @@ def nicesize(nbytes: int, space: str = '') -> str:
 	return str(nbytes // scale) + space + suffix
 
 
-
 def look(obj: Y, attrs: Union[str, Iterable[str], Callable[[Y], Z]]) -> Optional[Z]:
 	"""
 	See VeryCommonTools.look.
@@ -82,11 +86,5 @@ def look(obj: Y, attrs: Union[str, Iterable[str], Callable[[Y], Z]]) -> Optional
 def null_context():
 	yield
 
-@contextlib.contextmanager
-def silenced(no_stdout: bool = True, no_stderr: bool = True):
-	with contextlib.redirect_stdout(DevNull()) if no_stdout else null_context():
-		with contextlib.redirect_stderr(DevNull()) if no_stderr else null_context():
-			yield
 
-
-__all__ = ['nicesize', 'frozenlist', 'PathLike', 'Writeable', 'DevNull', 'LogWriter', 'DelegatingWriter', 'Capture', 'look', 'silenced', 'logger', 'Pretty']
+__all__ = ['nicesize', 'look', 'logger', 'Pretty']

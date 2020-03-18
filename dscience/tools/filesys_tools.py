@@ -11,11 +11,11 @@ import gzip, json, hashlib
 from contextlib import contextmanager
 import logging
 import pandas as pd
-from dscience.core.rezip import *
-from dscience.core.json_encoder import JsonEncoder
-from dscience.core.internal import Writeable, PathLike
+from dscience.core.web_resource import *
+from dscience.core import JsonEncoder
+from dscience.core.io import Writeable, PathLike, OpenMode
+from dscience.core.hasher import *
 from dscience.core.exceptions import ParsingError, BadCommandError, InvalidFileError, ContradictoryArgumentsError, AlreadyUsedError
-from dscience.core.open_mode import *
 from dscience.tools.base_tools import BaseTools
 from dscience.tools.path_tools import PathTools
 logger = logging.getLogger('dscience')
@@ -36,9 +36,13 @@ except ImportError:
 
 class FilesysTools(BaseTools):
 
-	dl_and_rezip = Rezipper.dl_and_rezip
-	rezip = Rezipper.rezip
-	gz = Rezipper.gz
+	@classmethod
+	def new_hasher(cls, algorithm: str = 'sha1'):
+		return FileHasher(algorithm)
+
+	@classmethod
+	def new_webresource(cls, url: str, archive_member: Optional[str], local_path: PathLike) -> WebResource:
+		return WebResource(url, archive_member, local_path)
 
 	@classmethod
 	def get_env_info(cls, extras: Optional[Mapping[str, Any]] = None) -> Mapping[str, str]:

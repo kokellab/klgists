@@ -11,7 +11,6 @@ from copy import copy
 # noinspection PyUnresolvedReferences
 from subprocess import CalledProcessError
 import logging
-from warnings import warn
 logger = logging.getLogger('dscience')
 KeyLike = Any
 PathLike = Union[Path, str, os.PathLike]

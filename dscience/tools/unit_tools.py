@@ -2,8 +2,8 @@ from typing import SupportsFloat, Optional, Tuple, Union
 import re
 import logging
 import math
-import humanfriendly as friendly
 from dscience.core.exceptions import OutOfRangeError, StringPatternError
+from dscience.core.internal import nicesize
 from dscience.tools.base_tools import BaseTools
 from dscience.tools.string_tools import StringTools
 logger = logging.getLogger('dscience')
@@ -60,10 +60,9 @@ class UnitTools(BaseTools):
 	def friendly_size(cls, n_bytes: int) -> str:
 		"""
 		Returns a text representation of a number of bytes.
-		Uses base 2 with units 'b', 'kb', 'mb', etc., rounded to 0 decimal places, and without a space.
+		Uses base 2 with IEC 1998, rounded to 0 decimal places, and without a space.
 		"""
-		n, u = friendly.format_size(n_bytes, binary=True).split(' ')
-		return str(round(float(n))) + u.replace('bytes', 'b').replace('i', '').lower()
+		return nicesize(n_bytes)
 
 	@classmethod
 	def round_to_sigfigs(cls, num: SupportsFloat, sig_figs: int) -> int:

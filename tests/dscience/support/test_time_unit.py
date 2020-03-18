@@ -1,5 +1,5 @@
 import pytest
-from dscience.core.time_unit import *
+from dscience.support.time_unit import *
 
 class TestTimeUnit:
 

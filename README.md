@@ -26,10 +26,11 @@ Tools.read_properties_file('abc.properties')  # returns a dict
 important_info = Tools.get_env_info()         # a dict of info like memory usage, cpu, host name, etc.
 ```
 
-`Chars` contains useful Unicode characters that are hard to type and related functions:
+`Chars` contains useful Unicode characters that are annoying to type, plus some related functions:
 ```python
 from dscience.full import *
-print(x0 + Chars.en + x1)          # en dash
+print(Chars.hairspace)             # hair space
+print(Chars.range(1, 2))           # '1–2' (with en dash)
 print(Chars.angled('not found'))   # '⟨not found⟩'
 ```
 
@@ -56,10 +57,10 @@ Or for an immutable class with nice `str` and `repr`:
 
 ```python
 from dscience.full import *
-@auto_repr_str()  # can also set 'include' or 'exclude'
+@abcd.auto_repr_str()  # can also set 'include' or 'exclude'
 @abcd.immutable
 class CannotChange:
-    __init__(self, x: str):
+    def __init__(self, x: str):
         self.x = x
 obj = CannotChange('sdf')
 print('obj')  # prints 'CannotChange(x='sdf')
@@ -88,7 +89,8 @@ These can be imported individually from `dscience.support` and `dscience.analysi
 Here are various snippets from these:
 
 ```python
-wb1 = Wb1(8, 12)               # 96-well plate
+from dscience.biochem.well_name import WB1
+wb1 = WB1(8, 12)               # 96-well plate
 print(wb1.index_to_label(13))  # prints 'B01'
 for well in wb1.block_range('A01', 'H11'):
     print(well)                # prints 'A01', 'A02', etc.
@@ -98,7 +100,7 @@ for well in wb1.block_range('A01', 'H11'):
 from dscience.ml.confusion_matrix import ConfusionMatrix
 mx = ConfusionMatrix.read_csv('mx.csv')                         # just a subclass of pd.DataFrame
 print(mx.sum_diagonal() - mx.sum_off_diagonal())
-mx = mx.sort(cooling_factor=0.98).symmetrize().triagonalize()   # 
+mx = mx.sort(cooling_factor=0.98).symmetrize().triagonalize()   # sort to show block-diagonal structure, plus more
 ```
 
 ```python
@@ -111,12 +113,13 @@ tissues.tissue('MKNK2')
 ### requirements
 
 Only a few packages are required for `Tools`. 
+- python       >= 3.7
 - pandas       >= 1.0
 - numpy        >= 1.18
 - natsort      >= 7.0
 
 Other packages have additional requirements.
-- python       >= 3.7
+- python       >= 3.8
 - scikit-learn >= 0.22
 - scipy        >= 1.4
 - scikit-image >= 0.16

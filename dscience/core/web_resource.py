@@ -8,6 +8,7 @@ from typing import Optional, Mapping
 from datetime import datetime
 from pathlib import Path
 from dscience.core.internal import PathLike
+from dscience.core.abcd import *
 logger = logging.getLogger('dscience')
 
 @enum.unique
@@ -17,6 +18,8 @@ class ArchiveType(enum.Enum):
 	TAR = 3
 	TARGZ = 4
 
+@auto_eq()
+@auto_hash()
 class WebResource:
 	"""
 	Useful for extracting files from ZIP and GZIPing them.
@@ -47,10 +50,11 @@ class WebResource:
 					shutil.move(extracted, to_path)
 				self._info_path.write_text('url='+self._url+'\n' + 'datetime_downloaded='+now.isoformat()+'\n' + 'response='+str(response).replace('\n', ' |')+'\n')
 			finally:
-				if extracted.exists():
+				if extracted is not None and extracted.exists():
 					extracted.unlink()
-				if dled.exists():
+				if dled is not None and dled.exists():
 					dled.unlink()
+			print(to_path, to_path.exists())
 
 	def datetime_downloaded(self) -> datetime:
 		return datetime.fromisoformat(self.metadata()['datetime_downloaded'])

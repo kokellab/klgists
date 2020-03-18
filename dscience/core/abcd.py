@@ -516,6 +516,7 @@ __all__ = [
 	'dataclass',
 	'auto_repr_str', 'auto_str', 'auto_repr', 'auto_html', 'auto_info',
 	'auto_eq', 'auto_hash', 'total_ordering',
+	'auto_obj',
 	'copy_docstring', 'append_docstring',
 	'auto_singleton',
 	'takes_seconds', 'takes_seconds_named',
@@ -525,7 +526,8 @@ __all__ = [
 	'float_type', 'int_type',
 	'abstractmethod', 'ABC', 'ABCMeta',
 	'override_recommended', 'override_point', 'overrides',
-	'deprecated', 'final',
+	'deprecated',
 	'internal', 'external', 'reserved',
-	'thread_safe', 'not_thread_safe'
+	'thread_safe', 'not_thread_safe',
+	'CodeStatus'
 ]

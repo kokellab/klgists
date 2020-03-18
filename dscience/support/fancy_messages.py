@@ -4,7 +4,7 @@ from pathlib import Path
 from colorama import Fore, Style
 import colorama
 from dscience.core.internal import PathLike
-from dscience.core.msg_level import *
+from dscience.core.messages import *
 from dscience.core.exceptions import RefusingRequestError
 from dscience.tools.filesys_tools import FilesysTools
 logger = logging.getLogger('dscience')

@@ -1,5 +1,5 @@
 import pytest
-from dscience.core import frozenlist, PathLike
+from dscience.core import frozenlist, PathLike, OptRow
 from dscience.core.exceptions import ImmutableError
 raises = pytest.raises
 
@@ -18,6 +18,8 @@ class TestCore:
 		assert PathLike.isinstance('')
 		assert not PathLike.isinstance(5)
 
+	def test_opt_row(self):
+		pass  # TODO
 
 if __name__ == '__main__':
 	pytest.main()

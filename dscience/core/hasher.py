@@ -1,21 +1,25 @@
-from typing import Callable, Any
+from typing import Callable, Any, Union, Optional
 import hashlib
 import os
 import codecs
 import gzip
 from dscience.core.exceptions import InvalidFileError
 from dscience.core.exceptions import HashValidationFailedError
-from dscience.tools.base_tools import BaseTools
-
 
 class FileHasher:
 	"""
 	Makes and reads .sha1 / .sha256 files next to existing paths.
 	"""
 
-	def __init__(self, algorithm: Callable[[], Any] = hashlib.sha1, extension: str = '.sha1', buffer_size: int = 16*1024):
-		self.algorithm = algorithm
-		self.extension = extension
+	def __init__(self, algorithm: Union[str, Callable[[], Any]] = 'sha1', extension: Optional[str] = None, buffer_size: int = 16*1024):
+		if isinstance(hashlib, str):
+			self.algorithm, self.extension = getattr(hashlib, algorithm), '.'+extension
+		elif callable(algorithm) and extension is None:
+			self.algorithm, self.extension = algorithm, '.hash'
+		elif callable(algorithm):
+			self.algorithm, self.extension = algorithm, extension
+		else:
+			raise TypeError("Algorithm {} is not callable".format(algorithm))
 		self.buffer_size = buffer_size
 
 	def hashsum(self, file_name: str) -> str:
@@ -31,7 +35,7 @@ class FileHasher:
 			f.write(s)
 
 	def check_hash(self, file_name: str) -> bool:
-		if not os.path.isfile(file_name + self.extension): return False 
+		if not os.path.isfile(file_name + self.extension): return False
 		with open(file_name + self.extension, 'r', encoding="utf8") as f:
 			hash_str = f.read().split()[0]  # check only the first thing on the line before any spaces
 			return hash_str == self.hashsum(file_name)
@@ -52,13 +56,4 @@ class FileHasher:
 		return opener(file_name, *args)
 
 
-class HashTools(BaseTools):
-
-	@classmethod
-	def new_hasher(cls, algorithm: Callable[[], Any] = hashlib.sha1, extension: str = '.sha1', buffer_size: int = 16*1024):
-		return FileHasher(algorithm, extension, buffer_size)
-
-
-__all__ = ['FileHasher', 'HashTools', 'HashValidationFailedError']
-
-
+__all__ = ['FileHasher']

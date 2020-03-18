@@ -5,7 +5,7 @@ class TestTissueExpression:
 	def test(self):
 		t = TissueTable.load()
 		assert len(t) > 0
-		assert t.tissue('MKNK2')
+		assert t.tissue('MKNK2') is not None
 
 
 if __name__ == '__main__':

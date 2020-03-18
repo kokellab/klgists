@@ -3,7 +3,7 @@ import re
 import json
 from copy import copy
 import numpy as np
-from dscience.core.json_encoder import *
+from dscience.core import JsonEncoder
 from dscience.core.exceptions import OutOfRangeError
 from dscience.core.chars import *
 from dscience.tools.base_tools import BaseTools

@@ -1,5 +1,5 @@
 import pytest
-from dscience.core.rezip import *
+from dscience.core.web_resource import *
 
 class TestWebResource:
 	def test(self):

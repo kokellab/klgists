@@ -22,3 +22,6 @@ class MsgFormatterSimple(MsgFormatter):
 	def __call__(self, message: str, level: MsgLevel) -> str:
 		return self.prefixes.get(level, '') + message + self.suffixes.get(level, '')
 
+
+__all__ = ['MsgLevel', 'MsgFormatter', 'MsgFormatterSimple']
+

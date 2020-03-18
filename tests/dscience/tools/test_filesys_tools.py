@@ -1,5 +1,4 @@
 import pytest
-import os
 from pathlib import Path
 from dscience.core.exceptions import ParsingError
 from dscience.tools.filesys_tools import FilesysTools

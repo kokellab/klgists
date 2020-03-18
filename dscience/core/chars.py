@@ -1,3 +1,4 @@
+from typing import Any, Union
 
 class Chars:
 	"""Unicode symbols that are useful in code and annoying to search for repeatedly."""
@@ -58,47 +59,51 @@ class Chars:
 	varphi = 'φ'
 
 	@classmethod
-	def squoted(cls, s: str) -> str:
+	def range(cls, start: Any, end: Any) -> str:
+		return str(start) + cls.en + str(end)
+
+	@classmethod
+	def squoted(cls, s: Any) -> str:
 		"""Wrap a string in singsle quotes."""
 		return Chars.lsq + str(s) + Chars.rsq
 
 	@classmethod
-	def dquoted(cls, s: str) -> str:
+	def dquoted(cls, s: Any) -> str:
 		"""Wrap a string in double quotes."""
 		return Chars.ldq + str(s) + Chars.rdq
 
 	@classmethod
-	def angled(cls, s: str) -> str:
+	def angled(cls, s: Any) -> str:
 		"""Wrap a string in angled brackets."""
 		return Chars.langle + str(s) + Chars.rangle
 
 	@classmethod
-	def dangled(cls, s: str) -> str:
+	def dangled(cls, s: Any) -> str:
 		"""Wrap a string in double brackets."""
 		return Chars.ldangle + str(s) + Chars.rdangle
 
 	@classmethod
-	def parened(cls, s: str) -> str:
+	def parened(cls, s: Any) -> str:
 		"""Wrap a string in parentheses."""
 		return '(' + str(s) + ')'
 
 	@classmethod
-	def bracketed(cls, s: str) -> str:
+	def bracketed(cls, s: Any) -> str:
 		"""Wrap a string in square brackets."""
 		return '[' + str(s) + ']'
 
 	@classmethod
-	def braced(cls, s: str) -> str:
+	def braced(cls, s: Any) -> str:
 		"""Wrap a string in curly braces."""
 		return '{' + str(s) + '}'
 
 	@classmethod
-	def shelled(cls, s: str) -> str:
+	def shelled(cls, s: Any) -> str:
 		"""Wrap a string in tortiose shell brackets (〔 〕)."""
 		return '〔' + str(s) + '〕'
 
 	@classmethod
-	def dbracketed(cls, s: str) -> str:
+	def dbracketed(cls, s: Any) -> str:
 		"""Wrap a string in double square brackets (⟦ ⟧)."""
 		return Chars.ldbracket + str(s) + Chars.rdbracket
 
