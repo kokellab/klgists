@@ -9,7 +9,7 @@ setup(
 	description='A collection of Python snippets for the Kokel Lab',
 	author='Douglas Myers-Turnbull',
 	url='https://github.com/kokellab/dscience',
-	packages=['dscience', 'dscience.analysis',  'dscience.core', 'dscience.tools', 'dscience.support', 'dscience.ml', 'tests'],
+	packages=['dscience',  'dscience.core', 'dscience.tools', 'dscience.support', 'dscience.biochem', 'dscience.analysis', 'dscience.ml', 'tests'],
 	package_dir='',
 	test_suite='tests',
 	classifiers=[
