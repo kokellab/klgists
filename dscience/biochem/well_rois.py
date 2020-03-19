@@ -1,7 +1,7 @@
 import typing
 from typing import Dict
 from enum import Enum
-from dscience.core.exceptions import Error, OutOfRangeError
+from dscience.core.exceptions import OutOfRangeError
 
 class Edge(Enum):
 	LEFT = 1

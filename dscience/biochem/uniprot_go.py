@@ -6,7 +6,8 @@ import uniprot
 import pandas as pd
 import os
 from dscience.core.exceptions import StringPatternError, MultipleMatchesError
-from dscience.core.internal import silenced
+# noinspection PyProtectedMember
+from dscience.core.io import silenced
 from goatools import obo_parser  # uses https://github.com/tanghaibao/goatools
 from goatools.obo_parser import GOTerm  # NOT the same as FlatGoTerm, which has no knowledge of hierarchy
 go_pattern = re.compile(r'GO:(\d+); ([CFP]):([\dA-Za-z- ,()]+); ([A-Z]+):([A-Za-z-_]+)\.')
