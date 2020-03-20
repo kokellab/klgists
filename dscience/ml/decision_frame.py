@@ -17,8 +17,8 @@ class DecisionFrame(ExtendedDataFrame):
 	Practically, this is a Pandas wrapper around a scikit-learn decision_function that also has the predicted and correct class labels.
 	"""
 
-	@staticmethod
-	def of(correct_labels: Sequence[str], labels: Sequence[str], decision_function: np.array, well_ids: Sequence[int], run_ids: Sequence[int]) -> DecisionFrame:
+	@classmethod
+	def of(cls, correct_labels: Sequence[str], labels: Sequence[str], decision_function: np.array, well_ids: Sequence[int], run_ids: Sequence[int]) -> DecisionFrame:
 		"""
 		Wraps a decision function numpy array into a DecisionFrame instance complete with labels as names and columns.
 		:param correct_labels: A length-n list of the correct labels for each of the n samples

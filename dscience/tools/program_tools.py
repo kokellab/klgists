@@ -18,17 +18,7 @@ class GitDescription:
 	is_dirty: bool
 	is_broken: bool
 
-	@classmethod
-	def parse(cls, text: str):
-		pat = re.compile(r'([\d.]+)-(\d+)-g([0-9a-h]{40})(?:-([a-z]+))?')
-		# ex: 1.8.6-43-g0ceb89d3a954da84070858319f177abe3869752b-dirty
-		m = pat.fullmatch(text)
-		if m is None: raise ParsingError("Bad git describe string {}".format(text))
-		# noinspection PyArgumentList
-		return GitDescription(text, m.group(1), int(m.group(2)), m.group(3), m.group(4)=='dirty', m.group(4)=='broken')
-
-	def __repr__(self):
-		return self.__class__.__name__ + '(' + self.text + ')'
+	def __repr__(self): return self.__class__.__name__ + '(' + self.text + ')'
 	def __str__(self): return repr(self)
 
 
@@ -50,7 +40,16 @@ class ProgramTools(BaseTools):
 		:raises: CalledProcessError
 		"""
 		x = subprocess.run('git describe --long --dirty --broken --abbrev=40 --tags'.split(' '), cwd=str(git_repo_dir), capture_output=True, check=True, text=True, encoding='utf8')
-		return GitDescription.parse(x.stdout.strip())
+		return cls._parse(x.stdout.strip())
+
+	@classmethod
+	def _parse(cls, text: str):
+		pat = re.compile(r'([\d.]+)-(\d+)-g([0-9a-h]{40})(?:-([a-z]+))?')
+		# ex: 1.8.6-43-g0ceb89d3a954da84070858319f177abe3869752b-dirty
+		m = pat.fullmatch(text)
+		if m is None: raise ParsingError("Bad git describe string {}".format(text))
+		# noinspection PyArgumentList
+		return GitDescription(text, m.group(1), int(m.group(2)), m.group(3), m.group(4)=='dirty', m.group(4)=='broken')
 
 
 __all__ = ['GitDescription', 'ProgramTools']

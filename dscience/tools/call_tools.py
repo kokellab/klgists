@@ -127,10 +127,7 @@ class CallTools(BaseTools):
 		finally:
 			p.kill()
 		if exit_code != 0:
-			raise subprocess.CalledProcessError(
-				"Got nonzero exit code {} from '{}'".format(exit_code, ' '.join(cmd)),
-				' '.join(cmd), exit_code, '<<unknown>>', '<<unknown>>'
-			)
+			raise subprocess.CalledProcessError(exit_code, ' '.join(cmd), '<<unknown>>', '<<unknown>>')
 
 	@classmethod
 	def _smart_log_callback(cls, source, line, prefix: str = '') -> None:

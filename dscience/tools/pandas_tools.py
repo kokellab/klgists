@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 from dscience.core.extended_df import *
 from dscience.core import PathLike
-from dscience.core.exceptions import LengthError, LengthMismatchError
+from dscience.core.exceptions import LengthError, XTypeError
 from dscience.tools.base_tools import BaseTools
 V = TypeVar('V')
 
@@ -69,7 +69,7 @@ class PandasTools(BaseTools):
 				X.__name__ = class_name
 				return X(df)
 		else:
-			raise TypeError("Invalid DataFrame type {}".format(df))
+			raise XTypeError("Invalid DataFrame type {}".format(df))
 
 	@classmethod
 	def series_to_df(cls, series, column: str) -> pd.DataFrame:

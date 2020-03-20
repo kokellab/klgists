@@ -222,8 +222,8 @@ class FilesysTools(BaseTools):
 			raise ImportError("No jsonpickle")
 		return jsonpickle.decode(FilesysTools.read_text(path))
 
-	@staticmethod
-	def read_any(path: PathLike) -> Union[str, bytes, Sequence[str], pd.DataFrame, Sequence[int], Sequence[float], Sequence[str], Mapping[str, str]]:
+	@classmethod
+	def read_any(cls, path: PathLike) -> Union[str, bytes, Sequence[str], pd.DataFrame, Sequence[int], Sequence[float], Sequence[str], Mapping[str, str]]:
 		"""
 		Reads a variety of simple formats based on filename extension, including '.txt', 'csv', .xml', '.properties', '.json'.
 		Also reads '.data' (binary), '.lines' (text lines).
