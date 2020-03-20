@@ -89,7 +89,7 @@ These can be imported individually from `dscience.support` and `dscience.analysi
 Here are various snippets from these:
 
 ```python
-from dscience.biochem.well_name import WB1
+from dscience.biochem.multiwell_plates import WB1
 wb1 = WB1(8, 12)               # 96-well plate
 print(wb1.index_to_label(13))  # prints 'B01'
 for well in wb1.block_range('A01', 'H11'):

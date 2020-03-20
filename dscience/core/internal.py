@@ -4,7 +4,6 @@ import os
 from pathlib import PurePath
 from typing import Iterable, TypeVar, Union, Callable, Optional
 import operator
-import contextlib
 T = TypeVar('T', covariant=True)
 Y = TypeVar('Y')
 Z = TypeVar('Z')

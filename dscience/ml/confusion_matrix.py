@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from clana.visualize_cm import simulated_annealing
-from dscience.core.internal import PathLike
+from dscience.core import PathLike
 from dscience.core.exceptions import *
 from dscience.core.extended_df import *
 from dscience.core.chars import *

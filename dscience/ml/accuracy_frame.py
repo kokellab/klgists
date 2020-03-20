@@ -3,7 +3,7 @@ import logging
 from typing import Sequence, Union, Iterable
 from pathlib import Path
 import pandas as pd
-from dscience.core.internal import PathLike
+from dscience.core import PathLike
 from dscience.core.extended_df import *
 
 logger = logging.getLogger('dscience')

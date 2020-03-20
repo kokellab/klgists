@@ -3,13 +3,15 @@ import json
 import requests
 import re
 from datetime import datetime
+from functools import total_ordering
 from pathlib import Path
 from typing import Iterator, Set, Sequence, Any
 from dscience.core.exceptions import IllegalStateError
-from dscience.core.internal import PathLike
+from dscience.core import PathLike
 logger = logging.getLogger('dscience')
 
 
+@total_ordering
 class Atc:
 	def __init__(self, code: str, desc: str, parent):
 		self.code = code
@@ -21,24 +23,12 @@ class Atc:
 	def __eq__(self, o):
 		return isinstance(o, Atc) and self.code == o.code
 
-	def __neq__(self, o):
-		return self != o
-
 	def __hash__(self):
 		return hash(self.code)
 
 	def __lt__(self, o):
 		return isinstance(o, Atc) and self.code < o.code
 
-	def __gt__(self, o):
-		return isinstance(o, Atc) and self.code > o.code
-
-	def __le__(self, o):
-		return isinstance(o, Atc) and self.code <= o.code
-
-	def __ge__(self, o):
-		return isinstance(o, Atc) and self.code >= o.code
-	
 	def __repr__(self):
 		return "→{:7} – {}".format(self.code, self.desc)
 

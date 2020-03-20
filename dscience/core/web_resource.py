@@ -7,7 +7,7 @@ import shutil
 from typing import Optional, Mapping
 from datetime import datetime
 from pathlib import Path
-from dscience.core.internal import PathLike
+from dscience.core import PathLike
 from dscience.core.abcd import *
 logger = logging.getLogger('dscience')
 

@@ -5,7 +5,7 @@ from typing import Type
 import numpy as np
 import pandas as pd
 from dscience.tools.filesys_tools import FilesysTools
-from dscience.core.internal import PathLike
+from dscience.core import PathLike
 
 
 class AbstractSaveLoad(metaclass=abc.ABCMeta):

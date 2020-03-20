@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Callable, Optional
 import pandas as pd
-from dscience.core.internal import PathLike
+from dscience.core import PathLike
 from dscience.core.web_resource import WebResource
 from dscience.core.extended_df import *
 from dscience.core.exceptions import LookupFailedError

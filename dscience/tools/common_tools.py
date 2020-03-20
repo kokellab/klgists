@@ -197,7 +197,7 @@ class CommonTools(BaseTools):
 	def parse_bool(cls, s: str) -> bool:
 		"""
 		Parses a 'true'/'false' string to a bool, ignoring case.
-		:raises: KaleValueError If neither true nor false
+		:raises: XValueError If neither true nor false
 		"""
 		if isinstance(s, bool):
 			return s

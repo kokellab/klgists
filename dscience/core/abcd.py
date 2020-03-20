@@ -18,7 +18,7 @@ try:
 	from deprecated import deprecated
 except ImportError:
 	deprecated = None
-from dscience.core.exceptions import ImmatureWarning, DeprecatedWarning
+from dscience.core.exceptions import ImmatureWarning, DeprecatedWarning, ObsoleteWarning
 
 
 class SpecialStr(str):
@@ -453,7 +453,8 @@ class CodeStatus(enum.Enum):
 	Immature = 1
 	Preview = 2
 	Stable = 3
-	Deprecated = 4
+	Obsolete = 4
+	Deprecated = 5
 
 def status(level: CodeStatus):
 	"""
@@ -469,9 +470,14 @@ def status(level: CodeStatus):
 				warn(str(func.__name__) + " is immature", ImmatureWarning)
 				return func(*args, **kwargs)
 			return wraps(func)(my_fn)
+		elif level == CodeStatus.Obsolete:
+			def my_fn(*args, **kwargs):
+				warn(str(func.__name__) + " is obsolete", ObsoleteWarning)
+				return func(*args, **kwargs)
+			return wraps(func)(my_fn)
 		elif level == CodeStatus.Deprecated:
 			def my_fn(*args, **kwargs):
-				warn(str(func.__name__) + " is deprecated", DeprecationWarning)
+				warn(str(func.__name__) + " is deprecated", DeprecatedWarning)
 				return func(*args, **kwargs)
 			return wraps(func)(my_fn)
 		assert False

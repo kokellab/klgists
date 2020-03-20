@@ -6,6 +6,7 @@ import json
 from datetime import date, datetime
 import numpy as np
 from dscience.core.exceptions import ImmutableError
+# noinspection PyProtectedMember
 from dscience.core.internal import PathLike, look as _look
 T = TypeVar('T', covariant=True)
 logger = logging.getLogger('dscience')
