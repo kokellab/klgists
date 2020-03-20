@@ -15,7 +15,7 @@ from dscience.core.web_resource import *
 from dscience.core import JsonEncoder
 from dscience.core.io import Writeable, PathLike, OpenMode
 from dscience.core.hasher import *
-from dscience.core.exceptions import ParsingError, BadCommandError, InvalidFileError, ContradictoryArgumentsError, AlreadyUsedError
+from dscience.core.exceptions import ParsingError, BadCommandError, FileDoesNotExistError, ContradictoryRequestError, AlreadyUsedError
 from dscience.tools.base_tools import BaseTools
 from dscience.tools.path_tools import PathTools
 logger = logging.getLogger('dscience')
@@ -173,7 +173,7 @@ class FilesysTools(BaseTools):
 	@classmethod
 	def write_properties_file(cls, properties: Mapping[Any, Any], path: Union[str, PurePath], mode: str = 'o'):
 		if not OpenMode(mode).write:
-			raise ContradictoryArgumentsError("Cannot write text to {} in mode {}".format(path, mode))
+			raise ContradictoryRequestError("Cannot write text to {} in mode {}".format(path, mode))
 		with FilesysTools.open_file(path, mode) as f:
 			bads = []
 			for k, v in properties.items():
@@ -298,7 +298,7 @@ class FilesysTools(BaseTools):
 		path = Path(path)
 		mode = OpenMode(mode)
 		if mode.write and mode.safe and path.exists():
-			raise InvalidFileError("Path {} already exists".format(path))
+			raise FileDoesNotExistError("Path {} already exists".format(path))
 		if not mode.read:
 			PathTools.prep_file(path, overwrite=mode.overwrite, append=mode.append)
 		if mode.gzipped:
@@ -321,7 +321,7 @@ class FilesysTools(BaseTools):
 		path = Path(path)
 		mode = OpenMode(mode)
 		if not mode.overwrite or mode.binary:
-			raise ContradictoryArgumentsError("Wrong mode for writing a text file: {}".format(mode))
+			raise ContradictoryRequestError("Wrong mode for writing a text file: {}".format(mode))
 		if not FilesysTools.is_true_iterable(iterable):
 			raise TypeError("Not a true iterable")  # TODO include iterable if small
 		PathTools.prep_file(path, mode.overwrite, mode.append)
@@ -395,7 +395,6 @@ class FilesysTools(BaseTools):
 	def tmpdir(cls, **kwargs) -> Generator[Path, None, None]:
 		with tempfile.TemporaryDirectory(**kwargs) as x:
 			yield Path(x)
-
 
 
 __all__ = ['FilesysTools']

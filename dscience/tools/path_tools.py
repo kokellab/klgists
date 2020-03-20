@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Mapping
 from dscience.tools.base_tools import BaseTools
 from dscience.core import PathLike
-from dscience.core.exceptions import InvalidDirectoryError, InvalidFileError, ContradictoryArgumentsError
+from dscience.core.exceptions import DirDoesNotExistError, FileDoesNotExistError, ContradictoryRequestError
 logger = logging.getLogger('dscience')
 
 
@@ -35,7 +35,7 @@ class PathTools(BaseTools):
 		exists = path.exists()
 		# On some platforms we get generic exceptions like permissions errors, so these are better
 		if exists and not path.is_dir():
-			raise InvalidDirectoryError("Path {} exists but is not a file".format(path))
+			raise DirDoesNotExistError("Path {} exists but is not a file".format(path))
 		if exists and not exist_ok:
 			logger.warning("Directory {} already exists".format(path))
 		if not exists:
@@ -52,11 +52,11 @@ class PathTools(BaseTools):
 		path = Path(path)
 		exists = path.exists()
 		if overwrite and append:
-			raise ContradictoryArgumentsError("Can't append and overwrite file {}".format(path))
+			raise ContradictoryRequestError("Can't append and overwrite file {}".format(path))
 		if exists and not overwrite and not append:
 			raise FileExistsError("Path {} already exists".format(path))
 		elif exists and not path.is_file() and not path.is_symlink():  # TODO check link?
-			raise InvalidFileError("Path {} exists but is not a file".format(path))
+			raise FileDoesNotExistError("Path {} exists but is not a file".format(path))
 		# NOTE! exist_ok in mkdir throws an error on Windows
 		if not path.parent.exists():
 			Path(path.parent).mkdir(parents=True, exist_ok=True)
@@ -98,11 +98,11 @@ class PathTools(BaseTools):
 			while fixed.endswith(' ') or fixed.endswith('.') and fixed != '.':
 				fixed = fixed[:-1]
 			if bit.strip() == '':
-				raise InvalidFileError("Path {} has a node (#{}) that is empty or contains only whitespace".format(path, i))
+				raise FileDoesNotExistError("Path {} has a node (#{}) that is empty or contains only whitespace".format(path, i))
 			if bit in bad_strs:
-				raise InvalidFileError("Path {} has node '{}' (#{}), which is reserved".format(path, bit, i))
+				raise FileDoesNotExistError("Path {} has node '{}' (#{}), which is reserved".format(path, bit, i))
 			if len(bit) > 254:
-				raise InvalidFileError("Path {} has node '{}' (#{}), which has more than 254 characters".format(path, bit, i))
+				raise FileDoesNotExistError("Path {} has node '{}' (#{}), which has more than 254 characters".format(path, bit, i))
 			return fixed
 		bits = path.split(sep)
 		if path.startswith(sep):

@@ -34,7 +34,7 @@ class BaseTools:
 		:param name: Just a name for the collection to use in an error message
 		:return: The first item the sequence.
 		:raises: LookupError If the sequence is empty
-		:raises: MultipleMatchesException If there is more than one unique item.
+		:raises: MultipleMatchesError If there is more than one unique item.
 		"""
 		def _only(sq):
 			st = set(sq)

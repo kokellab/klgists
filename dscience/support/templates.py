@@ -5,7 +5,7 @@ from pathlib import PurePath, Path
 from copy import deepcopy
 from IPython.core.magic import line_magic, magics_class, Magics
 from IPython import get_ipython
-from dscience.core.exceptions import InvalidFileError
+from dscience.core.exceptions import FileDoesNotExistError
 logger = logging.getLogger('dscience')
 
 class TemplateParser:
@@ -54,7 +54,7 @@ class TemplateMagic(Magics):
 	def fill(self, line):
 		path = self.template_path
 		if not path.exists():
-			raise InvalidFileError("Jupyter template text file at {} does not exist".format(path), path=path)
+			raise FileDoesNotExistError("Jupyter template text file at {} does not exist".format(path), path=path)
 		text = self.processor.fill(path.read_text(encoding='utf-8'))
 		self.shell.set_next_input(text, replace=True)
 

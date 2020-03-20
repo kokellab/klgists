@@ -5,7 +5,7 @@ Can depend on core, model, viz, and calc.
 from __future__ import annotations
 from typing import Sequence
 from pathlib import Path
-from dscience.core.internal import PathLike
+from dscience.core import PathLike
 from dscience.core.exceptions import PathError
 from dscience.tools.filesys_tools import FilesysTools
 from dscience.tools.path_tools import PathTools

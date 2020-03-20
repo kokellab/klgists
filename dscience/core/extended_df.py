@@ -4,7 +4,7 @@ import pandas as pd
 from natsort import ns, natsorted
 from pandas.core.frame import DataFrame as _InternalDataFrame
 from dscience.tools.common_tools import CommonTools
-from dscience.core.exceptions import MissingColumnError, ConstructionFailedError
+from dscience.core.exceptions import MissingColumnError, ConstructionError
 import dscience.core.abcd as abcd
 
 

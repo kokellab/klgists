@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import Iterator, Set, Sequence, Any
-from dscience.core.exceptions import ImpossibleStateError
+from dscience.core.exceptions import IllegalStateError
 from dscience.core.internal import PathLike
 logger = logging.getLogger('dscience')
 
@@ -52,7 +52,7 @@ class Atc:
 			return True
 		elif len(self.children) != 0 and self.level != 7:
 			return False
-		raise ImpossibleStateError("Inconsistent leaf definition for {}".format(self))
+		raise IllegalStateError("Inconsistent leaf definition for {}".format(self))
 	
 	def ancestry(self) -> Sequence[Any]:
 		parents = []

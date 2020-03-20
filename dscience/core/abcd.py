@@ -18,6 +18,7 @@ try:
 	from deprecated import deprecated
 except ImportError:
 	deprecated = None
+from dscience.core.exceptions import ImmatureWarning, DeprecatedWarning
 
 
 class SpecialStr(str):
@@ -453,8 +454,6 @@ class CodeStatus(enum.Enum):
 	Preview = 2
 	Stable = 3
 	Deprecated = 4
-
-class ImmatureWarning(Warning): pass
 
 def status(level: CodeStatus):
 	"""
