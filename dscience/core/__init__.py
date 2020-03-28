@@ -1,9 +1,10 @@
 from __future__ import annotations
 import enum
 import logging
-from typing import Sequence, Iterable, TypeVar, Any
+from typing import Sequence, Iterable, TypeVar, Any, Callable, Generic, Type
 import json
 from datetime import date, datetime
+import abc
 import numpy as np
 from dscience.core.exceptions import ImmutableError
 # noinspection PyProtectedMember
@@ -18,6 +19,84 @@ class JsonEncoder(json.JSONEncoder):
 		elif isinstance(obj, (datetime, date)):
 			return obj.isoformat()
 		return json.JSONEncoder.default(self, obj)
+
+V = TypeVar('V')
+class LazyWrapped(Generic[V], metaclass=abc.ABCMeta):
+
+	def __init__(self):
+		self._v, self._exists = None, False
+
+	def get(self) -> V:
+		if not self._exists:
+			self._v = self._generate()
+			self._exists = True
+		return self._v
+
+	@property
+	def raw_value(self):
+		return self._v
+
+	@property
+	def is_defined(self):
+		return self._exists
+
+	@property
+	def _name(self):
+		raise NotImplementedError()
+
+	def _generate(self):
+		raise NotImplementedError()
+
+	def __repr__(self):
+		return self._name + '[' + (repr(self._v) if self.is_defined else '⌀') + ']'
+	def __str__(self):
+		return self._name + '[' + (str(self._v) if self.is_defined else '⌀') + ']'
+	def __eq__(self, other):
+		return type(self) == type(other) and self.is_defined == other.__exists and type(self._v) == type(other.__v) and self._v == other.__v
+
+
+class PlainLazyWrapped(LazyWrapped, metaclass=abc.ABCMeta):
+	pass
+
+class ClearableLazyWrapped(LazyWrapped, metaclass=abc.ABCMeta):
+	def clear(self) -> None:
+		self._exists = False
+
+
+class LazyWrap:
+
+	@classmethod
+	def new_type(cls, dtype: str, generator: Callable[[], V]) -> Type[PlainLazyWrapped]:
+		# noinspection PyTypeChecker
+		return cls._new_type(dtype, generator, PlainLazyWrapped)
+
+	@classmethod
+	def new_clearable_type(cls, dtype: str, generator: Callable[[], V]) -> Type[ClearableLazyWrapped]:
+		# noinspection PyTypeChecker
+		return cls._new_type(dtype, generator, ClearableLazyWrapped)
+
+	@classmethod
+	def _new_type(cls, dtype: str, generator: Callable[[], V], superclass: Type[LazyWrapped]) -> Type[LazyWrapped]:
+		"""
+		Creates a new mutable wrapped type.
+		For ex:
+		```
+		LazyRemoteTime = LazyWrap.new_type('RemoteTime', lambda: urllib...)
+		dt = LazyRemoteTime()  # nothing happens
+		print(dt.get())  # has a value
+		```
+		:param dtype: The name of the data type, such as 'datetime' if generator=datetime.now
+		:param generator: This is called to (lazily) initialize an instance of the LazyWrapped
+		:return: A new class subclassing LazyWrapped
+		"""
+		class X(superclass):
+			@property
+			def _name(self):
+				return dtype
+			def _generate(self):
+				return generator()
+		X.__name__ = superclass.__name__ + dtype
+		return X
 
 
 class SmartEnum(enum.Enum):
@@ -132,4 +211,4 @@ class OptRow:
 
 
 __version__ = '0.1.0'
-__all__ = ['JsonEncoder', 'SmartEnum', 'frozenlist', 'PathLike', 'OptRow']
+__all__ = ['JsonEncoder', 'SmartEnum', 'frozenlist', 'PathLike', 'OptRow', 'LazyWrap']

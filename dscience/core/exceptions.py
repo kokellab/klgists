@@ -19,8 +19,8 @@ _PDW = PendingDeprecationWarning
 
 class ErrorUtils:
 	"""Utilities for creating and modifying errors."""
-	@classmethod
-	def args(cls, **names):
+	@staticmethod
+	def args(**names):
 		"""
 		Decorator.
 		Add a __init__ that calls the superclass and takes any argument in names.
@@ -29,7 +29,7 @@ class ErrorUtils:
 		"""
 		assert not any([s=='info' or s.startswith('__') and s.endswith('__') for s in names])
 		@wraps(names)
-		def dec(class_):
+		def dec(cls):
 			def _doc(doc: str) -> str:
 				return doc + '\n' + 'Supports attributes:\n' + '\n'.join([
 					'    • ' + name + ': ' + str(dtype)
@@ -50,20 +50,18 @@ class ErrorUtils:
 					nextclass = thisclass.__mro__[1]
 					# noinspection PyArgumentList
 					super(thisclass, self).__init__(*args, __thisclass=nextclass, **kwargs)
-			class_.__init__ = _init
-			class_.__doc__ = _doc(class_.__doc__)
-			return class_
+			cls.__init__ = _init
+			cls.__doc__ = _doc(cls.__doc__)
+			return cls
 		return dec
 
 
-class _DscienceBase:
+class _FnUtils:
 	"""
 	Abstract class for warnings and errors that can contain extra attributes.
 	"""
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args)
 
-	def __eq__(self, other) -> bool:
+	def eq(self, other) -> bool:
 		return (
 				type(self) == type(other)
 				and str(self) == str(other)
@@ -85,9 +83,17 @@ class _DscienceBase:
 # If not possible, adjust only for that line
 # Don't adjust existing lines from 50 to avoid git tracking
 
-class XException(Exception, _DscienceBase):      """Abstract exception whose subclasses can define extra attributes using ErrorTools.args."""
+class XException(Exception):
+	"""Abstract exception whose subclasses can define extra attributes using ErrorTools.args."""
+	def __init__(self, *args, **kwargs): pass
+	info = _FnUtils.info
+	__eq__ = _FnUtils.eq
 
-class XWarning(UserWarning, _DscienceBase):      """Abstract user warning whose subclasses can define extra attributes using ErrorTools.args."""
+class XWarning(UserWarning):
+	"""Abstract user warning whose subclasses can define extra attributes using ErrorTools.args."""
+	def __init__(self, *args, **kwargs): pass
+	info = _FnUtils.info
+	__eq__ = _FnUtils.eq
 
 class Error(XException):                         """Abstract exception could reasonably be recovered from. Subclass names should end with 'Error'."""
 class NaturalExpectedError(Error):               """Non-specific exception to short-circuit behavior but meaning 'all ok'."""

@@ -1,67 +1,85 @@
-from typing import Mapping, Callable, Union, Any
+from __future__ import annotations
+from typing import Mapping, Callable, Union, Any, Optional, Generic, TypeVar, Type
 from datetime import datetime
 import logging
 from pathlib import PurePath, Path
-from copy import deepcopy
-from IPython.core.magic import line_magic, magics_class, Magics
-from IPython import get_ipython
 from dscience.core.exceptions import FileDoesNotExistError
+from dscience.core import PathLike, LazyWrap
 logger = logging.getLogger('dscience')
 
-class TemplateParser:
-	def __init__(self, entries: Mapping[str,  Union[Any, Callable[[None], str]]]):
-		self.entries = deepcopy(entries)
 
-	def fill(self, r: str):
-		for k, v in self.entries.items():
-			k = '${{' + k + '}}'
+class MagicTemplate:
+
+	@classmethod
+	def from_path(cls, path: PathLike, encoding: str = 'utf8', prefix: str = '${{', suffix: str = '}}') -> MagicTemplate:
+		return MagicTemplate(lambda: Path(path).read_text(encoding=encoding), prefix=prefix, suffix=suffix)
+
+	@classmethod
+	def from_text(cls, text: str, prefix: str = '${{', suffix: str = '}}') -> MagicTemplate:
+		return MagicTemplate(lambda: text, prefix=prefix, suffix=suffix)
+
+	def __init__(self, reader: Callable[[], str], prefix: str = '${{', suffix: str = '}}'):
+		self._reader = reader
+		self._entries = {}
+		self._prefix, self._suffix = prefix, suffix
+
+	def add(self, key: str, value: Union[Any, Callable[[str], str]]) -> MagicTemplate:
+		self._entries[key] = value
+		return self
+
+	def add_version(self, semantic_version: str) -> MagicTemplate:
+		self._entries.update({
+			'version': semantic_version,
+			'major': semantic_version.split('.')[0],
+			'minor': semantic_version.split('.')[1] if semantic_version.count('.')>0 else '-',
+			'patch': semantic_version.split('.')[2] if semantic_version.count('.')>1 else '-',
+		})
+		return self
+
+	def add_datetime(self, at: Optional[datetime] = None):
+		if at is None:
+			now = LazyWrap.new_type('datetime', datetime.now)()
+		else:
+			now = LazyWrap.new_type('datetime', lambda: at)()
+		self._entries.update({
+			'year': lambda _: str(now.get().year),
+			'month': lambda _: str(now.get().month),
+			'day': lambda _: str(now.get().day),
+			'hour': lambda _: str(now.get().hour),
+			'minute': lambda _: str(now.get().minute),
+			'second': lambda _: str(now.get().second),
+			'datestr': lambda _: str(now.get().date()),
+			'timestr': lambda _: str(now.get().time()),
+			'datetuple': lambda _: str((now.get().year, now.get().month, now.get().day)),
+			'datetime': lambda _: str((now.get().year, now.get().month, now.get().day, now.get().hour, now.get().minute, now.get().second)),
+		})
+		return self
+
+	def register_magic(self, name: str, shell = None) -> None:
+		from IPython import get_ipython
+		if shell is None: shell = get_ipython()
+		shell.register_magic_function(self._fill, magic_name=name)
+
+	def parse(self, line: str = '') -> str:
+		return self.__replace(self._reader(), line)
+
+	def _fill(self, line, shell):
+		text = self.__replace(self._reader(), line)
+		shell.set_next_input(text, replace=True)
+
+	def __replace(self, r: str, line: str):
+		for k, v in self._entries.items():
+			k = self._prefix + k + self._suffix
 			if k in r:
 				try:
-					r = r.replace(k, v())
+					if callable(v):
+						r = r.replace(k, v(line))
+					else:
+						r = r.replace(k, str(v))
 				except Exception:
 					logger.error("Failed replacing {}".format(k))
+					raise
 		return r
 
-	@classmethod
-	def standard(cls, semantic_version: str, **extra):
-		now = datetime.now()
-		'''
-		'hash': lambda: Tools.git_commit_hash(kale_env.home),
-			'username': lambda: kale_env.username,
-			'author': lambda: kale_env.username.title(),
-			'config': lambda: kale_env.config_file
-		'''
-		return TemplateParser({
-			'version': lambda: semantic_version,
-			'major': lambda: semantic_version.split('.')[0],
-			'minor': lambda: semantic_version.split('.')[1],
-			'patch': lambda: semantic_version.split('.')[2],
-			'datestr': lambda: str(now.date()),
-			'timestr': lambda: str(now.time()),
-			'datetuple': lambda: str((now.year, now.month, now.day)),
-			'datetime': lambda: str((now.year, now.month, now.day, now.hour, now.minute, now.second)),
-			**extra
-		})
 
-@magics_class
-class TemplateMagic(Magics):
-	def __init__(self, shell, template_path: Union[PurePath, str], processor: TemplateParser):
-		super().__init__(shell)
-		self.template_path = Path(template_path)
-		self.processor = processor
-
-	@line_magic
-	def fill(self, line):
-		path = self.template_path
-		if not path.exists():
-			raise FileDoesNotExistError("Jupyter template text file at {} does not exist".format(path), path=path)
-		text = self.processor.fill(path.read_text(encoding='utf-8'))
-		self.shell.set_next_input(text, replace=True)
-
-	@classmethod
-	def from_template_path(cls, path: Union[PurePath, str], processor: TemplateParser):
-		data = Path(path).read_text(encoding='utf8')
-		return TemplateMagic(get_ipython(), data, processor)
-
-
-__all__ = ['TemplateMagic']
+__all__ = ['MagicTemplate']
